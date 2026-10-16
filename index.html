@@ -125,6 +125,32 @@ tr.thinfo span{display:block;max-width:90ch}
 .result strong{font-family:var(--f-num);font-weight:500;font-size:1.05rem}
 .note{font-size:.78rem;color:var(--muted);max-width:90ch}
 .toast{font-size:.8rem;color:var(--good);min-height:1.2em}
+.view{display:flex;flex-direction:column;gap:22px}
+.khome{display:flex;flex-direction:column;gap:10px}
+.crumb a{color:var(--accent);text-decoration:none;font-weight:500}
+.crumb a:hover{text-decoration:underline}
+.field.grow{flex:1 1 240px}
+.field.grow input{width:100%}
+.w-xl{width:240px;max-width:100%}
+.err{flex-basis:100%;margin:0;color:var(--crit);font-size:.8rem;min-height:0}
+.err:empty{display:none}
+.cnt{font-weight:400;color:var(--muted);font-size:.9rem}
+table.ktable{min-width:900px}
+.ktable th:nth-child(2),.ktable td:nth-child(2){text-align:right}
+.ktable th,.ktable td{padding:9px 7px}
+.ktable th:first-child,.ktable td:first-child{padding-left:12px}
+.ktable td.act{padding-right:12px}
+.ktable td.act .btns{gap:6px}
+.ktable td.act button,.ktable td.act a.btn{padding:4px 8px}
+.ktable td a.kn{color:var(--fg);font-weight:600;text-decoration:none}
+.ktable td a.kn:hover{color:var(--accent);text-decoration:underline}
+.ktable td.act{text-align:right}
+.ktable td.act .btns{justify-content:flex-end;flex-wrap:nowrap}
+.ktable td.act button,.ktable td.act a.btn{padding:4px 10px;font-size:.82rem}
+a.btn{display:inline-block;font-weight:500;border-radius:4px;padding:7px 12px;border:1px solid var(--accent);background:var(--accent);color:var(--on-accent);text-decoration:none}
+a.btn:focus-visible,a.kn:focus-visible,.crumb a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.armed,button.armed:hover{background:var(--crit);border-color:var(--crit);color:var(--on-accent)}
+.empty{padding:20px 16px;display:flex;flex-direction:column;gap:6px}
 @media (max-width:860px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.ed-top{grid-template-columns:repeat(2,minmax(0,1fr))}.crit{grid-template-columns:1fr}.tco{grid-template-columns:1fr}}
 @media (max-width:420px){.tile .v{font-size:1.2rem}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -133,14 +159,46 @@ tr.thinfo span{display:block;max-width:90ch}
 <body>
 
 <div class="wrap">
+ <div id="v-home" class="view">
   <header>
     <div class="eyebrow">Cloud-Migration · Fachverfahren</div>
     <h1>Migrationskalkulator Fachverfahren</h1>
-    <p class="lead">Schwierigkeitsfaktor aus zehn gewichteten Kriterien, Kosten pro Bürger heute und in der Cloud, Netto-Ersparnis nach Abzug der verteilten Migrationskosten. Die Startwerte sind fiktive Beispiele.</p>
+    <p class="lead">Für jede Kommune eine eigene Kalkulation: Fachverfahren, Schwierigkeitsfaktor, TCO heute und in der Cloud, Kosten und Ersparnis pro Bürger. Kommune anlegen, dann öffnen und die Verfahren erfassen.</p>
+  </header>
+
+  <form class="panel params" id="f-new" aria-label="Kommune anlegen" novalidate>
+    <div class="field grow"><label for="n-name">Name der Kommune</label><input id="n-name" type="text" placeholder="z. B. Stadt Rimbach" autocomplete="off"></div>
+    <div class="field"><label for="n-ew">Einwohner</label><input id="n-ew" class="w-lg" type="number" min="1" step="100" placeholder="z. B. 8500"></div>
+    <div class="field"><label for="n-start">Startdaten</label><select id="n-start"><option value="leer">Ohne Verfahren</option><option value="bsp">Mit fünf Beispielverfahren</option></select></div>
+    <button class="primary" type="submit">Kommune anlegen</button>
+    <p class="err" id="n-err" role="alert"></p>
+  </form>
+
+  <section class="khome">
+    <div class="bar"><h2>Kommunen <span class="cnt num" id="k-cnt"></span></h2></div>
+    <div class="panel tblwrap" id="k-wrap">
+      <table class="ktable">
+        <thead><tr><th>Kommune</th><th>Einwohner</th><th>Verfahren</th><th>Kosten heute<br>€/Bürger</th><th>Kosten Cloud<br>€/Bürger</th><th>E netto<br>€/Bürger</th><th>Ersparnis Betrieb<br>€/Jahr</th><th>Migration<br>€</th><th>Geändert</th><th></th></tr></thead>
+        <tbody id="kb"></tbody>
+        <tfoot id="kf"></tfoot>
+      </table>
+    </div>
+    <div class="panel empty" id="k-empty" hidden><h2>Noch keine Kommune angelegt</h2><p class="note">Oben Name und Einwohnerzahl eintragen und „Kommune anlegen“ wählen. Danach öffnet sich der Kalkulator für diese Kommune.</p></div>
+    <p class="note">Jede Kommune speichert ihre Fachverfahren getrennt. Die Daten liegen nur in diesem Browser auf diesem Gerät; andere Personen und andere Geräte sehen sie nicht. Browserdaten löschen entfernt auch die Kalkulationen.</p>
+  </section>
+ </div>
+
+ <div id="v-calc" class="view" hidden>
+  <nav class="crumb"><a href="#start" id="back">← Alle Kommunen</a></nav>
+  <header>
+    <div class="eyebrow">Migrationskalkulator · Fachverfahren</div>
+    <h1 id="k-title">Kommune</h1>
+    <p class="lead">Schwierigkeitsfaktor aus zehn gewichteten Kriterien, Kosten pro Bürger heute und in der Cloud, Netto-Ersparnis nach Abzug der verteilten Migrationskosten.</p>
   </header>
 
   <section class="panel params" aria-label="Annahmen">
-    <div class="field"><label for="g-b">Einwohner im Zuständigkeitsgebiet</label><input id="g-b" class="w-lg" type="number" min="1" step="1000"></div>
+    <div class="field"><label for="g-name">Name der Kommune</label><input id="g-name" type="text" class="w-xl" autocomplete="off"></div>
+    <div class="field"><label for="g-b">Einwohner der Kommune</label><input id="g-b" class="w-lg" type="number" min="1" step="100"></div>
     <div class="field"><label for="g-n">Verteilung Migrationskosten (Jahre)</label><input id="g-n" class="w-sm" type="number" min="1" max="20" step="1"></div>
     <div class="field"><span class="flabel">Aufschlag auf Migration Basis, ergibt sich aus der Einstufung (nicht änderbar)</span>
       <div class="aufs" id="g-aufs"></div>
@@ -175,6 +233,7 @@ tr.thinfo span{display:block;max-width:90ch}
   </section>
 
   <section class="panel editor" id="editor" aria-label="Verfahren bearbeiten"></section>
+ </div>
 </div>
 
 <script>
@@ -251,14 +310,30 @@ const EXAMPLE=()=>({B:250000,n:5,ts:800,aufs:[1,1.5,2.5,4],sel:0,rows:[
  {name:'Sozialhilfe',form:'Client-Server',b:null,ist:650000,cloud:470000,mb:250000,s:[4,4,3,3,5,3,3,4,3,3]},
  {name:'Finanzwesen',form:'Client-Server',b:null,ist:520000,cloud:455000,mb:200000,s:[5,4,5,3,4,4,4,5,3,4]}
 ]});
-const KEY='migrationskalkulator-v1';
-let S;
-try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
-if(!S||!Array.isArray(S.rows))S=EXAMPLE();
-ensureTco(S);
 const AUFS=[1,1.5,2.5,4];
-S.aufs=AUFS.slice();
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const OLDKEY='migrationskalkulator-v1', IDX='mk-kommunen-v1', KP='mk-kommune-';
+const MEM={};
+const lsGet=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
+const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const blankState=ew=>({B:ew>0?ew:10000,n:5,ts:800,sel:0,rows:[]});
+function prepState(st){ensureTco(st);st.aufs=AUFS.slice();if(!(st.sel>=0))st.sel=0;if(!(st.n>0))st.n=5;if(!(st.B>0))st.B=10000;return st}
+function loadK(id){let st=MEM[id]||lsGet(KP+id);if(!st||!Array.isArray(st.rows))st=blankState();MEM[id]=prepState(st);return MEM[id]}
+function storeK(id,st){MEM[id]=st;lsSet(KP+id,st)}
+let IX=lsGet(IDX);
+if(!IX||!Array.isArray(IX.list))IX={list:[]};
+if(!IX.init){
+  const old=lsGet(OLDKEY), now=Date.now();
+  if(old&&Array.isArray(old.rows)){const id=newId();storeK(id,prepState(old));IX.list.push({id,name:'Bisherige Kalkulation',created:now,updated:now})}
+  else{const id=newId();storeK(id,prepState(EXAMPLE()));IX.list.push({id,name:'Beispielkommune (fiktive Werte)',created:now,updated:now})}
+  IX.init=true;
+}
+const saveIdx=()=>lsSet(IDX,IX);
+saveIdx();
+let S=null, CUR=null;
+const meta=id=>IX.list.find(k=>k.id===id);
+function save(){if(!CUR||!S)return;storeK(CUR,S);const m=meta(CUR);if(m){m.updated=Date.now();saveIdx()}}
 
 const nf=(v,d)=>Number.isFinite(v)?v.toLocaleString('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d}):'–';
 const eur=v=>nf(v,0);
@@ -370,6 +445,9 @@ function renderResult(){
 function bindGlobals(){
   const map={'g-b':'B','g-n':'n'};
   for(const id in map){const el=document.getElementById(id);el.value=S[map[id]];el.oninput=()=>{S[map[id]]=Math.max(1,num(el.value));render();if(id==='g-b')renderEditor();else updateTco()}}
+  const gn=document.getElementById('g-name'), m=meta(CUR);
+  gn.value=m?m.name:'';
+  gn.oninput=()=>{const mm=meta(CUR);if(!mm)return;mm.name=gn.value;mm.updated=Date.now();saveIdx();setTitle()};
   const R=['SF 1,0–1,9','SF 2,0–2,9','SF 3,0–3,9','SF 4,0–5,0'];
   document.getElementById('g-aufs').innerHTML=AUFS.map((a,i)=>`<div class="chip" title="Aufschlag bei Einstufung ${CLS[i]}"><span class="r">${CLS[i]} · ${R[i]}</span><span class="f">× ${nf(a,1)}</span></div>`).join('');
 }
@@ -416,7 +494,12 @@ ed.addEventListener('click',e=>{
 });
 
 document.getElementById('b-add').addEventListener('click',()=>{S.rows.push({name:'Neues Verfahren',form:'On-Premises',b:null,mb:50000,s:[3,3,3,3,3,3,3,3,3,3],ti:splitIst(100000,S.ts),tc:splitCloud(80000,S.ts)});S.sel=S.rows.length-1;render();renderEditor();const n=document.getElementById('e-name');n.focus();n.select()});
-document.getElementById('b-reset').addEventListener('click',()=>{S=ensureTco(EXAMPLE());bindGlobals();render();renderEditor();flash('Beispieldaten geladen')});
+function arm(btn,label,fn){
+  if(btn.classList.contains('armed')){clearTimeout(btn._t);btn.classList.remove('armed');btn.textContent=btn._l;fn();return}
+  btn._l=btn.textContent;btn.textContent=label;btn.classList.add('armed');
+  btn._t=setTimeout(()=>{btn.classList.remove('armed');btn.textContent=btn._l},4000);
+}
+document.getElementById('b-reset').addEventListener('click',e=>arm(e.currentTarget,'Verfahren ersetzen? Nochmal klicken',()=>{const B=S.B;S=prepState(EXAMPLE());S.B=B;bindGlobals();render();renderEditor();flash('Beispieldaten geladen')}));
 document.getElementById('b-csv').addEventListener('click',()=>{
   const h=['Fachverfahren','Ausgangsform','Bürger','SF','Einstufung','TCO Ist','TCO Cloud','Migration M','K Ist','K Cloud','E netto','Amortisation','Empfehlung',...CRIT.map(c=>c.t)];
   const lines=[h.join(';')].concat(S.rows.map(r=>{const x=calc(r);return [r.name,r.form,x.B,nf(x.sf,2),CLS[x.cls],r.ist,r.cloud,Math.round(x.M),nf(x.kI,2),nf(x.kC,2),nf(x.E,2),Number.isFinite(x.T)?nf(x.T,1):'nie',x.rec,...r.s].map(v=>/[;"\n]/.test(String(v))?'"'+String(v).replace(/"/g,'""')+'"':v).join(';')}));
@@ -427,7 +510,64 @@ document.getElementById('b-csv').addEventListener('click',()=>{
 function fallback(txt){const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}ta.remove();flash(ok?'Tabelle kopiert – in Excel einfügen':'Kopieren nicht möglich')}
 let ft;function flash(m){const t=document.getElementById('toast');t.textContent=m;clearTimeout(ft);ft=setTimeout(()=>t.textContent='',2600)}
 
-bindGlobals();render();renderEditor();
+/* ---------- Kommunen: Startseite und Navigation ---------- */
+const dfmt=t=>{try{return new Date(t).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'})}catch(e){return ''}};
+function summarize(st){
+  const prev=S;S=st;const res=st.rows.map(calc);S=prev;
+  const sum=f=>res.reduce((a,x)=>a+f(x),0);
+  return {B:st.B,n:st.rows.length,kI:sum(x=>x.kI),kC:sum(x=>x.kC),E:sum(x=>x.E),d:sum(x=>x.d),M:sum(x=>x.M)};
+}
+function setTitle(){const m=meta(CUR);const n=(m&&m.name.trim())||'Kommune ohne Namen';document.getElementById('k-title').textContent=n;document.title=n+' · Migrationskalkulator'}
+function renderHome(){
+  const L=IX.list.slice().sort((a,b)=>a.name.localeCompare(b.name,'de'));
+  document.getElementById('k-cnt').textContent=L.length?`(${L.length})`:'';
+  document.getElementById('k-wrap').hidden=!L.length;
+  document.getElementById('k-empty').hidden=!!L.length;
+  let tB=0,tn=0,td=0,tM=0;
+  document.getElementById('kb').innerHTML=L.map(k=>{const s=summarize(loadK(k.id));tB+=s.B;tn+=s.n;td+=s.d;tM+=s.M;
+    const has=s.n>0;
+    return `<tr data-id="${k.id}">
+     <td><a class="kn" href="#k-${k.id}">${esc(k.name||'Kommune ohne Namen')}</a></td>
+     <td class="num">${eur(s.B)}</td><td class="num">${s.n}</td>
+     <td class="num">${has?nf(s.kI,2):'–'}</td><td class="num">${has?nf(s.kC,2):'–'}</td>
+     <td class="num ${has?(s.E<0?'neg':'pos'):''}">${has?nf(s.E,2):'–'}</td>
+     <td class="num">${has?eur(s.d):'–'}</td><td class="num">${has?eur(s.M):'–'}</td>
+     <td class="num">${dfmt(k.updated)}</td>
+     <td class="act"><div class="btns"><a class="btn" href="#k-${k.id}">Öffnen</a><button type="button" class="danger" data-del="${k.id}">Löschen</button></div></td></tr>`}).join('');
+  document.getElementById('kf').innerHTML=L.length>1?`<tr><td>Alle Kommunen</td><td class="num">${eur(tB)}</td><td class="num">${tn}</td><td></td><td></td><td></td><td class="num ${td<0?'neg':''}">${eur(td)}</td><td class="num">${eur(tM)}</td><td></td><td></td></tr>`:'';
+}
+document.getElementById('kb').addEventListener('click',e=>{
+  const del=e.target.closest('button[data-del]');
+  if(del){const id=del.dataset.del;arm(del,'Wirklich löschen?',()=>{IX.list=IX.list.filter(k=>k.id!==id);delete MEM[id];lsDel(KP+id);saveIdx();renderHome()});return}
+  if(e.target.closest('a'))return;
+  const tr=e.target.closest('tr[data-id]');if(tr)location.hash='k-'+tr.dataset.id;
+});
+document.getElementById('f-new').addEventListener('submit',e=>{
+  e.preventDefault();
+  const name=document.getElementById('n-name').value.trim(), ew=num(document.getElementById('n-ew').value), start=document.getElementById('n-start').value;
+  const err=document.getElementById('n-err');
+  if(!name){err.textContent='Bitte einen Namen für die Kommune eingeben.';document.getElementById('n-name').focus();return}
+  if(!(ew>0)){err.textContent='Bitte die Einwohnerzahl als Zahl größer als 0 eingeben.';document.getElementById('n-ew').focus();return}
+  err.textContent='';
+  const id=newId(), now=Date.now();
+  const st=start==='bsp'?prepState(EXAMPLE()):prepState(blankState(ew));st.B=ew;
+  storeK(id,st);IX.list.push({id,name,created:now,updated:now});saveIdx();
+  e.target.reset();
+  location.hash='k-'+id;
+});
+function show(v){document.getElementById('v-home').hidden=v!=='home';document.getElementById('v-calc').hidden=v!=='calc'}
+function route(){
+  const m=/^#k-([a-z0-9]+)$/.exec(location.hash);
+  if(m&&meta(m[1])){
+    if(CUR!==m[1]){CUR=m[1];S=loadK(CUR);openCol=-1;renderHead();bindGlobals();setTitle();render();renderEditor();window.scrollTo(0,0)}
+    show('calc');
+  }else{
+    if(CUR)save();
+    CUR=null;S=null;show('home');document.title='Migrationskalkulator Fachverfahren';renderHome();
+  }
+}
+window.addEventListener('hashchange',route);
+route();
 </script>
 
 </body>
