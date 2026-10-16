@@ -92,6 +92,16 @@ td .sub{display:block;font-size:.72rem;color:var(--muted);font-family:var(--f-bo
 .more summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .more p{margin:6px 0 2px;line-height:1.55;max-width:68ch;color:var(--fg)}
 .crit{align-items:start}
+.thw{display:inline-flex;align-items:flex-end;gap:4px}
+th[style] .thw{flex-direction:row}
+.thi{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;padding:0;border:none;border-radius:3px;background:transparent;color:var(--muted);cursor:pointer;flex:none}
+.thi:hover{background:var(--line);color:var(--fg)}
+.thi svg{width:10px;height:10px;fill:currentColor;transition:transform .15s}
+.thi[aria-expanded=true]{color:var(--accent)}
+.thi[aria-expanded=true] svg{transform:rotate(90deg)}
+tr.thinfo td{white-space:normal;text-align:left;background:var(--accent-soft);color:var(--fg);font-size:.84rem;line-height:1.5;padding:10px 12px;border-bottom:1px solid var(--line)}
+tr.thinfo strong{display:block;margin-bottom:2px;font-weight:600}
+tr.thinfo span{display:block;max-width:90ch}
 .ro{display:block;padding:6px 8px;border:1px dashed var(--line);border-radius:4px;background:var(--sunk);font-family:var(--f-num);font-variant-numeric:tabular-nums}
 .tco{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 28px;align-items:start}
 .tcol{display:flex;flex-direction:column;min-width:0}
@@ -132,7 +142,6 @@ td .sub{display:block;font-size:.72rem;color:var(--muted);font-family:var(--f-bo
   <section class="panel params" aria-label="Annahmen">
     <div class="field"><label for="g-b">Einwohner im Zuständigkeitsgebiet</label><input id="g-b" class="w-lg" type="number" min="1" step="1000"></div>
     <div class="field"><label for="g-n">Verteilung Migrationskosten (Jahre)</label><input id="g-n" class="w-sm" type="number" min="1" max="20" step="1"></div>
-    <div class="field"><label for="g-ts">Tagessatz Betriebspersonal €</label><input id="g-ts" class="w-sm" type="number" min="1" step="10"></div>
     <div class="field"><span class="flabel">Aufschlag auf Migration Basis, ergibt sich aus der Einstufung (nicht änderbar)</span>
       <div class="aufs" id="g-aufs"></div>
     </div>
@@ -157,9 +166,7 @@ td .sub{display:block;font-size:.72rem;color:var(--muted);font-family:var(--f-bo
     <div class="toast" id="toast" role="status"></div>
     <div class="panel tblwrap">
       <table>
-        <thead><tr>
-          <th>Fachverfahren</th><th>Einstufung</th><th>SF</th><th>TCO Ist<br>€/Jahr</th><th>TCO Cloud<br>€/Jahr</th><th>Migration M<br>€</th><th>K Ist<br>€/Bürger</th><th>K Cloud<br>€/Bürger</th><th>E netto<br>€/Bürger</th><th>Amortisation<br>Jahre</th><th style="text-align:left">Empfehlung</th>
-        </tr></thead>
+        <thead id="thd"></thead>
         <tbody id="tb"></tbody>
         <tfoot id="tf"></tfoot>
       </table>
@@ -199,7 +206,7 @@ const IST_LINES=[
  {id:'hw',t:'Hardware-Abschreibung',d:'Server, Speichersysteme, Netzkomponenten: Anschaffungswert geteilt durch Nutzungsdauer.',f:[['hwA','Anschaffung €'],['hwJ','Nutzungsdauer Jahre']],v:o=>o.hwJ>0?o.hwA/o.hwJ:0},
  {id:'rz',t:'Rechenzentrum anteilig',d:'Fläche, Strom, Kühlung, Gebäudesicherheit; Anteil z. B. nach Zahl der Server.',f:[['rz','€ pro Jahr']],v:o=>o.rz},
  {id:'liz',t:'Lizenzen und Wartung',d:'Betriebssystem, Datenbank, Fachverfahren, Herstellersupport.',f:[['liz','€ pro Jahr']],v:o=>o.liz},
- {id:'pt',t:'Betriebspersonal',d:'Administration, Datenbankpflege, Patching, Störungsbearbeitung; Personentage × Tagessatz oben.',f:[['pt','Personentage pro Jahr']],v:o=>o.pt*S.ts},
+ {id:'pt',t:'Betriebspersonal',d:'Administration, Datenbankpflege, Patching, Störungsbearbeitung; Personentage × Tagessatz.',f:[['pt','Personentage pro Jahr'],['ts','Tagessatz €']],v:o=>o.pt*o.ts},
  {id:'cli',t:'Arbeitsplatz und Client',d:'Softwareverteilung, Fat-Client-Pflege, Terminalserver, Spezialgeräte.',f:[['cli','€ pro Jahr']],v:o=>o.cli},
  {id:'net',t:'Netz und Sonstiges',d:'WAN-Anteil, Firewalls, Backup-Software, externe Dienstleister.',f:[['net','€ pro Jahr']],v:o=>o.net}
 ];
@@ -209,7 +216,7 @@ const CLOUD_LINES=[
  {id:'bak',t:'Backup und Archiv',d:'Datensicherung, Langzeitarchiv, Georedundanz.',f:[['bak','€ pro Monat']],v:o=>o.bak*12},
  {id:'plat',t:'Plattformumlage und Managed Services',d:'Anteil am Plattformbetrieb, Sicherheit, Monitoring, verwaltete Datenbank.',f:[['plat','€ pro Jahr']],v:o=>o.plat},
  {id:'liz',t:'Lizenzen oder SaaS-Gebühr',d:'Cloud-fähige Lizenzen, Herstellerwartung oder SaaS-Abonnement.',f:[['liz','€ pro Jahr']],v:o=>o.liz},
- {id:'pt',t:'Betriebspersonal',d:'Verbleibender Eigenaufwand für Fachadministration und Steuerung; Personentage × Tagessatz oben.',f:[['pt','Personentage pro Jahr']],v:o=>o.pt*S.ts},
+ {id:'pt',t:'Betriebspersonal',d:'Verbleibender Eigenaufwand für Fachadministration und Steuerung; Personentage × Tagessatz.',f:[['pt','Personentage pro Jahr'],['ts','Tagessatz €']],v:o=>o.pt*o.ts},
  {id:'cli',t:'Arbeitsplatz und Client',d:'Browser, Thin Client oder virtueller Arbeitsplatz.',f:[['cli','€ pro Jahr']],v:o=>o.cli},
  {id:'net',t:'Netz und Anbindung',d:'Leitungen zur Cloud, Datentransfer, Netzübergänge.',f:[['net','€ pro Jahr']],v:o=>o.net}
 ];
@@ -217,7 +224,7 @@ const NOTES={
  'ti-hw':'Erfasst werden alle Geräte, die nur oder überwiegend für dieses Verfahren betrieben werden: Anwendungs- und Datenbankserver, Speichersysteme, Backup-Hardware sowie anteilig gemeinsam genutzte Netzwerk- und Sicherheitskomponenten. Den Anschaffungswert findest du in der Anlagenbuchhaltung oder in den Beschaffungsunterlagen. Als Nutzungsdauer werden üblicherweise 5 Jahre angesetzt, bei Speichersystemen manchmal 4 bis 7. Teilen sich mehrere Verfahren einen virtualisierten Host, wird sein Wert nach dem Anteil an Prozessoren, Arbeitsspeicher oder virtuellen Maschinen verteilt. Wichtig für den Vergleich: Steht in den nächsten Jahren ohnehin eine Hardwareerneuerung an, fällt genau dieser Betrag nach einer Migration weg.',
  'ti-rz':'Gemeint sind die Kosten des Rechenzentrums, die auf dieses Verfahren entfallen: Miete oder Abschreibung der Fläche, Strom für Server und Kühlung, unterbrechungsfreie Stromversorgung, Brandschutz, Zutrittskontrolle und Gebäudeservice. Wird das Rechenzentrum von einem IT-Dienstleister betrieben, steht der Betrag oft direkt in dessen Leistungsverrechnung. Sonst teilt man die Gesamtkosten nach einem festen Schlüssel auf, zum Beispiel nach Höheneinheiten im Serverschrank, nach Zahl der Server oder nach Stromverbrauch. Wichtig ist, für alle Verfahren denselben Schlüssel zu nutzen, damit die Zahlen vergleichbar bleiben.',
  'ti-liz':'Hierzu zählen die jährlichen Wartungs- und Pflegeentgelte für das Fachverfahren selbst sowie für Betriebssystem, Datenbank, Virtualisierung, Backup-Software, Virenschutz und Überwachungswerkzeuge. Einmalig gekaufte Lizenzen werden wie Hardware über die Nutzungsdauer verteilt. Die Beträge stehen in den Software- und Pflegeverträgen (häufig EVB-IT). Prüfe dabei, welche Lizenzen an Prozessorkerne oder Hardware gebunden sind, denn genau diese ändern sich in der Cloud oft am stärksten.',
- 'ti-pt':'Gezählt wird der interne und externe Aufwand für den technischen Betrieb: Installation von Updates und Sicherheitspatches, Datenbankpflege, Überwachung, Datensicherung und Wiederherstellungstests, Störungsbearbeitung, Benutzerverwaltung und Abstimmung mit dem Hersteller. Nicht dazu gehört die fachliche Sachbearbeitung. Quelle ist idealerweise die Zeiterfassung oder das Ticketsystem. Fehlt beides, hilft eine Schätzung: Stunden pro Woche × 46 Arbeitswochen ÷ 8 ergibt Personentage pro Jahr. Der Tagessatz oben sollte Personalvollkosten enthalten, also Gehalt, Arbeitgeberanteile und Gemeinkosten des Arbeitsplatzes.',
+ 'ti-pt':'Gezählt wird der interne und externe Aufwand für den technischen Betrieb: Installation von Updates und Sicherheitspatches, Datenbankpflege, Überwachung, Datensicherung und Wiederherstellungstests, Störungsbearbeitung, Benutzerverwaltung und Abstimmung mit dem Hersteller. Nicht dazu gehört die fachliche Sachbearbeitung. Quelle ist idealerweise die Zeiterfassung oder das Ticketsystem. Fehlt beides, hilft eine Schätzung: Stunden pro Woche × 46 Arbeitswochen ÷ 8 ergibt Personentage pro Jahr. Der Tagessatz sollte Personalvollkosten enthalten, also Gehalt, Arbeitgeberanteile und Gemeinkosten des Arbeitsplatzes.',
  'ti-cli':'Dieser Block erfasst die Kosten auf der Arbeitsplatzseite, die nur wegen dieses Verfahrens entstehen. Dazu gehören Paketierung und Verteilung des Clients, Pflege bei jedem Versionswechsel, Terminalserver oder virtuelle Desktops samt Lizenzen sowie Spezialgeräte wie Kartenleser, Scanner, Formular- oder Etikettendrucker. Bei einer reinen Browser-Anwendung ist der Wert meist sehr klein. Bei Fat Clients mit vielen Arbeitsplätzen kann er dagegen erheblich sein.',
  'ti-net':'Hier landet alles, was in keinen anderen Block passt: anteilige Kosten für Weitverkehrsnetz und Standortanbindung, Firewalls und Netzsicherheit, externe Dienstleister für Betriebsunterstützung, Zertifikate, Penetrationstests oder Audits. Verwende diesen Block sparsam und notiere dir, was du hineinrechnest, damit nichts doppelt gezählt wird.',
  'tc-cpu':'Der Betrag ergibt sich aus der Zahl und Größe der virtuellen Server oder Container, die das Verfahren in der Cloud braucht. Ausgangspunkt ist die heutige Auslastung, nicht die installierte Größe, denn viele Server im eigenen Rechenzentrum sind deutlich überdimensioniert. Die Preise stehen im Leistungskatalog oder Preisrechner der Zielplattform. Bei dauerhaft laufenden Systemen lohnt ein Blick auf Reservierungen oder Laufzeitrabatte. Verfahren mit starken Lastspitzen, etwa zu Antragsfristen, profitieren davon, dass sich Leistung nur bei Bedarf hinzubuchen lässt.',
@@ -225,17 +232,18 @@ const NOTES={
  'tc-bak':'Dazu gehören die Datensicherung der Anwendung und der Datenbank, die Aufbewahrung über die vorgeschriebenen Fristen, eine Kopie an einem zweiten Standort sowie das Langzeitarchiv. Viele Plattformen bieten das als verwalteten Dienst an, abgerechnet nach gesichertem Volumen und Aufbewahrungsdauer. Achte darauf, dass die Sicherung die geforderten Wiederherstellungszeiten (RTO/RPO) erfüllt. Eine zu knapp bemessene Sicherung ist in der Rechnung billig, im Ernstfall aber teuer.',
  'tc-plat':'Bei einer einheitlichen Cloud für viele Verfahren fallen gemeinsame Kosten an: Plattformbetrieb, zentrale Sicherheitsdienste, Protokollierung und Überwachung, Identitäts- und Zugriffsverwaltung, Netzübergänge sowie verwaltete Dienste wie Datenbanken oder Container-Plattformen. Diese Kosten werden meist als Umlage pro Verfahren, pro Ressource oder als Prozentsatz der Verbrauchskosten weiterberechnet. Frag beim Plattformbetreiber nach dem Umlageschlüssel, damit die Zahl nicht unterschätzt wird. Hier liegt oft der größte Unterschied zwischen Werbeprospekt und tatsächlicher Rechnung.',
  'tc-liz':'Prüfe mit dem Hersteller, welche Lizenzen in der Cloud weiter gelten, welche umgestellt werden müssen und ob es eine SaaS-Variante gibt. Bei SaaS ersetzt eine Abo-Gebühr meist Lizenzen, Wartung und einen Großteil des Betriebs. Dann sinken die Blöcke Rechenleistung, Speicher und Personal entsprechend. Betriebssystem- und Datenbanklizenzen sind bei vielen Cloud-Angeboten bereits im Preis der Rechenleistung enthalten und dürfen dann hier nicht noch einmal auftauchen.',
- 'tc-pt':'Auch in der Cloud bleibt eigener Aufwand: fachliche Administration, Benutzerverwaltung, Steuerung des Plattformbetreibers, Prüfung von Rechnungen und Verbrauch, Abstimmung von Updates mit dem Hersteller und Tests nach Änderungen. Typischerweise sinkt der technische Betriebsaufwand um 30 bis 60 Prozent, weil Hardware, Patching und Datensicherung wegfallen oder vom Betreiber übernommen werden. Diese Spanne ist ein Erfahrungswert und hängt stark davon ab, wie viele Dienste verwaltet bezogen werden. Rechne nicht mit null, sonst ist die Ersparnis überschätzt.',
+ 'tc-pt':'Auch in der Cloud bleibt eigener Aufwand: fachliche Administration, Benutzerverwaltung, Steuerung des Plattformbetreibers, Prüfung von Rechnungen und Verbrauch, Abstimmung von Updates mit dem Hersteller und Tests nach Änderungen. Typischerweise sinkt der technische Betriebsaufwand um 30 bis 60 Prozent, weil Hardware, Patching und Datensicherung wegfallen oder vom Betreiber übernommen werden. Diese Spanne ist ein Erfahrungswert und hängt stark davon ab, wie viele Dienste verwaltet bezogen werden. Rechne nicht mit null, sonst ist die Ersparnis überschätzt. Übernimmt ein externer Betreiber Teile der Arbeit zu einem anderen Satz, trage hier den passenden Tagessatz ein.',
  'tc-cli':'Läuft das Verfahren nach der Migration im Browser, bleibt hier meist nur ein kleiner Restbetrag. Muss der bisherige Fat Client weiter genutzt werden, braucht es oft eine virtuelle Arbeitsumgebung oder einen Terminalserver in der Cloud, was laufende Kosten pro Nutzer verursacht. Spezialgeräte am Arbeitsplatz benötigen unter Umständen zusätzliche Software oder Gateways, um mit der Cloud zu kommunizieren.',
  'tc-net':'Gemeint sind die Kosten für die Verbindung zwischen Behördennetz und Cloud: dedizierte Leitungen oder gesicherte Tunnel, anteilige Netzübergänge, sowie Gebühren für ausgehenden Datentransfer, die viele Anbieter nach Volumen abrechnen. Verfahren mit großen Dokumentenmengen oder häufigen Abfragen von Arbeitsplätzen können hier spürbare Beträge erzeugen. Ist die Anbindung schon in der Plattformumlage enthalten, trage hier nur den verfahrensspezifischen Anteil ein.'
 };
 const tco=(L,o)=>L.reduce((a,l)=>a+l.v(o),0);
 const r1k=x=>Math.round(x/1000)*1000;
 function splitIst(T,ts){const hw=r1k(T*.18),rz=r1k(T*.10),pt=Math.round(T*.30/ts),cli=r1k(T*.07),net=r1k(T*.05);
-  return {hwA:hw*5,hwJ:5,rz,pt,cli,net,liz:Math.max(0,T-hw-rz-pt*ts-cli-net)}}
+  return {hwA:hw*5,hwJ:5,rz,pt,ts,cli,net,liz:Math.max(0,T-hw-rz-pt*ts-cli-net)}}
 function splitCloud(T,ts){const cpu=Math.round(T*.30/12/100)*100,tb=2,tbP=Math.round(T*.06/12/2/10)*10,bak=Math.round(T*.05/12/100)*100,plat=r1k(T*.12),pt=Math.round(T*.18/ts),cli=r1k(T*.03),net=r1k(T*.05);
-  return {cpu,tb,tbP,bak,plat,pt,cli,net,liz:Math.max(0,T-cpu*12-tb*tbP*12-bak*12-plat-pt*ts-cli-net)}}
-function ensureTco(st){if(!(st.ts>0))st.ts=800;st.rows.forEach(r=>{if(!r.ti)r.ti=splitIst(r.ist||0,st.ts);if(!r.tc)r.tc=splitCloud(r.cloud||0,st.ts)});return st}
+  return {cpu,tb,tbP,bak,plat,pt,ts,cli,net,liz:Math.max(0,T-cpu*12-tb*tbP*12-bak*12-plat-pt*ts-cli-net)}}
+function ensureTco(st){if(!(st.ts>0))st.ts=800;st.rows.forEach(r=>{if(!r.ti)r.ti=splitIst(r.ist||0,st.ts);if(!r.tc)r.tc=splitCloud(r.cloud||0,st.ts);
+  if(!(r.ti.ts>0))r.ti.ts=st.ts;if(!(r.tc.ts>0))r.tc.ts=st.ts});return st}
 const EXAMPLE=()=>({B:250000,n:5,ts:800,aufs:[1,1.5,2.5,4],sel:0,rows:[
  {name:'Kfz-Zulassung',form:'Andere Cloud',b:null,ist:280000,cloud:230000,mb:60000,s:[2,2,2,1,2,1,2,1,1,1]},
  {name:'Meldewesen',form:'On-Premises',b:null,ist:420000,cloud:310000,mb:150000,s:[3,3,2,2,3,2,2,2,2,2]},
@@ -360,11 +368,33 @@ function renderResult(){
 }
 
 function bindGlobals(){
-  const map={'g-b':'B','g-n':'n','g-ts':'ts'};
+  const map={'g-b':'B','g-n':'n'};
   for(const id in map){const el=document.getElementById(id);el.value=S[map[id]];el.oninput=()=>{S[map[id]]=Math.max(1,num(el.value));render();if(id==='g-b')renderEditor();else updateTco()}}
   const R=['SF 1,0–1,9','SF 2,0–2,9','SF 3,0–3,9','SF 4,0–5,0'];
   document.getElementById('g-aufs').innerHTML=AUFS.map((a,i)=>`<div class="chip" title="Aufschlag bei Einstufung ${CLS[i]}"><span class="r">${CLS[i]} · ${R[i]}</span><span class="f">× ${nf(a,1)}</span></div>`).join('');
 }
+
+const COLS=[
+ {l:'Fachverfahren',a:'left',i:'Name des Verfahrens und seine heutige Betriebsform (On-Premises, andere Cloud, Client-Server). Ist für das Verfahren eine eigene Bürgerzahl hinterlegt, steht sie darunter; sonst gilt die Einwohnerzahl oben. Ein Klick auf die Zeile öffnet das Verfahren unten zur Bearbeitung.'},
+ {l:'Einstufung',a:'left',i:'Schwierigkeitsstufe, die sich aus dem SF ergibt: gering (SF 1,0–1,9), mittel (2,0–2,9), hoch (3,0–3,9) oder sehr hoch (4,0–5,0). Die Stufe bestimmt den Aufschlag auf den Basis-Migrationsaufwand: × 1,0, × 1,5, × 2,5 oder × 4,0.'},
+ {l:'SF',i:'Schwierigkeitsfaktor von 1,0 bis 5,0. Er ist der gewichtete Mittelwert der zehn Kriterien, die du unten beim Verfahren mit 1 (einfach) bis 5 (sehr schwer) bewertest. Architektur und Schnittstellen zählen je 15 %, Organisation und Ausgangsform je 5 %, alle übrigen je 10 %.'},
+ {l:'TCO Ist',u:'€/Jahr',i:'Jährliche Gesamtbetriebskosten im heutigen Betrieb. Summe der sechs Kostenblöcke unter „TCO heute“: Hardware-Abschreibung, Rechenzentrum, Lizenzen und Wartung, Betriebspersonal, Arbeitsplatz und Client, Netz und Sonstiges. Einmalige Kosten sind über ihre Nutzungsdauer verteilt.'},
+ {l:'TCO Cloud',u:'€/Jahr',i:'Erwartete jährliche Gesamtbetriebskosten nach der Migration. Summe der acht Kostenblöcke unter „TCO in der Cloud“: Rechenleistung, Speicher, Backup, Plattformumlage, Lizenzen oder SaaS, Betriebspersonal, Arbeitsplatz, Netzanbindung. Migrationskosten sind hier nicht enthalten.'},
+ {l:'Migration M',u:'€',i:'Einmalige Kosten der Umstellung: Basis-Migrationsaufwand multipliziert mit dem Aufschlag der Einstufung. Der Basisaufwand umfasst Umbau, Tests, Datenübernahme, Parallelbetrieb und Schulung für einen glatten Verlauf. Der Aufschlag bildet das Mehraufwandsrisiko schwieriger Verfahren ab.'},
+ {l:'K Ist',u:'€/Bürger',i:'Heutige Kosten pro Bürger und Jahr: TCO Ist geteilt durch die Zahl der Bürger im Zuständigkeitsgebiet des Verfahrens.'},
+ {l:'K Cloud',u:'€/Bürger',i:'Kosten pro Bürger und Jahr nach der Migration: TCO Cloud geteilt durch die Bürgerzahl. Die einmaligen Migrationskosten sind hier noch nicht berücksichtigt, sie stecken erst in E netto.'},
+ {l:'E netto',u:'€/Bürger',i:'Netto-Ersparnis pro Bürger und Jahr im Betrachtungszeitraum: (TCO Ist − TCO Cloud − Migration M ÷ Verteilungsjahre) ÷ Bürger. Positiv (grün) heißt, die Migration rechnet sich schon im Zeitraum. Negativ (rot) heißt, die Migrationskosten fressen die laufende Ersparnis auf. Der Balken zeigt die Größe im Vergleich zu den anderen Verfahren.'},
+ {l:'Amortisation',u:'Jahre',i:'Wie viele Jahre es dauert, bis die laufende Ersparnis die einmaligen Migrationskosten wieder eingespielt hat: Migration M ÷ (TCO Ist − TCO Cloud). Rot markiert, wenn es länger dauert als der Verteilungszeitraum oben. „nie“ bedeutet, dass die Cloud im Betrieb nicht günstiger ist.'},
+ {l:'Empfehlung',a:'left',i:'Automatische Einordnung für die Reihenfolge. „Zuerst migrieren“: wirtschaftlich und Einstufung gering oder mittel. „Danach migrieren“: wirtschaftlich, aber hoch oder sehr hoch eingestuft. „Prüfen“: E netto negativ oder Amortisation länger als der Verteilungszeitraum; dann SaaS, Weiterbetrieb bis Vertragsende oder Ablösung prüfen.'}
+];
+let openCol=-1;
+function renderHead(){
+  const th=COLS.map((c,i)=>`<th${c.a?' style="text-align:left"':''}><span class="thw">${c.l}${c.u?'<br>'+c.u:''}<button class="thi" type="button" data-c="${i}" aria-expanded="${openCol===i}" aria-controls="thinfo" aria-label="Info zu ${c.l}"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1.5 7.5 5 3 8.5z"/></svg></button></span></th>`).join('');
+  const info=openCol>=0?`<tr class="thinfo"><td colspan="${COLS.length}" id="thinfo"><strong>${COLS[openCol].l}${COLS[openCol].u?' ('+COLS[openCol].u+')':''}</strong><span>${COLS[openCol].i}</span></td></tr>`:'';
+  document.getElementById('thd').innerHTML=`<tr>${th}</tr>${info}`;
+}
+document.getElementById('thd').addEventListener('click',e=>{const b=e.target.closest('button.thi');if(!b)return;const i=+b.dataset.c;openCol=openCol===i?-1:i;renderHead();const nb=document.querySelector(`button.thi[data-c="${i}"]`);if(nb)nb.focus()});
+renderHead();
 
 document.getElementById('tb').addEventListener('click',e=>{const tr=e.target.closest('tr[data-i]');if(!tr)return;S.sel=+tr.dataset.i;render();renderEditor()});
 document.getElementById('tb').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const tr=e.target.closest('tr[data-i]');if(!tr)return;e.preventDefault();S.sel=+tr.dataset.i;render();renderEditor();document.getElementById('editor').scrollIntoView({behavior:'smooth',block:'start'})});
