@@ -40,7 +40,7 @@ h2{font-size:1.05rem;font-weight:600;margin:0;text-wrap:balance}
 .params{display:flex;flex-wrap:wrap;gap:14px 22px;padding:14px 16px;align-items:flex-end}
 .field{display:flex;flex-direction:column;gap:4px;min-width:0}
 .field label{font-size:.75rem;color:var(--muted);font-weight:500}
-input[type=number],input[type=text],select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px 8px;min-width:0}
+input[type=number],input[type=text],input[type=email],select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px 8px;min-width:0}
 input[type=number]{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .w-lg{width:130px}.w-sm{width:70px}
@@ -163,6 +163,12 @@ button.armed,button.armed:hover{background:var(--crit);border-color:var(--crit);
 .store.db{background:var(--good-soft)}.store.db strong{color:var(--good)}
 .store.local{background:var(--warn-soft)}.store.local strong{color:var(--warn)}
 .store em{font-style:normal;color:var(--crit)}
+.login{padding:18px 16px;display:flex;flex-direction:column;gap:10px;max-width:640px}
+.login .note{margin:0}
+.loginrow{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.okmsg{margin:0;font-size:.82rem;color:var(--good)}.okmsg:empty{display:none}
+.linkbtn{border:none;background:none;padding:0;color:var(--accent);font:inherit;font-weight:500;text-decoration:underline;cursor:pointer}
+.linkbtn:hover{background:none}
 @media (max-width:860px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.ed-top{grid-template-columns:repeat(2,minmax(0,1fr))}.crit{grid-template-columns:1fr}.tco{grid-template-columns:1fr}}
 @media (max-width:420px){.tile .v{font-size:1.2rem}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -177,6 +183,18 @@ button.armed,button.armed:hover{background:var(--crit);border-color:var(--crit);
     <h1>Migrationskalkulator Fachverfahren</h1>
     <p class="lead">Für jede Kommune eine eigene Kalkulation: Fachverfahren, Schwierigkeitsfaktor, TCO heute und in der Cloud, Kosten und Ersparnis pro Bürger. Kommune anlegen, dann öffnen und die Verfahren erfassen.</p>
   </header>
+
+  <section class="panel login" id="login" hidden aria-labelledby="login-h">
+    <h2 id="login-h">Anmelden</h2>
+    <p class="note" id="login-p"></p>
+    <form id="f-login" class="loginrow" novalidate>
+      <div class="field grow"><label for="l-mail">E-Mail-Adresse</label><input id="l-mail" type="email" autocomplete="email" placeholder="name@kommune.de"></div>
+      <button class="primary" type="submit">Anmeldelink senden</button>
+    </form>
+    <p class="err" id="l-err" role="alert"></p>
+    <p class="okmsg" id="l-ok" role="status"></p>
+    <div><button type="button" id="b-logout2" hidden>Abmelden</button></div>
+  </section>
 
   <form class="panel params" id="f-new" aria-label="Kommune anlegen" novalidate>
     <div class="field grow"><label for="n-name">Name der Kommune</label><input id="n-name" type="text" placeholder="z. B. Stadt Rimbach" autocomplete="off"></div>
@@ -335,6 +353,28 @@ function prepState(st){ensureTco(st);st.aufs=AUFS.slice();if(!(st.sel>=0))st.sel
 function loadK(id){let st=MEM[id]||(MODE==='local'?lsGet(KP+id):null);if(!st||!Array.isArray(st.rows))st=blankState();MEM[id]=prepState(st);return MEM[id]}
 /* Speicher: MODE 'db' = gemeinsame Datenbank (Claude-Seite), 'local' = nur dieser Browser (z. B. GitHub Pages) */
 let MODE='load', DB=null, READONLY=false, DBERR='';
+/* Eigene Datenbank (Supabase) für die öffentliche Webseite. Beide Werte dürfen öffentlich sein;
+   der Schutz erfolgt über Anmeldung und Zugriffsregeln in der Datenbank. Niemals den service_role-Key eintragen. */
+const SUPABASE_URL='';
+const SUPABASE_ANON_KEY='';
+const SUPABASE_LIB='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
+let SUB='', SB=null, SBUSER=null;
+/* Einheitliche Schreib-/Löschschnittstelle für beide Datenbanken */
+const BACKEND={
+  set:async(id,p)=>{
+    if(SUB==='claude')return DB.collection('kommunen').doc(id).set(p);
+    const {error}=await SB.from('kommunen').upsert({id,name:p.name,created:p.created,updated:p.updated,state:p.state});
+    if(error)throw sbErr(error);
+  },
+  del:async id=>{
+    if(SUB==='claude')return DB.collection('kommunen').doc(id).delete();
+    const {error}=await SB.from('kommunen').delete().eq('id',id);
+    if(error)throw sbErr(error);
+  }
+};
+function sbErr(e){const s=String((e&&e.code)||'');const msg=String((e&&e.message)||'');
+  if(s==='42501'||/row-level security|permission denied|JWT/i.test(msg))return {code:'invalid_argument',message:msg};
+  return {code:'unavailable',message:msg}}
 let IX={list:[]};
 let S=null, CUR=null;
 const meta=id=>IX.list.find(k=>k.id===id);
@@ -352,7 +392,7 @@ function saveIdx(){if(MODE==='local')lsSet(IDX,IX);else if(MODE==='db'&&CUR)queu
 function storeK(id,st){MEM[id]=st;if(MODE==='local')lsSet(KP+id,st);else if(MODE==='db')queueWrite(id)}
 function removeK(id){IX.list=IX.list.filter(k=>k.id!==id);delete MEM[id];
   if(MODE==='local'){lsDel(KP+id);lsSet(IDX,IX)}
-  else if(MODE==='db'){clearTimeout(TIMERS[id]);delete TIMERS[id];GONE[id]=true;DB.collection('kommunen').doc(id).delete().catch(dbFail)}}
+  else if(MODE==='db'){clearTimeout(TIMERS[id]);delete TIMERS[id];GONE[id]=true;BACKEND.del(id).catch(dbFail)}}
 const GONE={};
 const LAST={};
 const stateJS=st=>{const {sel,aufs,...r}=st;return JSON.stringify(r)};
@@ -371,7 +411,7 @@ async function flushWrite(id){
   if(INFLIGHT[id]){DIRTY[id]=true;return}
   const p=payload(id);if(!p)return;
   INFLIGHT[id]=true;SENT[id]=JSON.stringify(p.state);
-  try{await DB.collection('kommunen').doc(id).set(p);setSave('ok')}
+  try{await BACKEND.set(id,p);setSave('ok')}
   catch(e){dbFail(e)}
   finally{INFLIGHT[id]=false;if(DIRTY[id]){DIRTY[id]=false;flushWrite(id)}else if(!Object.keys(TIMERS).length&&!READONLY&&!DBERR)setSave('ok')}
 }
@@ -644,22 +684,29 @@ document.getElementById('b-migrate').addEventListener('click',async e=>{
   btn.disabled=true;btn.textContent='Übernehme …';let ok=0;
   for(const k of loc){const st=lsGet(KP+k.id);if(!st||!Array.isArray(st.rows))continue;
     const s=prepState(clone(st));delete s.sel;delete s.aufs;
-    try{await DB.collection('kommunen').doc(k.id).set({name:k.name||'Kommune ohne Namen',created:k.created||Date.now(),updated:Date.now(),state:s});ok++}catch(err){dbFail(err);break}}
+    try{await BACKEND.set(k.id,{name:k.name||'Kommune ohne Namen',created:k.created||Date.now(),updated:Date.now(),state:s});ok++}catch(err){dbFail(err);break}}
   btn.disabled=false;flashHome(ok?`${ok} Kommune${ok>1?'n':''} in die Datenbank übernommen.`:'Nichts übernommen.');renderStoreInfo();
 });
 function localCandidates(){const x=readLocalIndex();if(!x)return [];return x.list.filter(k=>!meta(k.id)&&lsGet(KP+k.id))}
 function renderStoreInfo(){
   const el=document.getElementById('k-store'), mb=document.getElementById('b-migrate');
+  const auth=MODE==='auth';
+  document.getElementById('login').hidden=!auth;
+  document.getElementById('f-new').hidden=auth;
+  document.querySelector('.khome').hidden=auth;
   if(MODE==='db'){
     el.className='store db';
-    el.innerHTML=`<strong>Gemeinsame Datenbank.</strong> Alle Kommunen sind dauerhaft gespeichert, auch wenn der Browser-Cache gelöscht wird. Alle, denen du diese Seite freigibst, sehen dieselben Daten; Änderungen erscheinen bei allen live. ${READONLY?'<br><em>Du hast nur Leserechte.</em>':''}${DBERR?'<br><em>'+esc(DBERR)+'</em>':''}`;
+    const who=SUB==='supa'&&SBUSER?`<br>Angemeldet als ${esc(SBUSER.email||'')} · <button type="button" class="linkbtn" id="b-logout">Abmelden</button>`:'';
+    const whoSees=SUB==='supa'?'Alle freigeschalteten Personen sehen dieselben Daten; Änderungen erscheinen bei allen nach kurzer Zeit.':'Alle, denen du diese Seite freigibst, sehen dieselben Daten; Änderungen erscheinen bei allen live.';
+    el.innerHTML=`<strong>Gemeinsame Datenbank.</strong> Alle Kommunen sind dauerhaft gespeichert, auch wenn der Browser-Cache gelöscht wird. ${whoSees}${who}${READONLY?'<br><em>Du hast nur Leserechte.</em>':''}${DBERR?'<br><em>'+esc(DBERR)+'</em>':''}`;
     const n=localCandidates().length;mb.hidden=!n||READONLY;mb.textContent=`Kommunen aus diesem Browser übernehmen (${n})`;
   }else if(MODE==='local'){
     el.className='store local';
-    el.innerHTML='<strong>Nur in diesem Browser gespeichert.</strong> Andere Personen und Geräte sehen diese Kommunen nicht, und Browserdaten löschen entfernt sie. Die dauerhafte, gemeinsame Speicherung gibt es in der Claude-Version dieses Kalkulators.';
+    el.innerHTML='<strong>Nur in diesem Browser gespeichert.</strong> Andere Personen und Geräte sehen diese Kommunen nicht, und Browserdaten löschen entfernt sie.'+(DBERR?'<br><em>'+esc(DBERR)+'</em>':'');
     mb.hidden=true;
-  }else{el.className='store';el.textContent='Kommunen werden geladen …';mb.hidden=true}
+  }else{el.className='store';el.textContent=auth?'':'Kommunen werden geladen …';mb.hidden=true}
 }
+document.getElementById('k-store').addEventListener('click',e=>{if(e.target.id==='b-logout')sbLogout()});
 let fh;function flashHome(m){const t=document.getElementById('home-toast');if(!t)return;t.textContent=m;clearTimeout(fh);fh=setTimeout(()=>t.textContent='',3500)}
 function show(v){document.getElementById('v-home').hidden=v!=='home';document.getElementById('v-calc').hidden=v!=='calc'}
 function route(fromSnap){
@@ -679,15 +726,74 @@ async function startStore(){
   let db=null;
   try{if(window.claude&&typeof window.claude.use==='function')db=await window.claude.use('db')}catch(e){db=null}
   if(db){
-    DB=db;MODE='db';
+    DB=db;SUB='claude';MODE='db';
     try{const u=await window.claude.use('user');if(u&&typeof u.can==='function'){const w=await u.can('data.write');if(w===false){READONLY=true}}}catch(e){}
     renderStoreInfo();
     let first=true;
     DB.collection('kommunen').onSnapshot(snap=>{applySnapshot(snap);if(first){first=false;renderStoreInfo()}},err=>{dbFail(err)});
+    return;
+  }
+  if(SUPABASE_URL&&SUPABASE_ANON_KEY){
+    if(!(window.supabase&&window.supabase.createClient)){try{await loadScript(SUPABASE_LIB)}catch(e){}}
+    if(window.supabase&&window.supabase.createClient){
+      SUB='supa';
+      SB=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+      let session=null;
+      try{const r=await SB.auth.getSession();session=r&&r.data?r.data.session:null}catch(e){}
+      SB.auth.onAuthStateChange((ev,sess)=>{if(ev==='SIGNED_IN'&&sess&&!SBUSER)startSupa(sess.user)});
+      if(session)await startSupa(session.user);else{MODE='auth';showLogin('login');renderStoreInfo();route()}
+      return;
+    }
+    DBERR='Die Verbindung zur Datenbank konnte nicht hergestellt werden. Bitte später erneut versuchen; bis dahin wird nur in diesem Browser gespeichert.';
+  }
+  MODE='local';initLocal();renderStoreInfo();route();
+}
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)})}
+
+/* ---------- Supabase: Anmeldung, Laden, Live-Aktualisierung ---------- */
+async function startSupa(user){
+  SBUSER=user;
+  const {data,error}=await SB.from('zugelassene_nutzer').select('email').limit(1);
+  if(error||!data||!data.length){MODE='auth';showLogin('denied');renderStoreInfo();route();return}
+  MODE='db';renderStoreInfo();
+  await sbFetch();
+  try{SB.channel('kommunen-live').on('postgres_changes',{event:'*',schema:'public',table:'kommunen'},()=>sbRefetchSoon()).subscribe()}catch(e){}
+  window.addEventListener('focus',sbRefetchSoon);
+  setInterval(()=>{if(!document.hidden)sbFetch()},60000);
+}
+let sbT;function sbRefetchSoon(){clearTimeout(sbT);sbT=setTimeout(sbFetch,400)}
+async function sbFetch(){
+  if(!SB||MODE!=='db')return;
+  const {data,error}=await SB.from('kommunen').select('id,name,created,updated,state');
+  if(error){dbFail(sbErr(error));return}
+  const docs=(data||[]).map(r=>({id:r.id,data:()=>({name:r.name,created:Number(r.created)||0,updated:Number(r.updated)||0,state:r.state}),metadata:{hasPendingWrites:false}}));
+  applySnapshot({docs});renderStoreInfo();
+}
+function showLogin(kind){
+  const h=document.getElementById('login-h'),p=document.getElementById('login-p'),f=document.getElementById('f-login'),out=document.getElementById('b-logout2');
+  if(kind==='denied'){
+    h.textContent='Kein Zugriff';
+    p.textContent=`Du bist als ${SBUSER&&SBUSER.email||'unbekannt'} angemeldet, dieses Konto ist aber nicht für den Kalkulator freigeschaltet. Bitte die verantwortliche Person, deine E-Mail-Adresse freizuschalten, und melde dich danach erneut an.`;
+    f.hidden=true;out.hidden=false;
   }else{
-    MODE='local';initLocal();renderStoreInfo();route();
+    h.textContent='Anmelden';
+    p.textContent='Die Kommunen liegen in einer geschützten Datenbank. Gib deine E-Mail-Adresse ein; du bekommst einen Anmeldelink. Zugriff haben nur freigeschaltete Adressen.';
+    f.hidden=false;out.hidden=true;
   }
 }
+document.getElementById('f-login').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const mail=document.getElementById('l-mail').value.trim(),err=document.getElementById('l-err'),ok=document.getElementById('l-ok'),btn=e.target.querySelector('button');
+  err.textContent='';ok.textContent='';
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)){err.textContent='Bitte eine gültige E-Mail-Adresse eingeben.';return}
+  btn.disabled=true;
+  const {error}=await SB.auth.signInWithOtp({email:mail,options:{emailRedirectTo:location.origin+location.pathname,shouldCreateUser:true}});
+  btn.disabled=false;
+  if(error){err.textContent=/rate|seconds/i.test(error.message||'')?'Zu viele Versuche. Bitte eine Minute warten und erneut senden.':'Der Anmeldelink konnte nicht gesendet werden. Bitte die Adresse prüfen und erneut versuchen.';return}
+  ok.textContent=`Anmeldelink an ${mail} gesendet. Öffne die E-Mail in diesem Browser und klicke auf den Link.`;
+});
+document.getElementById('b-logout2').addEventListener('click',sbLogout);
+async function sbLogout(){try{await SB.auth.signOut()}catch(e){}location.hash='';location.reload()}
 renderStoreInfo();route();startStore();
 window.addEventListener('beforeunload',()=>{Object.keys(TIMERS).forEach(id=>{clearTimeout(TIMERS[id]);delete TIMERS[id];if(MODE==='db')flushWrite(id)})});
 </script>

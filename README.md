@@ -22,6 +22,18 @@ Ein Link der Form `index.html#k-<id>` öffnet direkt die Kalkulation einer Kommu
 
 Über GitHub Pages (Settings → Pages → Branch `main`) lässt sich der Kalkulator auch als Webseite bereitstellen. Bei einem privaten Repository hängt das vom GitHub-Tarif ab.
 
+## Datenbank (Supabase) einrichten
+
+Die öffentliche Webseite kann eine eigene Supabase-Datenbank nutzen. Dann sind die Kommunen dauerhaft und gemeinsam gespeichert, und nur freigeschaltete Personen haben nach Anmeldung per E-Mail-Link Zugriff.
+
+1. In Supabase ein Projekt anlegen (Region Frankfurt, `eu-central-1`).
+2. Im Dashboard unter **SQL Editor** den Inhalt von `supabase/migrations/20261017000000_kommunen.sql` ausführen.
+3. Personen freischalten, je Adresse: `insert into public.zugelassene_nutzer (email) values ('name@kommune.de');` Diese Adressen nicht ins Repository schreiben.
+4. Unter **Authentication → URL Configuration** als Site URL und Redirect URL die Adresse der Webseite eintragen, z. B. `https://nextlevelcodingffm.github.io/migrationskalkulator/`.
+5. In `index.html` die Werte `SUPABASE_URL` (Project URL) und `SUPABASE_ANON_KEY` (anon public key) eintragen. Beide dürfen öffentlich sein. Den `service_role`-Key niemals eintragen.
+
+Ohne diese Werte speichert die Webseite nur im Browser.
+
 ## Formeln
 
 ```
