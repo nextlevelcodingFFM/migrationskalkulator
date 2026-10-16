@@ -14,7 +14,11 @@ Webbasierter Kalkulator zur Vorbereitung der Migration von Fachverfahren (On-Pre
 
 ## Nutzung
 
-`index.html` im Browser öffnen. Es ist keine Installation und kein Server nötig. Eingaben werden je Kommune getrennt lokal im Browser gespeichert (localStorage). Andere Geräte und Personen sehen sie nicht. Ein Link der Form `index.html#k-<id>` öffnet direkt die Kalkulation einer Kommune.
+`index.html` im Browser öffnen. Es ist keine Installation und kein Server nötig.
+
+**Speicherung:** Auf GitHub Pages oder als lokale Datei werden die Kommunen nur im jeweiligen Browser gespeichert (localStorage). Andere Geräte und Personen sehen sie nicht, und Browserdaten löschen entfernt sie. In der Claude-Version des Kalkulators liegen die Kommunen dagegen in einer gemeinsamen, dauerhaften Datenbank; die Seite erkennt das automatisch und zeigt die Betriebsart auf der Startseite an.
+
+Ein Link der Form `index.html#k-<id>` öffnet direkt die Kalkulation einer Kommune.
 
 Über GitHub Pages (Settings → Pages → Branch `main`) lässt sich der Kalkulator auch als Webseite bereitstellen. Bei einem privaten Repository hängt das vom GitHub-Tarif ab.
 

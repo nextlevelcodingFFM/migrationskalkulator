@@ -151,6 +151,18 @@ a.btn{display:inline-block;font-weight:500;border-radius:4px;padding:7px 12px;bo
 a.btn:focus-visible,a.kn:focus-visible,.crumb a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 button.armed,button.armed:hover{background:var(--crit);border-color:var(--crit);color:var(--on-accent)}
 .empty{padding:20px 16px;display:flex;flex-direction:column;gap:6px}
+.crumb{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.savestate{font-size:.78rem;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.savestate::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.savestate.ok::before{background:var(--good)}
+.savestate.pending::before{background:var(--warn)}
+.savestate.err{color:var(--crit)}.savestate.err::before{background:var(--crit)}
+.storebar{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.store{margin:0;flex:1 1 320px;font-size:.8rem;color:var(--muted);max-width:90ch;padding:10px 12px;border-radius:4px;background:var(--sunk);line-height:1.5}
+.store strong{color:var(--fg);font-weight:600}
+.store.db{background:var(--good-soft)}.store.db strong{color:var(--good)}
+.store.local{background:var(--warn-soft)}.store.local strong{color:var(--warn)}
+.store em{font-style:normal;color:var(--crit)}
 @media (max-width:860px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.ed-top{grid-template-columns:repeat(2,minmax(0,1fr))}.crit{grid-template-columns:1fr}.tco{grid-template-columns:1fr}}
 @media (max-width:420px){.tile .v{font-size:1.2rem}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -183,13 +195,14 @@ button.armed,button.armed:hover{background:var(--crit);border-color:var(--crit);
         <tfoot id="kf"></tfoot>
       </table>
     </div>
-    <div class="panel empty" id="k-empty" hidden><h2>Noch keine Kommune angelegt</h2><p class="note">Oben Name und Einwohnerzahl eintragen und „Kommune anlegen“ wählen. Danach öffnet sich der Kalkulator für diese Kommune.</p></div>
-    <p class="note">Jede Kommune speichert ihre Fachverfahren getrennt. Die Daten liegen nur in diesem Browser auf diesem Gerät; andere Personen und andere Geräte sehen sie nicht. Browserdaten löschen entfernt auch die Kalkulationen.</p>
+    <div class="panel empty" id="k-empty" hidden><h2 id="k-empty-h">Noch keine Kommune angelegt</h2><p class="note" id="k-empty-p">Oben Name und Einwohnerzahl eintragen und „Kommune anlegen“ wählen. Danach öffnet sich der Kalkulator für diese Kommune.</p></div>
+    <div class="storebar"><p class="store" id="k-store" role="status"></p><button type="button" id="b-migrate" hidden></button></div>
+    <div class="toast" id="home-toast" role="status"></div>
   </section>
  </div>
 
  <div id="v-calc" class="view" hidden>
-  <nav class="crumb"><a href="#start" id="back">← Alle Kommunen</a></nav>
+  <nav class="crumb"><a href="#start" id="back">← Alle Kommunen</a><span class="savestate" id="savestate" role="status"></span></nav>
   <header>
     <div class="eyebrow">Migrationskalkulator · Fachverfahren</div>
     <h1 id="k-title">Kommune</h1>
@@ -319,21 +332,85 @@ const lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
 const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const blankState=ew=>({B:ew>0?ew:10000,n:5,ts:800,sel:0,rows:[]});
 function prepState(st){ensureTco(st);st.aufs=AUFS.slice();if(!(st.sel>=0))st.sel=0;if(!(st.n>0))st.n=5;if(!(st.B>0))st.B=10000;return st}
-function loadK(id){let st=MEM[id]||lsGet(KP+id);if(!st||!Array.isArray(st.rows))st=blankState();MEM[id]=prepState(st);return MEM[id]}
-function storeK(id,st){MEM[id]=st;lsSet(KP+id,st)}
-let IX=lsGet(IDX);
-if(!IX||!Array.isArray(IX.list))IX={list:[]};
-if(!IX.init){
-  const old=lsGet(OLDKEY), now=Date.now();
-  if(old&&Array.isArray(old.rows)){const id=newId();storeK(id,prepState(old));IX.list.push({id,name:'Bisherige Kalkulation',created:now,updated:now})}
-  else{const id=newId();storeK(id,prepState(EXAMPLE()));IX.list.push({id,name:'Beispielkommune (fiktive Werte)',created:now,updated:now})}
-  IX.init=true;
-}
-const saveIdx=()=>lsSet(IDX,IX);
-saveIdx();
+function loadK(id){let st=MEM[id]||(MODE==='local'?lsGet(KP+id):null);if(!st||!Array.isArray(st.rows))st=blankState();MEM[id]=prepState(st);return MEM[id]}
+/* Speicher: MODE 'db' = gemeinsame Datenbank (Claude-Seite), 'local' = nur dieser Browser (z. B. GitHub Pages) */
+let MODE='load', DB=null, READONLY=false, DBERR='';
+let IX={list:[]};
 let S=null, CUR=null;
 const meta=id=>IX.list.find(k=>k.id===id);
-function save(){if(!CUR||!S)return;storeK(CUR,S);const m=meta(CUR);if(m){m.updated=Date.now();saveIdx()}}
+function readLocalIndex(){const x=lsGet(IDX);return x&&Array.isArray(x.list)?x:null}
+function initLocal(){
+  IX=readLocalIndex()||{list:[]};
+  if(!IX.init){
+    const old=lsGet(OLDKEY), now=Date.now();
+    if(old&&Array.isArray(old.rows)){const id=newId();MEM[id]=prepState(old);lsSet(KP+id,MEM[id]);IX.list.push({id,name:'Bisherige Kalkulation',created:now,updated:now})}
+    else{const id=newId();MEM[id]=prepState(EXAMPLE());lsSet(KP+id,MEM[id]);IX.list.push({id,name:'Beispielkommune (fiktive Werte)',created:now,updated:now})}
+    IX.init=true;lsSet(IDX,IX);
+  }
+}
+function saveIdx(){if(MODE==='local')lsSet(IDX,IX);else if(MODE==='db'&&CUR)queueWrite(CUR)}
+function storeK(id,st){MEM[id]=st;if(MODE==='local')lsSet(KP+id,st);else if(MODE==='db')queueWrite(id)}
+function removeK(id){IX.list=IX.list.filter(k=>k.id!==id);delete MEM[id];
+  if(MODE==='local'){lsDel(KP+id);lsSet(IDX,IX)}
+  else if(MODE==='db'){clearTimeout(TIMERS[id]);delete TIMERS[id];GONE[id]=true;DB.collection('kommunen').doc(id).delete().catch(dbFail)}}
+const GONE={};
+const LAST={};
+const stateJS=st=>{const {sel,aufs,...r}=st;return JSON.stringify(r)};
+function save(){if(!CUR||!S)return;const js=stateJS(S);if(LAST[CUR]===js)return;LAST[CUR]=js;
+  const m=meta(CUR);if(m)m.updated=Date.now();storeK(CUR,S);if(MODE==='local')lsSet(IDX,IX)}
+
+/* Datenbank-Schreiblogik: je Kommune ein Dokument kommunen/<id>, Schreiben gebündelt und nacheinander */
+const TIMERS={}, INFLIGHT={}, DIRTY={}, SENT={};
+const clone=o=>JSON.parse(JSON.stringify(o));
+function payload(id){const m=meta(id), st=MEM[id];if(!m||!st)return null;
+  const s=clone(st);delete s.sel;delete s.aufs;
+  return {name:m.name,created:m.created,updated:m.updated||Date.now(),state:s}}
+function queueWrite(id,now){if(READONLY)return;clearTimeout(TIMERS[id]);setSave('pending');
+  TIMERS[id]=setTimeout(()=>{delete TIMERS[id];flushWrite(id)},now?0:700)}
+async function flushWrite(id){
+  if(INFLIGHT[id]){DIRTY[id]=true;return}
+  const p=payload(id);if(!p)return;
+  INFLIGHT[id]=true;SENT[id]=JSON.stringify(p.state);
+  try{await DB.collection('kommunen').doc(id).set(p);setSave('ok')}
+  catch(e){dbFail(e)}
+  finally{INFLIGHT[id]=false;if(DIRTY[id]){DIRTY[id]=false;flushWrite(id)}else if(!Object.keys(TIMERS).length&&!READONLY&&!DBERR)setSave('ok')}
+}
+function dbFail(e){
+  const c=e&&e.code;
+  if(c==='invalid_argument'){READONLY=true;DBERR='Du hast für diese Seite nur Leserechte. Änderungen werden nicht gespeichert.'}
+  else if(c==='quota_exceeded'){DBERR='Die Datenbank ist voll. Lösche nicht mehr benötigte Kommunen, dann klappt das Speichern wieder.'}
+  else if(c==='revoked'){READONLY=true;DBERR='Der Zugriff auf die Datenbank wurde beendet. Lade die Seite neu.'}
+  else{DBERR='Speichern hat nicht geklappt. Bitte die Seite neu laden und die letzte Änderung prüfen.'}
+  setSave('err');renderStoreInfo();
+}
+function setSave(s){const el=document.getElementById('savestate');if(!el)return;
+  if(MODE!=='db'){el.textContent='Gespeichert in diesem Browser';el.className='savestate';return}
+  el.className='savestate '+s;
+  el.textContent=s==='pending'?'Speichert …':s==='err'?(DBERR||'Nicht gespeichert'):READONLY?'Nur lesen':'In der Datenbank gespeichert'}
+
+function applySnapshot(snap){
+  const list=[];
+  snap.docs.forEach(d=>{const x=d.data();if(!x||typeof x!=='object')return;
+    const id=d.id;list.push({id,name:String(x.name||''),created:x.created||0,updated:x.updated||0});
+    const busy=TIMERS[id]||INFLIGHT[id];
+    const incoming=x.state&&Array.isArray(x.state.rows)?x.state:null;
+    if(!incoming||busy||d.metadata.hasPendingWrites)return;
+    const js=JSON.stringify(incoming);
+    if(MEM[id]&&(SENT[id]===js||stateJS(MEM[id])===js)){LAST[id]=stateJS(MEM[id]);return}
+    const sel=MEM[id]?MEM[id].sel:0;
+    MEM[id]=prepState(clone(incoming));MEM[id].sel=Math.min(sel,Math.max(0,MEM[id].rows.length-1));
+    LAST[id]=stateJS(MEM[id]);
+    if(id===CUR){S=MEM[id];render();const ae=document.activeElement;if(!ae||!document.getElementById('editor').contains(ae))renderEditor();else renderResult()}
+  });
+  // Lokale Namensänderung, die gerade gespeichert wird, nicht überschreiben
+  list.forEach(k=>{const old=meta(k.id);if(old&&(TIMERS[k.id]||INFLIGHT[k.id]))k.name=old.name});
+  // Gerade angelegte, noch nicht bestätigte Kommunen behalten; gerade gelöschte ausblenden
+  IX.list.forEach(k=>{if(!list.some(x=>x.id===k.id)&&(TIMERS[k.id]||INFLIGHT[k.id]||DIRTY[k.id]))list.push(k)});
+  IX={list:list.filter(k=>!GONE[k.id])};
+  if(CUR&&!meta(CUR)){CUR=null;S=null;location.hash='start';flashHome('Diese Kommune wurde gelöscht.')}
+  if(CUR){const gn=document.getElementById('g-name'),m=meta(CUR);if(m&&document.activeElement!==gn){gn.value=m.name;setTitle()}}
+  route(true);
+}
 
 const nf=(v,d)=>Number.isFinite(v)?v.toLocaleString('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d}):'–';
 const eur=v=>nf(v,0);
@@ -448,6 +525,7 @@ function bindGlobals(){
   const gn=document.getElementById('g-name'), m=meta(CUR);
   gn.value=m?m.name:'';
   gn.oninput=()=>{const mm=meta(CUR);if(!mm)return;mm.name=gn.value;mm.updated=Date.now();saveIdx();setTitle()};
+  gn.disabled=READONLY;
   const R=['SF 1,0–1,9','SF 2,0–2,9','SF 3,0–3,9','SF 4,0–5,0'];
   document.getElementById('g-aufs').innerHTML=AUFS.map((a,i)=>`<div class="chip" title="Aufschlag bei Einstufung ${CLS[i]}"><span class="r">${CLS[i]} · ${R[i]}</span><span class="f">× ${nf(a,1)}</span></div>`).join('');
 }
@@ -523,6 +601,8 @@ function renderHome(){
   document.getElementById('k-cnt').textContent=L.length?`(${L.length})`:'';
   document.getElementById('k-wrap').hidden=!L.length;
   document.getElementById('k-empty').hidden=!!L.length;
+  document.getElementById('k-empty-h').textContent=MODE==='load'?'Kommunen werden geladen …':'Noch keine Kommune angelegt';
+  document.getElementById('k-empty-p').textContent=MODE==='load'?'Einen Moment, die gespeicherten Kalkulationen werden abgerufen.':'Oben Name und Einwohnerzahl eintragen und „Kommune anlegen“ wählen. Danach öffnet sich der Kalkulator für diese Kommune.';
   let tB=0,tn=0,td=0,tM=0;
   document.getElementById('kb').innerHTML=L.map(k=>{const s=summarize(loadK(k.id));tB+=s.B;tn+=s.n;td+=s.d;tM+=s.M;
     const has=s.n>0;
@@ -538,7 +618,7 @@ function renderHome(){
 }
 document.getElementById('kb').addEventListener('click',e=>{
   const del=e.target.closest('button[data-del]');
-  if(del){const id=del.dataset.del;arm(del,'Wirklich löschen?',()=>{IX.list=IX.list.filter(k=>k.id!==id);delete MEM[id];lsDel(KP+id);saveIdx();renderHome()});return}
+  if(del){const id=del.dataset.del;arm(del,'Wirklich löschen?',()=>{removeK(id);renderHome()});return}
   if(e.target.closest('a'))return;
   const tr=e.target.closest('tr[data-id]');if(tr)location.hash='k-'+tr.dataset.id;
 });
@@ -548,26 +628,68 @@ document.getElementById('f-new').addEventListener('submit',e=>{
   const err=document.getElementById('n-err');
   if(!name){err.textContent='Bitte einen Namen für die Kommune eingeben.';document.getElementById('n-name').focus();return}
   if(!(ew>0)){err.textContent='Bitte die Einwohnerzahl als Zahl größer als 0 eingeben.';document.getElementById('n-ew').focus();return}
+  if(MODE==='load'){err.textContent='Die Kommunen werden noch geladen. Bitte einen Moment warten.';return}
+  if(READONLY){err.textContent='Du hast für diese Seite nur Leserechte und kannst keine Kommune anlegen.';return}
   err.textContent='';
   const id=newId(), now=Date.now();
   const st=start==='bsp'?prepState(EXAMPLE()):prepState(blankState(ew));st.B=ew;
-  storeK(id,st);IX.list.push({id,name,created:now,updated:now});saveIdx();
+  IX.list.push({id,name,created:now,updated:now});
+  MEM[id]=st;
+  if(MODE==='local'){lsSet(KP+id,st);lsSet(IDX,IX)}else queueWrite(id,true);
   e.target.reset();
   location.hash='k-'+id;
 });
+document.getElementById('b-migrate').addEventListener('click',async e=>{
+  const btn=e.currentTarget, loc=localCandidates();if(!loc.length||MODE!=='db')return;
+  btn.disabled=true;btn.textContent='Übernehme …';let ok=0;
+  for(const k of loc){const st=lsGet(KP+k.id);if(!st||!Array.isArray(st.rows))continue;
+    const s=prepState(clone(st));delete s.sel;delete s.aufs;
+    try{await DB.collection('kommunen').doc(k.id).set({name:k.name||'Kommune ohne Namen',created:k.created||Date.now(),updated:Date.now(),state:s});ok++}catch(err){dbFail(err);break}}
+  btn.disabled=false;flashHome(ok?`${ok} Kommune${ok>1?'n':''} in die Datenbank übernommen.`:'Nichts übernommen.');renderStoreInfo();
+});
+function localCandidates(){const x=readLocalIndex();if(!x)return [];return x.list.filter(k=>!meta(k.id)&&lsGet(KP+k.id))}
+function renderStoreInfo(){
+  const el=document.getElementById('k-store'), mb=document.getElementById('b-migrate');
+  if(MODE==='db'){
+    el.className='store db';
+    el.innerHTML=`<strong>Gemeinsame Datenbank.</strong> Alle Kommunen sind dauerhaft gespeichert, auch wenn der Browser-Cache gelöscht wird. Alle, denen du diese Seite freigibst, sehen dieselben Daten; Änderungen erscheinen bei allen live. ${READONLY?'<br><em>Du hast nur Leserechte.</em>':''}${DBERR?'<br><em>'+esc(DBERR)+'</em>':''}`;
+    const n=localCandidates().length;mb.hidden=!n||READONLY;mb.textContent=`Kommunen aus diesem Browser übernehmen (${n})`;
+  }else if(MODE==='local'){
+    el.className='store local';
+    el.innerHTML='<strong>Nur in diesem Browser gespeichert.</strong> Andere Personen und Geräte sehen diese Kommunen nicht, und Browserdaten löschen entfernt sie. Die dauerhafte, gemeinsame Speicherung gibt es in der Claude-Version dieses Kalkulators.';
+    mb.hidden=true;
+  }else{el.className='store';el.textContent='Kommunen werden geladen …';mb.hidden=true}
+}
+let fh;function flashHome(m){const t=document.getElementById('home-toast');if(!t)return;t.textContent=m;clearTimeout(fh);fh=setTimeout(()=>t.textContent='',3500)}
 function show(v){document.getElementById('v-home').hidden=v!=='home';document.getElementById('v-calc').hidden=v!=='calc'}
-function route(){
+function route(fromSnap){
   const m=/^#k-([a-z0-9]+)$/.exec(location.hash);
   if(m&&meta(m[1])){
-    if(CUR!==m[1]){CUR=m[1];S=loadK(CUR);openCol=-1;renderHead();bindGlobals();setTitle();render();renderEditor();window.scrollTo(0,0)}
+    if(CUR!==m[1]){CUR=m[1];S=loadK(CUR);if(LAST[CUR]===undefined)LAST[CUR]=stateJS(S);openCol=-1;renderHead();bindGlobals();setTitle();render();renderEditor();setSave('ok');window.scrollTo(0,0)}
     show('calc');
+  }else if(m&&MODE==='load'){
+    show('home');renderHome();
   }else{
-    if(CUR)save();
+    if(CUR&&!fromSnap){const id=CUR;if(TIMERS[id]){clearTimeout(TIMERS[id]);delete TIMERS[id];if(MODE==='db')flushWrite(id)}}
     CUR=null;S=null;show('home');document.title='Migrationskalkulator Fachverfahren';renderHome();
   }
 }
-window.addEventListener('hashchange',route);
-route();
+window.addEventListener('hashchange',()=>route());
+async function startStore(){
+  let db=null;
+  try{if(window.claude&&typeof window.claude.use==='function')db=await window.claude.use('db')}catch(e){db=null}
+  if(db){
+    DB=db;MODE='db';
+    try{const u=await window.claude.use('user');if(u&&typeof u.can==='function'){const w=await u.can('data.write');if(w===false){READONLY=true}}}catch(e){}
+    renderStoreInfo();
+    let first=true;
+    DB.collection('kommunen').onSnapshot(snap=>{applySnapshot(snap);if(first){first=false;renderStoreInfo()}},err=>{dbFail(err)});
+  }else{
+    MODE='local';initLocal();renderStoreInfo();route();
+  }
+}
+renderStoreInfo();route();startStore();
+window.addEventListener('beforeunload',()=>{Object.keys(TIMERS).forEach(id=>{clearTimeout(TIMERS[id]);delete TIMERS[id];if(MODE==='db')flushWrite(id)})});
 </script>
 
 </body>
