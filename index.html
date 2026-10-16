@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Migrationskalkulator Fachverfahren</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: Arbeitswerkzeug – Annahmen oben, Kennzahlen, Verfahrensliste, darunter Editor des gewählten Verfahrens */
+:root{
+  --bg:#f5f7fa; --surface:#ffffff; --sunk:#eef2f6; --line:#d8dee6; --fg:#16202b; --muted:#5a6878;
+  --accent:#1d4f7c; --accent-soft:#e3edf6; --on-accent:#ffffff;
+  --good:#1f7a4d; --good-soft:#e2f2e9; --warn:#9a6400; --warn-soft:#fbf0d9; --crit:#b3261e; --crit-soft:#fbe5e3;
+  --sel:#f0f5fb;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#10161d; --surface:#18212b; --sunk:#131a22; --line:#2b3744; --fg:#e4eaf0; --muted:#93a2b2;
+  --accent:#7fb3e3; --accent-soft:#1e3347; --on-accent:#0d1620;
+  --good:#6cc89a; --good-soft:#173528; --warn:#e3b45a; --warn-soft:#3a2d12; --crit:#f08a82; --crit-soft:#3d1c1a;
+  --sel:#1c2a38; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10161d; --surface:#18212b; --sunk:#131a22; --line:#2b3744; --fg:#e4eaf0; --muted:#93a2b2;
+  --accent:#7fb3e3; --accent-soft:#1e3347; --on-accent:#0d1620;
+  --good:#6cc89a; --good-soft:#173528; --warn:#e3b45a; --warn-soft:#3a2d12; --crit:#f08a82; --crit-soft:#3d1c1a;
+  --sel:#1c2a38; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:22px}
+h1{font-size:1.6rem;font-weight:700;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h2{font-size:1.05rem;font-weight:600;margin:0;text-wrap:balance}
+.lead{color:var(--muted);margin:4px 0 0;max-width:68ch}
+.eyebrow{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.params{display:flex;flex-wrap:wrap;gap:14px 22px;padding:14px 16px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:.75rem;color:var(--muted);font-weight:500}
+input[type=number],input[type=text],select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px 8px;min-width:0}
+input[type=number]{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.w-lg{width:130px}.w-sm{width:70px}
+.aufs{display:flex;gap:6px;flex-wrap:wrap}
+.flabel{font-size:.75rem;color:var(--muted);font-weight:500}
+.chip{display:flex;flex-direction:column;gap:1px;padding:5px 10px;border-radius:4px;background:var(--sunk);border:1px dashed var(--line);min-width:92px}
+.chip .r{font-size:.7rem;color:var(--muted)}
+.chip .f{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-weight:500}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.tile{padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.tile .v{font-family:var(--f-num);font-size:1.45rem;font-weight:500}
+.tile .s{font-size:.78rem;color:var(--muted)}
+.tile.hl{background:var(--accent-soft);border-color:transparent}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;font-weight:500;border-radius:4px;padding:7px 12px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
+button:hover{background:var(--sunk)}
+button.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+button.primary:hover{filter:brightness(1.08)}
+button.danger{color:var(--crit)}
+.tblwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:980px}
+th,td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;vertical-align:bottom;background:var(--sunk)}
+th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--sunk)}
+tbody tr.on{background:var(--sel);box-shadow:inset 3px 0 0 var(--accent)}
+tfoot td{font-weight:600;border-bottom:none;background:var(--sunk)}
+td .sub{display:block;font-size:.72rem;color:var(--muted);font-family:var(--f-body)}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.74rem;font-weight:600;font-family:var(--f-body)}
+.p0{background:var(--good-soft);color:var(--good)}.p1{background:var(--accent-soft);color:var(--accent)}
+.p2{background:var(--warn-soft);color:var(--warn)}.p3{background:var(--crit-soft);color:var(--crit)}
+.ecell{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.ebar{position:relative;width:70px;height:8px;background:var(--sunk);border-radius:2px}
+.ebar i{position:absolute;top:0;height:100%;border-radius:2px}
+.ebar b{position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--muted)}
+.neg{color:var(--crit)}.pos{color:var(--good)}
+.editor{padding:18px 16px;display:flex;flex-direction:column;gap:18px}
+.ed-top{display:grid;grid-template-columns:2fr 1.2fr 1fr 1fr 1fr 1fr;gap:12px}
+.ed-top .field input,.ed-top .field select{width:100%}
+.crit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 28px}
+.c{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.c .t{font-weight:500}
+.c .g{font-size:.72rem;color:var(--muted);font-family:var(--f-num)}
+.c .h{grid-column:1/-1;font-size:.78rem;color:var(--muted);min-height:1.2em}
+.more{grid-column:1/-1;font-size:.82rem}
+.more summary{cursor:pointer;color:var(--accent);font-weight:500;width:max-content;max-width:100%}
+.more summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.more p{margin:6px 0 2px;line-height:1.55;max-width:68ch;color:var(--fg)}
+.crit{align-items:start}
+.ro{display:block;padding:6px 8px;border:1px dashed var(--line);border-radius:4px;background:var(--sunk);font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.tco{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 28px;align-items:start}
+.tcol{display:flex;flex-direction:column;min-width:0}
+.tl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.tl-t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.tl-t .t{font-weight:500}
+.tl-t .d{font-size:.78rem;color:var(--muted);line-height:1.45}
+.tl-v{grid-column:2;grid-row:1;text-align:right;font-weight:500;white-space:nowrap}
+.tl-in{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap}
+.mini{display:flex;flex-direction:column;gap:2px;font-size:.72rem;color:var(--muted)}
+.mini input{width:150px;max-width:100%}
+.tsum{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0 0;font-weight:600}
+.tsum strong{font-weight:500;font-size:1.05rem}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg button{border:none;border-right:1px solid var(--line);border-radius:0;padding:4px 0;width:30px;font-family:var(--f-num);background:var(--surface)}
+.seg button:last-child{border-right:none}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--on-accent)}
+.result{display:flex;flex-wrap:wrap;gap:10px 26px;padding:12px 14px;background:var(--sunk);border-radius:4px}
+.result div{display:flex;flex-direction:column}
+.result span{font-size:.72rem;color:var(--muted)}
+.result strong{font-family:var(--f-num);font-weight:500;font-size:1.05rem}
+.note{font-size:.78rem;color:var(--muted);max-width:90ch}
+.toast{font-size:.8rem;color:var(--good);min-height:1.2em}
+@media (max-width:860px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.ed-top{grid-template-columns:repeat(2,minmax(0,1fr))}.crit{grid-template-columns:1fr}.tco{grid-template-columns:1fr}}
+@media (max-width:420px){.tile .v{font-size:1.2rem}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Cloud-Migration · Fachverfahren</div>
+    <h1>Migrationskalkulator Fachverfahren</h1>
+    <p class="lead">Schwierigkeitsfaktor aus zehn gewichteten Kriterien, Kosten pro Bürger heute und in der Cloud, Netto-Ersparnis nach Abzug der verteilten Migrationskosten. Die Startwerte sind fiktive Beispiele.</p>
+  </header>
+
+  <section class="panel params" aria-label="Annahmen">
+    <div class="field"><label for="g-b">Einwohner im Zuständigkeitsgebiet</label><input id="g-b" class="w-lg" type="number" min="1" step="1000"></div>
+    <div class="field"><label for="g-n">Verteilung Migrationskosten (Jahre)</label><input id="g-n" class="w-sm" type="number" min="1" max="20" step="1"></div>
+    <div class="field"><label for="g-ts">Tagessatz Betriebspersonal €</label><input id="g-ts" class="w-sm" type="number" min="1" step="10"></div>
+    <div class="field"><span class="flabel">Aufschlag auf Migration Basis, ergibt sich aus der Einstufung (nicht änderbar)</span>
+      <div class="aufs" id="g-aufs"></div>
+    </div>
+  </section>
+
+  <section class="tiles" aria-label="Gesamtergebnis">
+    <div class="panel tile"><span class="eyebrow">Kosten heute</span><span class="v" id="t-ist"></span><span class="s">€ pro Bürger und Jahr, alle Verfahren</span></div>
+    <div class="panel tile"><span class="eyebrow">Kosten in der Cloud</span><span class="v" id="t-cloud"></span><span class="s">€ pro Bürger und Jahr</span></div>
+    <div class="panel tile hl"><span class="eyebrow">Netto-Ersparnis</span><span class="v" id="t-e"></span><span class="s" id="t-e-s"></span></div>
+    <div class="panel tile"><span class="eyebrow">Amortisation gesamt</span><span class="v" id="t-t"></span><span class="s" id="t-t-s"></span></div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:10px">
+    <div class="bar">
+      <h2>Fachverfahren</h2>
+      <div class="btns">
+        <button class="primary" id="b-add">Verfahren hinzufügen</button>
+        <button id="b-csv">Tabelle kopieren (CSV)</button>
+        <button id="b-reset">Beispieldaten laden</button>
+      </div>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+    <div class="panel tblwrap">
+      <table>
+        <thead><tr>
+          <th>Fachverfahren</th><th>Einstufung</th><th>SF</th><th>TCO Ist<br>€/Jahr</th><th>TCO Cloud<br>€/Jahr</th><th>Migration M<br>€</th><th>K Ist<br>€/Bürger</th><th>K Cloud<br>€/Bürger</th><th>E netto<br>€/Bürger</th><th>Amortisation<br>Jahre</th><th style="text-align:left">Empfehlung</th>
+        </tr></thead>
+        <tbody id="tb"></tbody>
+        <tfoot id="tf"></tfoot>
+      </table>
+    </div>
+    <p class="note">Zeile anklicken, um Bewertung und Kosten unten zu bearbeiten. E netto = (TCO Ist − TCO Cloud − M / n) / Bürger. Eingaben bleiben in diesem Browser gespeichert.</p>
+  </section>
+
+  <section class="panel editor" id="editor" aria-label="Verfahren bearbeiten"></section>
+</div>
+
+<script>
+const CRIT=[
+ {t:'Architektur und Cloudfähigkeit',w:.15,h:['Container, zustandslos','','Virtualisierter Mehrschicht-Monolith','','Monolith mit festen Servernamen, Fat Client'],
+  d:'Das Kriterium beschreibt, wie die Anwendung aufgebaut ist und ob sie ohne Umbau in einer Cloud-Umgebung laufen kann. Cloudfähig ist eine Anwendung, die in Containern läuft, ihren Zustand in der Datenbank statt auf dem Server ablegt und ihre Einstellungen über Konfiguration statt über feste Servernamen oder IP-Adressen bezieht. Ein großer Monolith, der fest auf einen bestimmten Server zugeschnitten ist, muss dagegen erst angepasst oder zerlegt werden. Prüffragen: Läuft die Anwendung schon virtualisiert oder in Containern? Lassen sich mehrere Instanzen parallel starten? Sind Pfade, Servernamen oder lokale Dateiablagen fest im Code hinterlegt?'},
+ {t:'Schnittstellen und Abhängigkeiten',w:.15,h:['Höchstens 2, standardisiert (REST, XÖV)','','3 bis 8, gemischt','','Mehr als 8 oder DB-Links, Dateiablage'],
+  d:'Gezählt werden alle Verbindungen zu anderen Fachverfahren, Registern, Basisdiensten und externen Partnern, etwa Melderegister, Finanzverfahren, E-Akte, Zahlungsverkehr oder Bürgerportal. Jede Schnittstelle muss nach dem Umzug neu getestet werden, und Partner bleiben oft vorerst im alten Rechenzentrum, was Netzfreigaben und Latenz zum Thema macht. Standardisierte Schnittstellen (REST, XÖV, OSCI) sind einfach umzuziehen. Direkte Datenbankverbindungen, gemeinsame Dateiablagen oder nächtliche Dateiübergaben binden dagegen mehrere Verfahren aneinander, sodass sie oft gemeinsam migriert werden müssen.'},
+ {t:'Technologiealter und Support',w:.10,h:['Aktuelle, unterstützte Versionen','','Support endet in höchstens 2 Jahren','','Support ausgelaufen, Altsprachen'],
+  d:'Hier zählt, wie aktuell Betriebssystem, Datenbank, Programmiersprache, Frameworks und Laufzeitumgebungen sind. Die Zielcloud stellt in der Regel nur unterstützte Versionen bereit, also etwa ein aktuelles Linux oder eine aktuelle Datenbankversion. Ist eine Komponente veraltet, muss sie vor oder während der Migration aktualisiert werden, was oft Folgeänderungen in der Anwendung nach sich zieht. Besonders schwierig sind Altsprachen oder Eigenentwicklungen, für die kaum noch Wissen im Haus oder beim Hersteller vorhanden ist.'},
+ {t:'Datenvolumen und Datenmigration',w:.10,h:['Unter 100 GB, ein Schema','','100 GB bis 2 TB','','Über 2 TB oder Formatwechsel'],
+  d:'Das Kriterium bewertet, wie viele Daten umgezogen werden müssen und wie aufwendig das ist. Große Datenmengen verlängern die Übertragung und damit die Zeit, in der das Verfahren nicht oder nur eingeschränkt genutzt werden kann. Noch stärker wirkt ein Formatwechsel, etwa von einer proprietären Datenbank auf ein Open-Source-Produkt, weil dann Daten umgewandelt, bereinigt und vollständig abgeglichen werden müssen. Archivbestände mit langen Aufbewahrungsfristen und eingebettete Dokumente (Scans, PDF) erhöhen den Aufwand zusätzlich.'},
+ {t:'Schutzbedarf und Datenschutz',w:.10,h:['Normal','','Hoch','','Sehr hoch, Art. 9 DSGVO, Souveränitätsauflage'],
+  d:'Grundlage ist die Schutzbedarfsfeststellung nach BSI-Grundschutz für Vertraulichkeit, Integrität und Verfügbarkeit. Je höher der Schutzbedarf, desto mehr Nachweise und Maßnahmen verlangt der Betrieb in der Cloud: Verschlüsselung, Schlüsselverwaltung, Protokollierung, Zugriffskonzepte und oft eine neue Datenschutz-Folgenabschätzung. Verarbeitet das Verfahren besondere Kategorien personenbezogener Daten (Art. 9 DSGVO), Sozial-, Steuer- oder Meldedaten, oder gibt es Vorgaben zum Datenstandort und zur Souveränität, schränkt das die Wahl der Plattform und Dienste ein und verlängert Abstimmungen mit Datenschutz und Informationssicherheit.'},
+ {t:'Lizenz und Herstellerfreigabe',w:.10,h:['Freigabe oder SaaS vorhanden','','Freigabe in Klärung','','Keine Freigabe, Lizenz nicht cloudfähig'],
+  d:'Viele Fachverfahren sind Kaufsoftware. Entscheidend ist, ob der Hersteller den Betrieb auf der Zielplattform unterstützt und Support leistet, und ob die bestehenden Lizenzen dort gelten. Manche Lizenzen sind an physische Prozessorkerne oder eine bestimmte Hardware gebunden und werden in der Cloud teurer oder ungültig. Bietet der Hersteller eine SaaS- oder zertifizierte Cloud-Variante an, sinkt der Aufwand stark. Fehlt eine Freigabe, bleibt nur Verhandeln, Warten auf eine neue Version oder Neubeschaffung.'},
+ {t:'Kritikalität und Verfügbarkeit',w:.10,h:['Ausfall von Tagen tragbar','','RTO 4 bis 24 Stunden','','RTO unter 4 Stunden, kaum Wartungsfenster'],
+  d:'Das Kriterium misst, wie stark der Dienstbetrieb und die Bürger von dem Verfahren abhängen. Maßgeblich sind die vereinbarte Verfügbarkeit, die maximal tolerierbare Ausfallzeit (RTO) und der maximal tolerierbare Datenverlust (RPO). Ein Verfahren, das ein paar Tage stillstehen darf, lässt sich an einem Wochenende umstellen. Bei sehr kurzen Ausfallzeiten braucht es dagegen aufwendige Verfahren wie Datenreplikation, Parallelbetrieb und ein erprobtes Rückfallszenario. Auch Fristen und Lastspitzen (Jahreswechsel, Wahlen, Antragsfristen) schränken die möglichen Umstellungstermine ein.'},
+ {t:'Client- und Hardwarebindung',w:.10,h:['Browserbasiert','','Thin Client, Terminalserver','','Fat Client mit Spezialhardware'],
+  d:'Hier geht es um die Arbeitsplatzseite. Eine Browser-Anwendung merkt vom Umzug kaum etwas. Ein installierter Fat Client, der direkt mit der Datenbank spricht, reagiert dagegen empfindlich auf die längeren Wege ins Cloud-Rechenzentrum und muss oft auf einen Terminalserver, eine virtuelle Arbeitsumgebung oder eine Web-Oberfläche umgestellt werden. Hinzu kommen lokale Geräte wie Kartenleser, Dokumentenscanner, Etiketten- oder Formulardrucker, Kassen und Lizenz-Dongles. Sie müssen aus der Cloud weiterhin erreichbar sein, was eigene technische Lösungen erfordert.'},
+ {t:'Organisation und Beteiligung',w:.05,h:['Kompetenz da, keine Mitbestimmung','','Schulung nötig','','Mitbestimmung, fehlende Kompetenz'],
+  d:'Das Kriterium erfasst die nicht technischen Hürden. Dazu gehören fehlendes Wissen für den Cloud-Betrieb im eigenen Team, notwendige Schulungen für Administration und Sachbearbeitung, die Beteiligung von Personalrat, Datenschutzbeauftragten und gegebenenfalls Fachaufsicht sowie Abstimmungen bei Verfahren, die im Verbund mit anderen Behörden betrieben werden. Diese Schritte kosten selten viel Geld, verschieben aber Termine, weshalb das Kriterium mit 5 % gewichtet ist.'},
+ {t:'Ausgangs-Betriebsform',w:.05,h:['Andere Cloud, Standarddienste','','On-Premises virtualisiert','','Client-Server physisch, lokale Konten'],
+  d:'Das Kriterium beschreibt, von wo aus migriert wird. Läuft das Verfahren bereits in einer anderen Cloud mit Standarddiensten, ist der Wechsel vor allem ein Umzug. Ein virtualisiertes System im eigenen Rechenzentrum lässt sich meist als Ganzes übertragen. Am weitesten ist der Weg bei physischen Servern mit lokalen Benutzerkonten, weil dann Virtualisierung, Anbindung an die zentrale Anmeldung (z. B. Active Directory, SAML/OIDC) und neue Betriebsprozesse zusammenkommen. Die Gewichtung ist gering, weil die eigentlichen Hürden schon in den anderen Kriterien stecken.'}
+];
+const CLS=['Gering','Mittel','Hoch','Sehr hoch'];
+const FORMS=['On-Premises','Andere Cloud','Client-Server'];
+const IST_LINES=[
+ {id:'hw',t:'Hardware-Abschreibung',d:'Server, Speichersysteme, Netzkomponenten: Anschaffungswert geteilt durch Nutzungsdauer.',f:[['hwA','Anschaffung €'],['hwJ','Nutzungsdauer Jahre']],v:o=>o.hwJ>0?o.hwA/o.hwJ:0},
+ {id:'rz',t:'Rechenzentrum anteilig',d:'Fläche, Strom, Kühlung, Gebäudesicherheit; Anteil z. B. nach Zahl der Server.',f:[['rz','€ pro Jahr']],v:o=>o.rz},
+ {id:'liz',t:'Lizenzen und Wartung',d:'Betriebssystem, Datenbank, Fachverfahren, Herstellersupport.',f:[['liz','€ pro Jahr']],v:o=>o.liz},
+ {id:'pt',t:'Betriebspersonal',d:'Administration, Datenbankpflege, Patching, Störungsbearbeitung; Personentage × Tagessatz oben.',f:[['pt','Personentage pro Jahr']],v:o=>o.pt*S.ts},
+ {id:'cli',t:'Arbeitsplatz und Client',d:'Softwareverteilung, Fat-Client-Pflege, Terminalserver, Spezialgeräte.',f:[['cli','€ pro Jahr']],v:o=>o.cli},
+ {id:'net',t:'Netz und Sonstiges',d:'WAN-Anteil, Firewalls, Backup-Software, externe Dienstleister.',f:[['net','€ pro Jahr']],v:o=>o.net}
+];
+const CLOUD_LINES=[
+ {id:'cpu',t:'Rechenleistung',d:'Virtuelle Server oder Container laut Angebot oder Preisrechner der Plattform.',f:[['cpu','€ pro Monat']],v:o=>o.cpu*12},
+ {id:'sto',t:'Speicher',d:'Datenbestand einschließlich Wachstum mal Preis pro Terabyte.',f:[['tb','Terabyte'],['tbP','€ pro TB und Monat']],v:o=>o.tb*o.tbP*12},
+ {id:'bak',t:'Backup und Archiv',d:'Datensicherung, Langzeitarchiv, Georedundanz.',f:[['bak','€ pro Monat']],v:o=>o.bak*12},
+ {id:'plat',t:'Plattformumlage und Managed Services',d:'Anteil am Plattformbetrieb, Sicherheit, Monitoring, verwaltete Datenbank.',f:[['plat','€ pro Jahr']],v:o=>o.plat},
+ {id:'liz',t:'Lizenzen oder SaaS-Gebühr',d:'Cloud-fähige Lizenzen, Herstellerwartung oder SaaS-Abonnement.',f:[['liz','€ pro Jahr']],v:o=>o.liz},
+ {id:'pt',t:'Betriebspersonal',d:'Verbleibender Eigenaufwand für Fachadministration und Steuerung; Personentage × Tagessatz oben.',f:[['pt','Personentage pro Jahr']],v:o=>o.pt*S.ts},
+ {id:'cli',t:'Arbeitsplatz und Client',d:'Browser, Thin Client oder virtueller Arbeitsplatz.',f:[['cli','€ pro Jahr']],v:o=>o.cli},
+ {id:'net',t:'Netz und Anbindung',d:'Leitungen zur Cloud, Datentransfer, Netzübergänge.',f:[['net','€ pro Jahr']],v:o=>o.net}
+];
+const tco=(L,o)=>L.reduce((a,l)=>a+l.v(o),0);
+const r1k=x=>Math.round(x/1000)*1000;
+function splitIst(T,ts){const hw=r1k(T*.18),rz=r1k(T*.10),pt=Math.round(T*.30/ts),cli=r1k(T*.07),net=r1k(T*.05);
+  return {hwA:hw*5,hwJ:5,rz,pt,cli,net,liz:Math.max(0,T-hw-rz-pt*ts-cli-net)}}
+function splitCloud(T,ts){const cpu=Math.round(T*.30/12/100)*100,tb=2,tbP=Math.round(T*.06/12/2/10)*10,bak=Math.round(T*.05/12/100)*100,plat=r1k(T*.12),pt=Math.round(T*.18/ts),cli=r1k(T*.03),net=r1k(T*.05);
+  return {cpu,tb,tbP,bak,plat,pt,cli,net,liz:Math.max(0,T-cpu*12-tb*tbP*12-bak*12-plat-pt*ts-cli-net)}}
+function ensureTco(st){if(!(st.ts>0))st.ts=800;st.rows.forEach(r=>{if(!r.ti)r.ti=splitIst(r.ist||0,st.ts);if(!r.tc)r.tc=splitCloud(r.cloud||0,st.ts)});return st}
+const EXAMPLE=()=>({B:250000,n:5,ts:800,aufs:[1,1.5,2.5,4],sel:0,rows:[
+ {name:'Kfz-Zulassung',form:'Andere Cloud',b:null,ist:280000,cloud:230000,mb:60000,s:[2,2,2,1,2,1,2,1,1,1]},
+ {name:'Meldewesen',form:'On-Premises',b:null,ist:420000,cloud:310000,mb:150000,s:[3,3,2,2,3,2,2,2,2,2]},
+ {name:'Bauantrag',form:'On-Premises',b:null,ist:190000,cloud:150000,mb:80000,s:[3,3,3,2,3,3,2,3,3,3]},
+ {name:'Sozialhilfe',form:'Client-Server',b:null,ist:650000,cloud:470000,mb:250000,s:[4,4,3,3,5,3,3,4,3,3]},
+ {name:'Finanzwesen',form:'Client-Server',b:null,ist:520000,cloud:455000,mb:200000,s:[5,4,5,3,4,4,4,5,3,4]}
+]});
+const KEY='migrationskalkulator-v1';
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
+if(!S||!Array.isArray(S.rows))S=EXAMPLE();
+ensureTco(S);
+const AUFS=[1,1.5,2.5,4];
+S.aufs=AUFS.slice();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+const nf=(v,d)=>Number.isFinite(v)?v.toLocaleString('de-DE',{minimumFractionDigits:d,maximumFractionDigits:d}):'–';
+const eur=v=>nf(v,0);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num=v=>{const x=parseFloat(v);return Number.isFinite(x)?x:0};
+
+function calc(r){
+  r.ist=tco(IST_LINES,r.ti);r.cloud=tco(CLOUD_LINES,r.tc);
+  let sum=0;CRIT.forEach((c,i)=>sum+=c.w*r.s[i]);
+  const sf=Math.round(sum*100)/100, sf1=Math.round(sf*10)/10;
+  const cls=sf1<2?0:sf1<3?1:sf1<4?2:3;
+  const M=r.mb*S.aufs[cls];
+  const B=r.b>0?r.b:S.B, n=S.n>0?S.n:1;
+  const d=r.ist-r.cloud;
+  const E=(d-M/n)/B;
+  const T=d>0?M/d:Infinity;
+  const ok=E>=0&&T<=n;
+  const rec=!ok?'Prüfen: SaaS, Retain, Ablösung':cls<=1?'Zuerst migrieren':'Danach migrieren';
+  return {sf,cls,M,B,d,kI:r.ist/B,kC:r.cloud/B,E,T,ok,rec,gross:d/B};
+}
+
+function render(){
+  const res=S.rows.map(calc);
+  const maxE=Math.max(0.01,...res.map(x=>Math.abs(x.E)));
+  document.getElementById('tb').innerHTML=S.rows.map((r,i)=>{const x=res[i];
+    const w=Math.min(50,Math.abs(x.E)/maxE*50);
+    const bar=x.E>=0?`<i style="left:50%;width:${w}%;background:var(--good)"></i>`:`<i style="left:${50-w}%;width:${w}%;background:var(--crit)"></i>`;
+    return `<tr data-i="${i}" class="${i===S.sel?'on':''}" tabindex="0">
+      <td><strong>${esc(r.name||'Ohne Namen')}</strong><span class="sub">${esc(r.form)}${r.b>0?' · '+eur(r.b)+' Bürger':''}</span></td>
+      <td><span class="pill p${x.cls}">${CLS[x.cls]}</span></td>
+      <td class="num">${nf(x.sf,1)}</td>
+      <td class="num">${eur(r.ist)}</td><td class="num">${eur(r.cloud)}</td><td class="num">${eur(x.M)}</td>
+      <td class="num">${nf(x.kI,2)}</td><td class="num">${nf(x.kC,2)}</td>
+      <td><div class="ecell"><span class="num ${x.E<0?'neg':'pos'}">${nf(x.E,2)}</span><span class="ebar" aria-hidden="true"><b></b>${bar}</span></div></td>
+      <td class="num ${x.T>S.n?'neg':''}">${Number.isFinite(x.T)?nf(x.T,1):'nie'}</td>
+      <td style="text-align:left">${x.rec}</td></tr>`}).join('');
+  const sIst=S.rows.reduce((a,r)=>a+r.ist,0), sCl=S.rows.reduce((a,r)=>a+r.cloud,0), sM=res.reduce((a,x)=>a+x.M,0);
+  const kI=res.reduce((a,x)=>a+x.kI,0), kC=res.reduce((a,x)=>a+x.kC,0), E=res.reduce((a,x)=>a+x.E,0), G=res.reduce((a,x)=>a+x.gross,0);
+  const dT=sIst-sCl, T=dT>0?sM/dT:Infinity;
+  document.getElementById('tf').innerHTML=`<tr><td>Summe (${S.rows.length})</td><td></td><td></td><td class="num">${eur(sIst)}</td><td class="num">${eur(sCl)}</td><td class="num">${eur(sM)}</td><td class="num">${nf(kI,2)}</td><td class="num">${nf(kC,2)}</td><td class="num ${E<0?'neg':'pos'}">${nf(E,2)}</td><td class="num">${Number.isFinite(T)?nf(T,1):'nie'}</td><td></td></tr>`;
+  document.getElementById('t-ist').textContent=nf(kI,2)+' €';
+  document.getElementById('t-cloud').textContent=nf(kC,2)+' €';
+  const te=document.getElementById('t-e');te.textContent=nf(E,2)+' €';te.className='v '+(E<0?'neg':'');
+  document.getElementById('t-e-s').textContent=`pro Bürger und Jahr in den ersten ${S.n} Jahren, danach ${nf(G,2)} €`;
+  document.getElementById('t-t').textContent=Number.isFinite(T)?nf(T,1)+' Jahre':'nie';
+  document.getElementById('t-t-s').textContent=`${eur(sM)} € Migration ÷ ${eur(dT)} € Einsparung pro Jahr`;
+  renderResult();
+  save();
+}
+
+function renderEditor(){
+  const ed=document.getElementById('editor');
+  if(!S.rows.length){ed.innerHTML='<h2>Kein Verfahren erfasst</h2><p class="note">Mit „Verfahren hinzufügen“ ein erstes Fachverfahren anlegen.</p>';return}
+  if(S.sel>=S.rows.length)S.sel=S.rows.length-1;
+  const r=S.rows[S.sel];
+  ed.innerHTML=`<div class="bar"><h2>Bearbeiten: <span id="ed-title">${esc(r.name||'Ohne Namen')}</span></h2><button class="danger" id="b-del">Verfahren entfernen</button></div>
+   <div class="ed-top">
+    <div class="field"><label for="e-name">Name</label><input id="e-name" type="text" value="${esc(r.name)}"></div>
+    <div class="field"><label for="e-form">Ausgangsform</label><select id="e-form">${FORMS.map(f=>`<option ${f===r.form?'selected':''}>${f}</option>`).join('')}</select></div>
+    <div class="field"><label for="e-b">Bürger (leer = ${eur(S.B)})</label><input id="e-b" type="number" min="0" step="1000" value="${r.b>0?r.b:''}" placeholder="${S.B}"></div>
+    <div class="field"><span class="flabel">TCO Ist €/Jahr (berechnet)</span><output id="o-ist" class="ro num"></output></div>
+    <div class="field"><span class="flabel">TCO Cloud €/Jahr (berechnet)</span><output id="o-cloud" class="ro num"></output></div>
+    <div class="field"><label for="e-mb">Migration Basis €</label><input id="e-mb" type="number" min="0" step="1000" value="${r.mb}"></div>
+   </div>
+   <div class="result" id="ed-res"></div>
+   <div class="tco">
+    ${tcoCol('ti','TCO heute',IST_LINES,r.ti,'s-ist')}
+    ${tcoCol('tc','TCO in der Cloud',CLOUD_LINES,r.tc,'s-cloud')}
+   </div>
+   <p class="note" id="tco-diff"></p>
+   <div><div class="eyebrow" style="margin-bottom:4px">Schwierigkeitskriterien · 1 einfach bis 5 sehr schwer</div>
+   <div class="crit">${CRIT.map((c,k)=>`<div class="c"><div><div class="t">${c.t}</div><div class="g">Gewicht ${Math.round(c.w*100)} %</div></div>
+     <div class="seg" role="group" aria-label="${c.t}">${[1,2,3,4,5].map(v=>`<button data-k="${k}" data-v="${v}" aria-pressed="${r.s[k]===v}">${v}</button>`).join('')}</div>
+     <div class="h" id="h-${k}">${hint(c,r.s[k])}</div>
+     <details class="more"><summary>Was bedeutet das Kriterium?</summary><p>${c.d}</p></details></div>`).join('')}</div></div>`;
+  renderResult();updateTco();
+}
+function tcoCol(g,title,L,o,sid){
+  return `<div class="tcol"><div class="eyebrow">${title} · € pro Jahr</div>
+   ${L.map(l=>`<div class="tl"><div class="tl-t"><span class="t">${l.t}</span><span class="d">${l.d}</span></div>
+     <div class="tl-v num" id="v-${g}-${l.id}"></div>
+     <div class="tl-in">${l.f.map(([k,lab])=>`<label class="mini"><span>${lab}</span><input id="i-${g}-${k}" type="number" min="0" step="any" data-g="${g}" data-k="${k}" value="${o[k]??0}"></label>`).join('')}</div></div>`).join('')}
+   <div class="tsum"><span>Summe</span><strong class="num" id="${sid}"></strong></div></div>`;
+}
+function updateTco(){
+  const r=S.rows[S.sel];if(!r||!document.getElementById('s-ist'))return;
+  IST_LINES.forEach(l=>{document.getElementById('v-ti-'+l.id).textContent=eur(l.v(r.ti))});
+  CLOUD_LINES.forEach(l=>{document.getElementById('v-tc-'+l.id).textContent=eur(l.v(r.tc))});
+  const a=tco(IST_LINES,r.ti),b=tco(CLOUD_LINES,r.tc);
+  document.getElementById('s-ist').textContent=eur(a)+' €';
+  document.getElementById('s-cloud').textContent=eur(b)+' €';
+  document.getElementById('o-ist').textContent=eur(a)+' €';
+  document.getElementById('o-cloud').textContent=eur(b)+' €';
+  const d=a-b;
+  document.getElementById('tco-diff').textContent=d>=0?`Die Cloud ist im laufenden Betrieb ${eur(d)} € pro Jahr günstiger (${nf(a>0?d/a*100:0,0)} %).`:`Die Cloud ist im laufenden Betrieb ${eur(-d)} € pro Jahr teurer.`;
+}
+function hint(c,v){return c.h[v-1]||('Zwischen „'+c.h[v-2]+'“ und „'+c.h[v]+'“')}
+function renderResult(){
+  const el=document.getElementById('ed-res');if(!el||!S.rows[S.sel])return;
+  const x=calc(S.rows[S.sel]);
+  el.innerHTML=`<div><span>Schwierigkeitsfaktor</span><strong>${nf(x.sf,2)} · ${CLS[x.cls]}</strong></div>
+   <div><span>Migration M (× ${nf(S.aufs[x.cls],1)})</span><strong>${eur(x.M)} €</strong></div>
+   <div><span>Kosten pro Bürger heute → Cloud</span><strong>${nf(x.kI,2)} → ${nf(x.kC,2)} €</strong></div>
+   <div><span>Netto-Ersparnis pro Bürger</span><strong class="${x.E<0?'neg':'pos'}">${nf(x.E,2)} €</strong></div>
+   <div><span>Amortisation</span><strong>${Number.isFinite(x.T)?nf(x.T,1)+' Jahre':'nie'}</strong></div>`;
+}
+
+function bindGlobals(){
+  const map={'g-b':'B','g-n':'n','g-ts':'ts'};
+  for(const id in map){const el=document.getElementById(id);el.value=S[map[id]];el.oninput=()=>{S[map[id]]=Math.max(1,num(el.value));render();if(id==='g-b')renderEditor();else updateTco()}}
+  const R=['SF 1,0–1,9','SF 2,0–2,9','SF 3,0–3,9','SF 4,0–5,0'];
+  document.getElementById('g-aufs').innerHTML=AUFS.map((a,i)=>`<div class="chip" title="Aufschlag bei Einstufung ${CLS[i]}"><span class="r">${CLS[i]} · ${R[i]}</span><span class="f">× ${nf(a,1)}</span></div>`).join('');
+}
+
+document.getElementById('tb').addEventListener('click',e=>{const tr=e.target.closest('tr[data-i]');if(!tr)return;S.sel=+tr.dataset.i;render();renderEditor()});
+document.getElementById('tb').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const tr=e.target.closest('tr[data-i]');if(!tr)return;e.preventDefault();S.sel=+tr.dataset.i;render();renderEditor();document.getElementById('editor').scrollIntoView({behavior:'smooth',block:'start'})});
+
+const ed=document.getElementById('editor');
+ed.addEventListener('input',e=>{const r=S.rows[S.sel];if(!r)return;const t=e.target;
+  if(t.id==='e-name'){r.name=t.value;document.getElementById('ed-title').textContent=t.value||'Ohne Namen'}
+  else if(t.id==='e-b')r.b=t.value===''?null:num(t.value);
+  else if(t.dataset.g){r[t.dataset.g][t.dataset.k]=num(t.value);render();updateTco();return}
+  else if(t.id==='e-mb')r.mb=num(t.value);
+  else return;render()});
+ed.addEventListener('change',e=>{if(e.target.id==='e-form'){S.rows[S.sel].form=e.target.value;render()}});
+ed.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-k]');
+  if(b){const k=+b.dataset.k,v=+b.dataset.v;S.rows[S.sel].s[k]=v;
+    b.parentElement.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.v===v));
+    document.getElementById('h-'+k).textContent=hint(CRIT[k],v);render();return}
+  if(e.target.id==='b-del'){S.rows.splice(S.sel,1);S.sel=Math.max(0,S.sel-1);render();renderEditor();flash('Verfahren entfernt')}
+});
+
+document.getElementById('b-add').addEventListener('click',()=>{S.rows.push({name:'Neues Verfahren',form:'On-Premises',b:null,mb:50000,s:[3,3,3,3,3,3,3,3,3,3],ti:splitIst(100000,S.ts),tc:splitCloud(80000,S.ts)});S.sel=S.rows.length-1;render();renderEditor();const n=document.getElementById('e-name');n.focus();n.select()});
+document.getElementById('b-reset').addEventListener('click',()=>{S=ensureTco(EXAMPLE());bindGlobals();render();renderEditor();flash('Beispieldaten geladen')});
+document.getElementById('b-csv').addEventListener('click',()=>{
+  const h=['Fachverfahren','Ausgangsform','Bürger','SF','Einstufung','TCO Ist','TCO Cloud','Migration M','K Ist','K Cloud','E netto','Amortisation','Empfehlung',...CRIT.map(c=>c.t)];
+  const lines=[h.join(';')].concat(S.rows.map(r=>{const x=calc(r);return [r.name,r.form,x.B,nf(x.sf,2),CLS[x.cls],r.ist,r.cloud,Math.round(x.M),nf(x.kI,2),nf(x.kC,2),nf(x.E,2),Number.isFinite(x.T)?nf(x.T,1):'nie',x.rec,...r.s].map(v=>/[;"\n]/.test(String(v))?'"'+String(v).replace(/"/g,'""')+'"':v).join(';')}));
+  const txt=lines.join('\n');
+  const done=()=>flash('Tabelle kopiert – in Excel einfügen');
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done).catch(()=>fallback(txt))}else fallback(txt);
+});
+function fallback(txt){const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}ta.remove();flash(ok?'Tabelle kopiert – in Excel einfügen':'Kopieren nicht möglich')}
+let ft;function flash(m){const t=document.getElementById('toast');t.textContent=m;clearTimeout(ft);ft=setTimeout(()=>t.textContent='',2600)}
+
+bindGlobals();render();renderEditor();
+</script>
+
+</body>
+</html>
