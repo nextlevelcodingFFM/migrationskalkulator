@@ -80,8 +80,12 @@ td .sub{display:block;font-size:.72rem;color:var(--muted);font-family:var(--f-bo
 .ebar b{position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--muted)}
 .neg{color:var(--neg);font-weight:600}.pos{color:var(--pos);font-weight:600}
 .editor{padding:18px 16px;display:flex;flex-direction:column;gap:18px}
-.ed-top{display:grid;grid-template-columns:2fr 1.2fr 1fr 1fr 1fr 1fr;gap:12px}
-.ed-top .field input,.ed-top .field select{width:100%}
+.ed-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.ed-hl{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ed-hl h2{font-size:1.35rem}
+.ed-grid{display:grid;grid-template-columns:2fr 1.2fr 1fr 1fr;gap:16px;align-items:start}
+.ed-grid .field input,.ed-grid .field select{width:100%;height:36px}
+.fhelp{font-size:.72rem;color:var(--muted)}
 .sfbox{border:1px solid var(--line-strong);border-radius:6px;overflow:hidden;background:var(--surface)}
 .sfbox-h{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px 20px;padding:12px 16px;background:var(--sunk);border-bottom:3px solid var(--teal)}
 .sfbox-l{display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -139,10 +143,13 @@ tr.thinfo span{display:block;max-width:90ch}
 .seg button{border:none;border-right:1px solid var(--line);border-radius:0;padding:4px 0;width:30px;font-family:var(--f-num);background:var(--surface)}
 .seg button:last-child{border-right:none}
 .seg button[aria-pressed=true]{background:var(--accent);color:var(--on-accent)}
-.result{display:flex;flex-wrap:wrap;gap:10px 26px;padding:12px 14px;background:var(--sunk);border-radius:4px}
-.result div{display:flex;flex-direction:column}
-.result span{font-size:.72rem;color:var(--muted)}
-.result strong{font-family:var(--f-num);font-weight:500;font-size:1.05rem}
+.result{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border:1px solid var(--line-strong);border-radius:6px;overflow:hidden;background:var(--surface)}
+.rc{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-right:1px solid var(--line);min-width:0}
+.rc:last-child{border-right:none}
+.rc>span{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--teal-text)}
+.rc strong{font-family:var(--f-num);font-weight:700;font-size:1.02rem;color:var(--ink);line-height:1.25}
+.rc small{font-size:.72rem;color:var(--muted)}
+.rc-hl{background:var(--good-soft)}
 .note{font-size:.78rem;color:var(--muted);max-width:90ch}
 .toast{font-size:.8rem;color:var(--good);min-height:1.2em}
 .view{display:flex;flex-direction:column;gap:22px}
@@ -189,7 +196,8 @@ button.armed,button.armed:hover{background:var(--crit);border-color:var(--crit);
 .okmsg{margin:0;font-size:.82rem;color:var(--good)}.okmsg:empty{display:none}
 .linkbtn{border:none;background:none;padding:0;color:var(--accent);font:inherit;font-weight:500;text-decoration:underline;cursor:pointer}
 .linkbtn:hover{background:none}
-@media (max-width:860px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.ed-top{grid-template-columns:repeat(2,minmax(0,1fr))}.crit{grid-template-columns:1fr}.tco{grid-template-columns:1fr}}
+@media (max-width:1000px){.result{grid-template-columns:repeat(4,minmax(0,1fr))}.rc{border-bottom:1px solid var(--line)}}
+@media (max-width:860px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.ed-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.f-name{grid-column:1/-1}.result{grid-template-columns:repeat(2,minmax(0,1fr))}.crit{grid-template-columns:1fr}.tco{grid-template-columns:1fr}}
 @media (max-width:420px){.tile .v{font-size:1.2rem}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
@@ -555,16 +563,14 @@ function renderEditor(){
   if(!S.rows.length){ed.innerHTML='<h2>Kein Verfahren erfasst</h2><p class="note">Mit „Verfahren hinzufügen“ ein erstes Fachverfahren anlegen.</p>';return}
   if(S.sel>=S.rows.length)S.sel=S.rows.length-1;
   const r=S.rows[S.sel];
-  ed.innerHTML=`<div class="bar"><h2>Bearbeiten: <span id="ed-title">${esc(r.name||'Ohne Namen')}</span></h2><button class="danger" id="b-del">Verfahren entfernen</button></div>
-   <div class="ed-top">
-    <div class="field"><label for="e-name">Name</label><input id="e-name" type="text" value="${esc(r.name)}"></div>
+  ed.innerHTML=`<div class="ed-head"><div class="ed-hl"><span class="eyebrow">Fachverfahren bearbeiten</span><h2 id="ed-title">${esc(r.name||'Ohne Namen')}</h2></div><button class="danger" id="b-del">Verfahren entfernen</button></div>
+   <div class="ed-grid">
+    <div class="field f-name"><label for="e-name">Name des Verfahrens</label><input id="e-name" type="text" value="${esc(r.name)}"></div>
     <div class="field"><label for="e-form">Ausgangsform</label><select id="e-form">${FORMS.map(f=>`<option ${f===r.form?'selected':''}>${f}</option>`).join('')}</select></div>
-    <div class="field"><label for="e-b">Bürger (leer = ${eur(S.B)})</label><input id="e-b" type="number" min="0" step="1000" value="${r.b>0?r.b:''}" placeholder="${S.B}"></div>
-    <div class="field"><span class="flabel">TCO Ist €/Jahr (berechnet)</span><output id="o-ist" class="ro num"></output></div>
-    <div class="field"><span class="flabel">TCO Cloud €/Jahr (berechnet)</span><output id="o-cloud" class="ro num"></output></div>
-    <div class="field"><label for="e-mb">Migration Basis €</label><input id="e-mb" type="number" min="0" step="1000" value="${r.mb}"></div>
+    <div class="field"><label for="e-b">Bürger</label><input id="e-b" type="number" min="0" step="1000" value="${r.b>0?r.b:''}" placeholder="${eur(S.B)}"><span class="fhelp">leer = Einwohner der Kommune</span></div>
+    <div class="field"><label for="e-mb">Migration Basis €</label><input id="e-mb" type="number" min="0" step="1000" value="${r.mb}"><span class="fhelp">einmalig, ohne Aufschlag</span></div>
    </div>
-   <div class="result" id="ed-res"></div>
+   <div class="result" id="ed-res" aria-label="Ergebnis für dieses Verfahren"></div>
    <div class="tco">
     ${tcoCol('ti','TCO heute',IST_LINES,r.ti,'s-ist')}
     ${tcoCol('tc','TCO in der Cloud',CLOUD_LINES,r.tc,'s-cloud')}
@@ -596,8 +602,6 @@ function updateTco(){
   const a=tco(IST_LINES,r.ti),b=tco(CLOUD_LINES,r.tc);
   document.getElementById('s-ist').textContent=eur(a)+' €';
   document.getElementById('s-cloud').textContent=eur(b)+' €';
-  document.getElementById('o-ist').textContent=eur(a)+' €';
-  document.getElementById('o-cloud').textContent=eur(b)+' €';
   const d=a-b;
   document.getElementById('tco-diff').textContent=d>=0?`Die Cloud ist im laufenden Betrieb ${eur(d)} € pro Jahr günstiger (${nf(a>0?d/a*100:0,0)} %).`:`Die Cloud ist im laufenden Betrieb ${eur(-d)} € pro Jahr teurer.`;
 }
@@ -606,11 +610,14 @@ function renderResult(){
   const el=document.getElementById('ed-res');if(!el||!S.rows[S.sel])return;
   const x=calc(S.rows[S.sel]);
   const sl=document.getElementById('sf-live');if(sl)sl.innerHTML=`<span class="sfv num">SF ${nf(x.sf,2)}</span><span class="pill p${x.cls}">${CLS[x.cls]}</span><span class="sfm">Aufschlag × ${nf(S.aufs[x.cls],1)}</span>`;
-  el.innerHTML=`<div><span>Schwierigkeitsfaktor</span><strong>${nf(x.sf,2)} · ${CLS[x.cls]}</strong></div>
-   <div><span>Migration M (× ${nf(S.aufs[x.cls],1)})</span><strong>${eur(x.M)} €</strong></div>
-   <div><span>Kosten pro Bürger heute → Cloud</span><strong>${nf(x.kI,2)} → ${nf(x.kC,2)} €</strong></div>
-   <div><span>Netto-Ersparnis pro Bürger</span><strong class="${x.E<0?'neg':'pos'}">${nf(x.E,2)} €</strong></div>
-   <div><span>Amortisation</span><strong>${Number.isFinite(x.T)?nf(x.T,1)+' Jahre':'nie'}</strong></div>`;
+  const r=S.rows[S.sel];
+  el.innerHTML=`<div class="rc"><span>TCO heute</span><strong>${eur(r.ist)} €</strong><small>pro Jahr</small></div>
+   <div class="rc"><span>TCO Cloud</span><strong>${eur(r.cloud)} €</strong><small>pro Jahr</small></div>
+   <div class="rc"><span>Schwierigkeit</span><strong>SF ${nf(x.sf,2)}</strong><small><span class="pill p${x.cls}">${CLS[x.cls]}</span></small></div>
+   <div class="rc"><span>Migration M</span><strong>${eur(x.M)} €</strong><small>einmalig, × ${nf(S.aufs[x.cls],1)}</small></div>
+   <div class="rc"><span>Kosten pro Bürger</span><strong>${nf(x.kI,2)} → ${nf(x.kC,2)} €</strong><small>heute → Cloud</small></div>
+   <div class="rc rc-hl"><span>Netto-Ersparnis</span><strong class="${x.E<0?'neg':'pos'}">${nf(x.E,2)} €</strong><small>pro Bürger und Jahr</small></div>
+   <div class="rc"><span>Amortisation</span><strong class="${Number.isFinite(x.T)&&x.T<=S.n?'':'neg'}">${Number.isFinite(x.T)?nf(x.T,1)+' Jahre':'nie'}</strong><small>Ziel ≤ ${S.n} Jahre</small></div>`;
 }
 
 function bindGlobals(){
@@ -749,9 +756,8 @@ function renderStoreInfo(){
   document.querySelector('.khome').hidden=auth;
   if(MODE==='db'){
     el.className='store db';
-    const who=LINKMODE?'<br>Zugang über Link: Jeder mit diesem Link kann die Kommunen sehen und ändern. Link nur an Berechtigte weitergeben.':SUB==='supa'&&SBUSER?`<br>Angemeldet als ${esc(SBUSER.email||'')} · <button type="button" class="linkbtn" id="b-logout">Abmelden</button>`:'';
-    const whoSees=LINKMODE?'Änderungen anderer erscheinen nach kurzer Zeit.':SUB==='supa'?'Alle freigeschalteten Personen sehen dieselben Daten; Änderungen erscheinen bei allen nach kurzer Zeit.':'Alle, denen du diese Seite freigibst, sehen dieselben Daten; Änderungen erscheinen bei allen live.';
-    el.innerHTML=`<strong>Gemeinsame Datenbank.</strong> Alle Kommunen sind dauerhaft gespeichert, auch wenn der Browser-Cache gelöscht wird. ${whoSees}${who}${READONLY?'<br><em>Du hast nur Leserechte.</em>':''}${DBERR?'<br><em>'+esc(DBERR)+'</em>':''}`;
+    const who=!LINKMODE&&SUB==='supa'&&SBUSER?` · Angemeldet als ${esc(SBUSER.email||'')} · <button type="button" class="linkbtn" id="b-logout">Abmelden</button>`:'';
+    el.innerHTML=`<strong>Gemeinsame Datenbank.</strong>${who}${READONLY?'<br><em>Du hast nur Leserechte.</em>':''}${DBERR?'<br><em>'+esc(DBERR)+'</em>':''}`;
     const n=localCandidates().length;mb.hidden=!n||READONLY;mb.textContent=`Kommunen aus diesem Browser übernehmen (${n})`;
   }else if(MODE==='local'){
     el.className='store local';
