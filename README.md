@@ -11,7 +11,7 @@ Webbasierter Kalkulator zur Vorbereitung der Migration von Fachverfahren (On-Pre
 - **Kosten pro Bürger:** heute und nach Migration, Netto-Ersparnis nach Abzug der verteilten Migrationskosten, Amortisationsdauer.
 - **Empfehlung:** Migrationsreihenfolge oder Prüfung von SaaS, Weiterbetrieb oder Ablösung.
 - **Export:** Tabelle als CSV in die Zwischenablage kopieren und in Excel einfügen.
-- **Farbschema:** Teal, Dunkelblau, Oliv, Grün, Weinrot und Grautöne; heller und dunkler Modus.
+- **Farbschema:** weißer Hintergrund mit Dunkelblau, Teal, Oliv, Grün, Weinrot und Grautönen.
 
 ## Nutzung
 

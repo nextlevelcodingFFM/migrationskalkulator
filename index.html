@@ -14,30 +14,17 @@
    Dunkelblau = Überschriften, Schaltflächen, Links · Teal = Markierung und Hervorhebung
    Einstufung: gering = Grün, mittel = Teal, hoch = Oliv, sehr hoch = Weinrot · positiv = Grün, negativ = Weinrot */
 :root{
-  --bg:#f3f3f3; --surface:#ffffff; --sunk:#e4e4e4; --line:#d2d2d2; --line-strong:#b2b2b2;
-  --fg:#1d2a30; --ink:#004b65; --muted:#707070;
+  --bg:#ffffff; --surface:#ffffff; --sunk:#f4f4f4; --line:#e4e4e4; --line-strong:#b2b2b2;
+  --fg:#1d2a30; --ink:#004b65; --on-ink:#ffffff; --on-ink-muted:#e4e4e4; --muted:#707070;
   --accent:#004b65; --accent-soft:#e1f1f1; --on-accent:#ffffff;
-  --teal:#03878a; --teal-text:#03676a; --teal-soft:#e1f1f1;
-  --olive:#aab414; --good:#647d2d; --good-soft:#edf1e2; --warn:#6b7210; --warn-soft:#f2f4d6; --crit:#5f1937; --crit-soft:#f3e4eb;
-  --sel:#ebf5f5;
+  --teal:#03878a; --teal-text:#03676a; --teal-soft:#e6f3f3;
+  --olive:#aab414; --good:#647d2d; --good-soft:#eef2e4; --warn:#6b7210; --warn-soft:#f4f6dc; --crit:#5f1937; --crit-soft:#f5e8ee;
+  --sel:#edf6f6;
   --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-num:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0c1b21; --surface:#12262d; --sunk:#0a161b; --line:#27404a; --line-strong:#3b5862;
-  --fg:#e4e4e4; --ink:#e4e4e4; --muted:#b2b2b2;
-  --accent:#4fbfc1; --accent-soft:#103a3e; --on-accent:#04191d;
-  --teal:#4fbfc1; --teal-text:#7fd3d4; --teal-soft:#103a3e;
-  --olive:#aab414; --good:#a8c26a; --good-soft:#212e18; --warn:#c9d340; --warn-soft:#2c300e; --crit:#e09ab8; --crit-soft:#3a1626;
-  --sel:#123139; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0c1b21; --surface:#12262d; --sunk:#0a161b; --line:#27404a; --line-strong:#3b5862;
-  --fg:#e4e4e4; --ink:#e4e4e4; --muted:#b2b2b2;
-  --accent:#4fbfc1; --accent-soft:#103a3e; --on-accent:#04191d;
-  --teal:#4fbfc1; --teal-text:#7fd3d4; --teal-soft:#103a3e;
-  --olive:#aab414; --good:#a8c26a; --good-soft:#212e18; --warn:#c9d340; --warn-soft:#2c300e; --crit:#e09ab8; --crit-soft:#3a1626;
-  --sel:#123139; color-scheme:dark}
-body{border-top:4px solid var(--teal)}
+/* Bewusst nur helles Erscheinungsbild: weißer Hintergrund auch bei Geräten im Dunkelmodus */
 h1,h2{color:var(--ink)}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.45}
@@ -183,6 +170,34 @@ button.armed,button.armed:hover{background:var(--crit);border-color:var(--crit);
 @media (max-width:860px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.ed-top{grid-template-columns:repeat(2,minmax(0,1fr))}.crit{grid-template-columns:1fr}.tco{grid-template-columns:1fr}}
 @media (max-width:420px){.tile .v{font-size:1.2rem}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* Farbschema kombiniert: Kopfbalken, Tabellenköpfe, Kachelstreifen */
+.view>header{background:var(--ink);color:var(--on-ink);padding:22px 24px 20px;border-radius:6px;border-bottom:4px solid var(--teal)}
+.view>header h1{color:var(--on-ink)}
+.view>header .lead{color:var(--on-ink-muted)}
+.view>header .eyebrow{color:var(--olive)}
+th{background:var(--ink);color:var(--on-ink);border-bottom:3px solid var(--teal)}
+.thi{color:var(--line-strong)}
+.thi:hover{background:rgba(255,255,255,.12);color:var(--on-ink)}
+.thi[aria-expanded=true]{color:var(--olive)}
+tfoot td{background:var(--sunk);border-top:2px solid var(--line-strong)}
+.tile{border-top:4px solid var(--muted)}
+.tiles .tile:nth-child(2){border-top-color:var(--teal)}
+.tiles .tile:nth-child(3){border-top-color:var(--good)}
+.tiles .tile:nth-child(4){border-top-color:var(--ink)}
+.tile.hl{background:var(--good-soft);box-shadow:none;border-color:var(--line);border-top-color:var(--good)}
+.tile.hl .eyebrow{color:var(--good)}
+button:hover{background:var(--teal-soft)}
+button.primary:hover{background:var(--teal);border-color:var(--teal);filter:none}
+a.btn:hover{background:var(--teal);border-color:var(--teal)}
+button.danger{color:var(--crit);border-color:var(--crit-soft)}
+button.danger:hover{background:var(--crit-soft)}
+.editor{border-top:4px solid var(--teal)}
+.chip{border-color:var(--line-strong)}
+.crumb a{color:var(--teal-text)}
+.more summary{color:var(--teal-text)}
+.store.local{border-left:4px solid var(--olive)}
+.store.db{border-left:4px solid var(--good)}
 </style>
 </head>
 <body>
