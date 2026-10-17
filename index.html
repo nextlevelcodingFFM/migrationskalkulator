@@ -362,6 +362,10 @@ button.danger.armed,button.danger.armed:hover{background:var(--crit);border-colo
 .td-track{position:relative;height:18px;border-radius:4px;overflow:hidden}
 .td-track i{position:absolute;top:0;left:0;border-radius:0}
 .td-ist{background:var(--ink)}
+.td-row{grid-template-columns:82px minmax(0,1fr) 92px 50px}
+.td-row b.td-p{color:var(--muted);font-weight:600}
+.td-note{grid-column:1/-1}
+@media (max-width:480px){.td-row{grid-template-columns:66px minmax(0,1fr) auto auto;gap:8px}.td-row b{font-size:.8rem;white-space:nowrap}.td-n{font-size:.76rem}}
 .td-sv{background:repeating-linear-gradient(135deg,var(--good-soft) 0 6px,#fff 6px 10px);border:2px dashed var(--pos);box-sizing:border-box}
 @media (max-width:760px){.tcodiff{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:420px){.td-k strong{font-size:1.45rem}.td-k{padding-right:14px}.td-k+.td-k{padding-left:14px}}
@@ -765,8 +769,8 @@ function updateTco(){
      </div>
    </div>
    <div class="td-bars">
-     <div class="td-row"><span class="td-n">TCO heute</span><div class="td-track"><i class="td-ist" style="width:${iw.toFixed(1)}%"></i></div><b class="num">${eur(a)} €</b></div>
-     <div class="td-row"><span class="td-n">TCO Cloud</span><div class="td-track"><i class="td-cl" style="width:${cw.toFixed(1)}%"></i>${good&&d>0?`<i class="td-sv" style="left:${cw.toFixed(1)}%;width:${(iw-cw).toFixed(1)}%"></i>`:''}</div><b class="num">${eur(b)} €</b></div>
+     <div class="td-row"><span class="td-n">TCO heute</span><div class="td-track"><i class="td-ist" style="width:${iw.toFixed(1)}%"></i></div><b class="num">${eur(a)} €</b><b class="num td-p">${a>0?'100 %':'–'}</b></div>
+     <div class="td-row"><span class="td-n">TCO Cloud</span><div class="td-track"><i class="td-cl" style="width:${cw.toFixed(1)}%"></i>${good&&d>0?`<i class="td-sv" style="left:${cw.toFixed(1)}%;width:${(iw-cw).toFixed(1)}%"></i>`:''}</div><b class="num">${eur(b)} €</b><b class="num td-p">${a>0?nf(b/a*100,0)+' %':'–'}</b></div>
      <p class="td-note">Laufende Betriebskosten pro Jahr, ohne Migrationsbetrag. ${good&&d>0?'Gestrichelt: Ersparnis.':''}</p>
    </div>`;
 }
