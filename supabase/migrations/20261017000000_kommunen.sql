@@ -36,13 +36,15 @@ $$;
 create or replace function public.kommunen_stempel()
 returns trigger
 language plpgsql
+set search_path = ''
 as $$
 begin
   new.geaendert_von := auth.uid();
-  new.geaendert_am  := now();
+  new.geaendert_am  := pg_catalog.now();
   return new;
 end;
 $$;
+revoke execute on function public.kommunen_stempel() from public, anon, authenticated;
 
 drop trigger if exists kommunen_stempel on public.kommunen;
 create trigger kommunen_stempel
@@ -70,10 +72,12 @@ create policy "eigene freischaltung lesen" on public.zugelassene_nutzer
   using (lower(email) = lower(coalesce(auth.jwt() ->> 'email', '')));
 
 -- Nicht angemeldete Besucher bekommen keinerlei Rechte
-revoke all on public.kommunen from anon;
-revoke all on public.zugelassene_nutzer from anon;
+revoke all on public.kommunen from anon, authenticated;
+revoke all on public.zugelassene_nutzer from anon, authenticated;
 grant select, insert, update, delete on public.kommunen to authenticated;
 grant select on public.zugelassene_nutzer to authenticated;
+revoke execute on function public.ist_zugelassen() from public, anon;
+grant execute on function public.ist_zugelassen() to authenticated;
 
 -- Live-Aktualisierung für alle geöffneten Seiten
 do $$
