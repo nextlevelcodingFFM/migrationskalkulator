@@ -81,6 +81,7 @@ thead tr.r1 th:not(.tl-left) .thl{align-items:flex-end}
 #v-calc #tb td:last-child{white-space:normal;min-width:120px;line-height:1.3}
 #v-calc .ebar{width:56px}
 #v-calc thead th{letter-spacing:.02em}
+.ktable thead th{letter-spacing:.02em}
 tbody tr{cursor:pointer}
 tbody tr:hover{background:var(--sunk)}
 tbody tr.on{background:var(--sel);box-shadow:inset 3px 0 0 var(--teal)}
@@ -280,7 +281,7 @@ button.danger:hover{background:var(--crit-soft)}
     <div class="bar"><h2>Kommunen <span class="cnt num" id="k-cnt"></span></h2></div>
     <div class="panel tblwrap" id="k-wrap">
       <table class="ktable">
-        <thead><tr><th>Kommune</th><th>Einwohner</th><th>Verfahren</th><th>Kosten heute<br>€/Bürger</th><th>Kosten Cloud<br>€/Bürger</th><th>Netto-Ersparnis<br>€/Bürger</th><th>Ersparnis Betrieb<br>€/Jahr</th><th>Migration<br>€</th><th></th></tr></thead>
+        <thead><tr><th>Kommune</th><th>Einwohner</th><th>Verfahren</th><th>Kosten heute<br>€/Bürger</th><th>Kosten Cloud<br>€/Bürger</th><th>Netto-Ersparnis<br>€/Bürger</th><th>Ersparnis Betrieb<br>€/Jahr</th><th>Migrations-<br>betrag €</th><th></th></tr></thead>
         <tbody id="kb"></tbody>
         <tfoot id="kf"></tfoot>
       </table>
@@ -567,7 +568,7 @@ function render(){
   const te=document.getElementById('t-e');te.textContent=nf(E,2)+' €';te.className='v '+(E<0?'neg':'pos');
   document.getElementById('t-e-s').textContent=`pro Bürger und Jahr in den ersten ${S.n} Jahren, danach ${nf(G,2)} €`;
   document.getElementById('t-t').textContent=Number.isFinite(T)?nf(T,1)+' Jahre':'nie';
-  document.getElementById('t-t-s').textContent=`${eur(sM)} € Migration ÷ ${eur(dT)} € Einsparung pro Jahr`;
+  document.getElementById('t-t-s').textContent=`${eur(sM)} € Migrationsbetrag ÷ ${eur(dT)} € Einsparung pro Jahr`;
   renderResult();
   save();
 }
@@ -582,7 +583,7 @@ function renderEditor(){
     <div class="field f-name"><label for="e-name">Name des Verfahrens</label><input id="e-name" type="text" value="${esc(r.name)}"></div>
     <div class="field"><label for="e-form">Ausgangsform</label><select id="e-form">${FORMS.map(f=>`<option ${f===r.form?'selected':''}>${f}</option>`).join('')}</select></div>
     <div class="field"><label for="e-b">Bürger</label><input id="e-b" type="number" min="0" step="1000" value="${r.b>0?r.b:''}" placeholder="${eur(S.B)}"><span class="fhelp">leer = Einwohner der Kommune</span></div>
-    <div class="field"><label for="e-mb">Migration Basis €</label><input id="e-mb" type="number" min="0" step="1000" value="${r.mb}"><span class="fhelp">einmalig, ohne Aufschlag</span></div>
+    <div class="field"><label for="e-mb">Migrationsbetrag Basis €</label><input id="e-mb" type="number" min="0" step="1000" value="${r.mb}"><span class="fhelp">ohne Aufschlag</span></div>
    </div>
    <div class="result" id="ed-res" aria-label="Ergebnis für dieses Verfahren"></div>
    <div class="tco">
@@ -628,7 +629,7 @@ function renderResult(){
   el.innerHTML=`<div class="rc"><span>TCO heute</span><strong>${eur(r.ist)} €</strong><small>pro Jahr</small></div>
    <div class="rc"><span>TCO Cloud</span><strong>${eur(r.cloud)} €</strong><small>pro Jahr</small></div>
    <div class="rc"><span>Schwierigkeit</span><strong>SF ${nf(x.sf,2)}</strong><small><span class="pill p${x.cls}">${CLS[x.cls]}</span></small></div>
-   <div class="rc"><span>Migration</span><strong>${eur(x.M)} €</strong><small>einmalig, × ${nf(S.aufs[x.cls],1)}</small></div>
+   <div class="rc"><span>Migrationsbetrag</span><strong>${eur(x.M)} €</strong><small>inkl. Aufschlag × ${nf(S.aufs[x.cls],1)}</small></div>
    <div class="rc"><span>Kosten pro Bürger</span><strong>${nf(x.kI,2)} → ${nf(x.kC,2)} €</strong><small>heute → Cloud</small></div>
    <div class="rc rc-hl"><span>Netto-Ersparnis</span><strong class="${x.E<0?'neg':'pos'}">${nf(x.E,2)} €</strong><small>pro Bürger und Jahr</small></div>
    <div class="rc"><span>Amortisation</span><strong class="${Number.isFinite(x.T)&&x.T<=S.n?'':'neg'}">${Number.isFinite(x.T)?nf(x.T,1)+' Jahre':'nie'}</strong><small>Ziel ≤ ${S.n} Jahre</small></div>`;
@@ -650,12 +651,12 @@ const COLS=[
  {l:'Fachverfahren',a:'left',i:'Name des Verfahrens und seine heutige Betriebsform (On-Premises, andere Cloud, Client-Server). Ist für das Verfahren eine eigene Bürgerzahl hinterlegt, steht sie darunter; sonst gilt die Einwohnerzahl der Kommune. Ein Klick auf die Zeile öffnet das Verfahren unten zur Bearbeitung.'},
  {l:'Schwierigkeit',a:'left',i:'Einstufung und Schwierigkeitsfaktor (SF, 1,0 bis 5,0). Der SF ist der gewichtete Mittelwert der zehn Kriterien, die unten beim Verfahren mit 1 (einfach) bis 5 (sehr schwer) bewertet werden. Gewichte: Architektur und Cloudfähigkeit 30 %, Schnittstellen 12 %, Technologiealter 12 %, Client- und Hardwarebindung 10 %, Datenmigration 8 %, Kritikalität 8 %, Lizenz 7 %, Schutzbedarf 6 %, Organisation 4 %, Ausgangsform 3 %. Daraus folgt die Einstufung: gering (SF 1,0–1,9, Aufschlag × 1,0), mittel (2,0–2,9, × 1,5), hoch (3,0–3,9, × 2,5) oder sehr hoch (4,0–5,0, × 4,0).'},
  {l:'Heute',g:'tco',i:'Jährliche Gesamtbetriebskosten (TCO) im heutigen Betrieb. Summe der sechs Kostenblöcke unter „TCO heute“: Hardware-Abschreibung, Rechenzentrum, Lizenzen und Wartung, Betriebspersonal, Arbeitsplatz und Client, Netz und Sonstiges. Einmalige Kosten sind über ihre Nutzungsdauer verteilt.'},
- {l:'Cloud',g:'tco',i:'Erwartete jährliche Gesamtbetriebskosten (TCO) nach der Migration. Summe der acht Kostenblöcke unter „TCO in der Cloud“: Rechenleistung, Speicher, Backup, Plattformumlage, Lizenzen oder SaaS, Betriebspersonal, Arbeitsplatz, Netzanbindung. Die einmaligen Migrationskosten sind hier nicht enthalten.'},
- {l:'Migration',u:'€ einmalig',i:'Einmalige Kosten der Umstellung: Basis-Migrationsaufwand multipliziert mit dem Aufschlag der Einstufung. Der Basisaufwand umfasst Umbau, Tests, Datenübernahme, Parallelbetrieb und Schulung für einen glatten Verlauf. Der Aufschlag bildet das Mehraufwandsrisiko schwieriger Verfahren ab.'},
+ {l:'Cloud',g:'tco',i:'Erwartete jährliche Gesamtbetriebskosten (TCO) nach der Migration. Summe der acht Kostenblöcke unter „TCO in der Cloud“: Rechenleistung, Speicher, Backup, Plattformumlage, Lizenzen oder SaaS, Betriebspersonal, Arbeitsplatz, Netzanbindung. Der Migrationsbetrag ist hier nicht enthalten.'},
+ {l:'Migrationsbetrag',lh:'Migrations-<br>betrag',u:'€',i:'Kosten der Umstellung: Basis-Migrationsaufwand multipliziert mit dem Aufschlag der Einstufung. Der Basisaufwand umfasst Umbau, Tests, Datenübernahme, Parallelbetrieb und Schulung für einen glatten Verlauf. Der Aufschlag bildet das Mehraufwandsrisiko schwieriger Verfahren ab.'},
  {l:'Heute',g:'kb',i:'Heutige Kosten pro Bürger und Jahr: Betriebskosten heute geteilt durch die Zahl der Bürger im Zuständigkeitsgebiet des Verfahrens.'},
- {l:'Cloud',g:'kb',i:'Kosten pro Bürger und Jahr nach der Migration: Betriebskosten in der Cloud geteilt durch die Bürgerzahl. Die einmaligen Migrationskosten sind hier noch nicht berücksichtigt, sie stecken erst in der Netto-Ersparnis.'},
- {l:'Netto-Ersparnis',g:'kb',i:'Netto-Ersparnis pro Bürger und Jahr im Betrachtungszeitraum: (Betriebskosten heute − Betriebskosten Cloud − Migrationskosten ÷ Verteilungsjahre) ÷ Bürger. Grün heißt, die Migration rechnet sich schon im Zeitraum. Rot heißt, die Migrationskosten zehren die laufende Ersparnis auf. Der Balken zeigt die Größe im Vergleich zu den anderen Verfahren.'},
- {l:'Amortisation',u:'Jahre',i:'Wie viele Jahre es dauert, bis die laufende Ersparnis die einmaligen Migrationskosten wieder eingespielt hat: Migrationskosten ÷ (Betriebskosten heute − Betriebskosten Cloud). Rot markiert, wenn es länger dauert als der Verteilungszeitraum. „nie“ bedeutet, dass die Cloud im Betrieb nicht günstiger ist.'},
+ {l:'Cloud',g:'kb',i:'Kosten pro Bürger und Jahr nach der Migration: Betriebskosten in der Cloud geteilt durch die Bürgerzahl. Der Migrationsbetrag ist hier noch nicht berücksichtigt, er steckt erst in der Netto-Ersparnis.'},
+ {l:'Netto-Ersparnis',g:'kb',i:'Netto-Ersparnis pro Bürger und Jahr im Betrachtungszeitraum: (Betriebskosten heute − Betriebskosten Cloud − Migrationsbetrag ÷ Verteilungsjahre) ÷ Bürger. Grün heißt, die Migration rechnet sich schon im Zeitraum. Rot heißt, der Migrationsbetrag zehrt die laufende Ersparnis auf. Der Balken zeigt die Größe im Vergleich zu den anderen Verfahren.'},
+ {l:'Amortisation',u:'Jahre',i:'Wie viele Jahre es dauert, bis die laufende Ersparnis den Migrationsbetrag wieder eingespielt hat: Migrationsbetrag ÷ (Betriebskosten heute − Betriebskosten Cloud). Rot markiert, wenn es länger dauert als der Verteilungszeitraum. „nie“ bedeutet, dass die Cloud im Betrieb nicht günstiger ist.'},
  {l:'Empfehlung',a:'left',i:'Automatische Einordnung für die Reihenfolge. „Zuerst migrieren“: wirtschaftlich und Einstufung gering oder mittel. „Danach migrieren“: wirtschaftlich, aber hoch oder sehr hoch eingestuft. „Prüfen“: Netto-Ersparnis negativ oder Amortisation länger als der Verteilungszeitraum; dann SaaS, Weiterbetrieb bis Vertragsende oder Ablösung prüfen.'}
 ];
 let openCol=-1;
@@ -669,7 +670,7 @@ function renderHead(){
       if(i===0||COLS[i-1].g!==c.g){const n=COLS.filter(x=>x.g===c.g).length;r1+=`<th colspan="${n}" class="grp">${GROUPS[c.g].l}<span class="gu">${GROUPS[c.g].u}</span></th>`}
       r2+=`<th><span class="thw">${c.l}${thBtn(c,i)}</span></th>`;
     }else{
-      r1+=`<th rowspan="2" class="${c.a==='left'?'tl-left':''}"><span class="thw"><span class="thl">${c.l}${c.u?'<span class="gu">'+c.u+'</span>':''}</span>${thBtn(c,i)}</span></th>`;
+      r1+=`<th rowspan="2" class="${c.a==='left'?'tl-left':''}"><span class="thw"><span class="thl">${c.lh||c.l}${c.u?'<span class="gu">'+c.u+'</span>':''}</span>${thBtn(c,i)}</span></th>`;
     }
   });
   const info=openCol>=0?`<tr class="thinfo"><td colspan="${COLS.length}" id="thinfo"><strong>${colName(COLS[openCol])}${colUnit(COLS[openCol])?' ('+colUnit(COLS[openCol])+')':''}</strong><span>${COLS[openCol].i}</span></td></tr>`:'';
@@ -705,7 +706,7 @@ function arm(btn,label,fn){
 }
 document.getElementById('b-reset').addEventListener('click',e=>arm(e.currentTarget,'Verfahren ersetzen? Nochmal klicken',()=>{const B=S.B;S=prepState(EXAMPLE());S.B=B;bindGlobals();render();renderEditor();flash('Beispieldaten geladen')}));
 document.getElementById('b-csv').addEventListener('click',()=>{
-  const h=['Fachverfahren','Ausgangsform','Bürger','SF','Einstufung','Betriebskosten heute €/Jahr','Betriebskosten Cloud €/Jahr','Migration € einmalig','Kosten pro Bürger heute','Kosten pro Bürger Cloud','Netto-Ersparnis pro Bürger','Amortisation Jahre','Empfehlung',...CRIT.map(c=>c.t)];
+  const h=['Fachverfahren','Ausgangsform','Bürger','SF','Einstufung','Betriebskosten heute €/Jahr','Betriebskosten Cloud €/Jahr','Migrationsbetrag €','Kosten pro Bürger heute','Kosten pro Bürger Cloud','Netto-Ersparnis pro Bürger','Amortisation Jahre','Empfehlung',...CRIT.map(c=>c.t)];
   const lines=[h.join(';')].concat(S.rows.map(r=>{const x=calc(r);return [r.name,r.form,x.B,nf(x.sf,2),CLS[x.cls],r.ist,r.cloud,Math.round(x.M),nf(x.kI,2),nf(x.kC,2),nf(x.E,2),Number.isFinite(x.T)?nf(x.T,1):'nie',x.rec,...r.s].map(v=>/[;"\n]/.test(String(v))?'"'+String(v).replace(/"/g,'""')+'"':v).join(';')}));
   const txt=lines.join('\n');
   const done=()=>flash('Tabelle kopiert – in Excel einfügen');
