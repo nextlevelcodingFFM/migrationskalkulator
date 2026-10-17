@@ -6,6 +6,7 @@
 <meta name="referrer" content="no-referrer">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Migrationskalkulator Fachverfahren</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2303878A'/%3E%3Cg fill='%23fff'%3E%3Ccircle cx='22' cy='38' r='9'/%3E%3Ccircle cx='33' cy='29' r='13'/%3E%3Ccircle cx='44' cy='38' r='9'/%3E%3Crect x='22' y='34' width='22' height='13'/%3E%3C/g%3E%3Cpath d='M33 43V27M26.5 33.5 33 27l6.5 6.5' fill='none' stroke='%23004B65' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -285,6 +286,11 @@ button.danger:hover{background:var(--crit-soft)}
 .td-row b{text-align:right;font-weight:700;color:var(--ink);font-size:.9rem}
 .td-note{margin:0;font-size:.74rem;color:var(--muted)}
 @media (max-width:700px){.tcodiff{grid-template-columns:1fr}}
+
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:30px;padding:0 7px!important}
+.icon-btn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.icon-btn.armed{font-size:.8rem;font-weight:600;padding:0 10px!important}
+button.danger.armed,button.danger.armed:hover{background:var(--crit);border-color:var(--crit);color:#fff}
 </style>
 </head>
 <body>
@@ -756,9 +762,9 @@ ed.addEventListener('click',e=>{
 
 document.getElementById('b-add').addEventListener('click',()=>{S.rows.push({name:'Neues Verfahren',form:'On-Premises',b:null,mb:50000,s:[3,3,3,3,3,3,3,3,3,3],ti:splitIst(100000,S.ts),tc:splitCloud(80000,S.ts)});S.sel=S.rows.length-1;render();renderEditor();const n=document.getElementById('e-name');n.focus();n.select()});
 function arm(btn,label,fn){
-  if(btn.classList.contains('armed')){clearTimeout(btn._t);btn.classList.remove('armed');btn.textContent=btn._l;fn();return}
-  btn._l=btn.textContent;btn.textContent=label;btn.classList.add('armed');
-  btn._t=setTimeout(()=>{btn.classList.remove('armed');btn.textContent=btn._l},4000);
+  if(btn.classList.contains('armed')){clearTimeout(btn._t);btn.classList.remove('armed');btn.innerHTML=btn._l;fn();return}
+  btn._l=btn.innerHTML;btn.textContent=label;btn.classList.add('armed');
+  btn._t=setTimeout(()=>{btn.classList.remove('armed');btn.innerHTML=btn._l},4000);
 }
 document.getElementById('b-reset').addEventListener('click',e=>arm(e.currentTarget,'Verfahren ersetzen? Nochmal klicken',()=>{const B=S.B;S=prepState(EXAMPLE());S.B=B;bindGlobals();render();renderEditor();flash('Beispieldaten geladen')}));
 document.getElementById('b-csv').addEventListener('click',()=>{
@@ -795,12 +801,12 @@ function renderHome(){
      <td class="num">${has?nf(s.kI,2):'–'}</td><td class="num">${has?nf(s.kC,2):'–'}</td>
      <td class="num ${has?(s.E<0?'neg':'pos'):''}">${has?nf(s.E,2):'–'}</td>
      <td class="num">${has?eur(s.d):'–'}</td><td class="num">${has?eur(s.M):'–'}</td>
-     <td class="act"><div class="btns"><a class="btn" href="#k-${k.id}">Öffnen</a><button type="button" class="danger" data-del="${k.id}">Löschen</button></div></td></tr>`}).join('');
+     <td class="act"><div class="btns"><a class="btn" href="#k-${k.id}">Öffnen</a><button type="button" class="danger icon-btn" data-del="${k.id}" aria-label="Kommune ${esc(k.name||'')} löschen" title="Kommune löschen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button></div></td></tr>`}).join('');
   document.getElementById('kf').innerHTML=L.length>1?`<tr><td>Alle Kommunen</td><td class="num">${eur(tB)}</td><td class="num">${tn}</td><td></td><td></td><td></td><td class="num ${td<0?'neg':''}">${eur(td)}</td><td class="num">${eur(tM)}</td><td></td></tr>`:'';
 }
 document.getElementById('kb').addEventListener('click',e=>{
   const del=e.target.closest('button[data-del]');
-  if(del){const id=del.dataset.del;arm(del,'Wirklich löschen?',()=>{removeK(id);renderHome()});return}
+  if(del){const id=del.dataset.del;arm(del,'Löschen?',()=>{removeK(id);renderHome()});return}
   if(e.target.closest('a'))return;
   const tr=e.target.closest('tr[data-id]');if(tr)location.hash='k-'+tr.dataset.id;
 });
