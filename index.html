@@ -21,6 +21,7 @@
   --teal:#03878a; --teal-text:#03676a; --teal-soft:#e6f3f3;
   --olive:#aab414; --good:#647d2d; --good-soft:#eef2e4; --warn:#6b7210; --warn-soft:#f4f6dc; --crit:#5f1937; --crit-soft:#f5e8ee;
   --sel:#edf6f6;
+  --pos:#2e6b1f; --neg:#a3161b; /* Netto-Ersparnis: kräftiges dunkles Grün und Rot */
   --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-num:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
   color-scheme:light;
@@ -77,7 +78,7 @@ td .sub{display:block;font-size:.72rem;color:var(--muted);font-family:var(--f-bo
 .ebar{position:relative;width:70px;height:8px;background:var(--sunk);border-radius:2px}
 .ebar i{position:absolute;top:0;height:100%;border-radius:2px}
 .ebar b{position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--muted)}
-.neg{color:var(--crit)}.pos{color:var(--good)}
+.neg{color:var(--neg);font-weight:600}.pos{color:var(--pos);font-weight:600}
 .editor{padding:18px 16px;display:flex;flex-direction:column;gap:18px}
 .ed-top{display:grid;grid-template-columns:2fr 1.2fr 1fr 1fr 1fr 1fr;gap:12px}
 .ed-top .field input,.ed-top .field select{width:100%}
@@ -505,7 +506,7 @@ function render(){
   const maxE=Math.max(0.01,...res.map(x=>Math.abs(x.E)));
   document.getElementById('tb').innerHTML=S.rows.map((r,i)=>{const x=res[i];
     const w=Math.min(50,Math.abs(x.E)/maxE*50);
-    const bar=x.E>=0?`<i style="left:50%;width:${w}%;background:var(--good)"></i>`:`<i style="left:${50-w}%;width:${w}%;background:var(--crit)"></i>`;
+    const bar=x.E>=0?`<i style="left:50%;width:${w}%;background:var(--pos)"></i>`:`<i style="left:${50-w}%;width:${w}%;background:var(--neg)"></i>`;
     return `<tr data-i="${i}" class="${i===S.sel?'on':''}" tabindex="0">
       <td><strong>${esc(r.name||'Ohne Namen')}</strong><span class="sub">${esc(r.form)}${r.b>0?' · '+eur(r.b)+' Bürger':''}</span></td>
       <td><span class="pill p${x.cls}">${CLS[x.cls]}</span></td>
@@ -521,7 +522,7 @@ function render(){
   document.getElementById('tf').innerHTML=`<tr><td>Summe (${S.rows.length})</td><td></td><td></td><td class="num">${eur(sIst)}</td><td class="num">${eur(sCl)}</td><td class="num">${eur(sM)}</td><td class="num">${nf(kI,2)}</td><td class="num">${nf(kC,2)}</td><td class="num ${E<0?'neg':'pos'}">${nf(E,2)}</td><td class="num">${Number.isFinite(T)?nf(T,1):'nie'}</td><td></td></tr>`;
   document.getElementById('t-ist').textContent=nf(kI,2)+' €';
   document.getElementById('t-cloud').textContent=nf(kC,2)+' €';
-  const te=document.getElementById('t-e');te.textContent=nf(E,2)+' €';te.className='v '+(E<0?'neg':'');
+  const te=document.getElementById('t-e');te.textContent=nf(E,2)+' €';te.className='v '+(E<0?'neg':'pos');
   document.getElementById('t-e-s').textContent=`pro Bürger und Jahr in den ersten ${S.n} Jahren, danach ${nf(G,2)} €`;
   document.getElementById('t-t').textContent=Number.isFinite(T)?nf(T,1)+' Jahre':'nie';
   document.getElementById('t-t-s').textContent=`${eur(sM)} € Migration ÷ ${eur(dT)} € Einsparung pro Jahr`;
