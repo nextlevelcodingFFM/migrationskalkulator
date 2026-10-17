@@ -349,6 +349,21 @@ button.danger.armed,button.danger.armed:hover{background:var(--crit);border-colo
 @media (max-width:520px){.tile .tabs{flex-direction:column;align-items:flex-start;gap:1px}}
 
 @media (max-width:860px){.tiles .tile:nth-child(5){grid-column:1/-1}}
+
+.tcodiff{grid-template-columns:minmax(300px,1fr) 1.4fr;gap:16px 32px;padding:18px 20px;background:linear-gradient(90deg,var(--good-soft),var(--surface) 55%)}
+.tcodiff.is-neg{background:linear-gradient(90deg,var(--crit-soft),var(--surface) 55%)}
+.td-main{gap:8px}
+.td-kpis{display:grid;grid-template-columns:auto auto;justify-content:start;gap:0}
+.td-k{display:flex;flex-direction:column;gap:2px;padding-right:22px}
+.td-k+.td-k{padding:0 0 0 22px;border-left:1px solid var(--line-strong)}
+.td-k strong{font-size:1.8rem;line-height:1.1;white-space:nowrap}
+.td-k span{font-size:.78rem;color:var(--muted)}
+.td-track{position:relative;height:18px;border-radius:4px;overflow:hidden}
+.td-track i{position:absolute;top:0;left:0;border-radius:0}
+.td-ist{background:var(--ink)}
+.td-sv{background:repeating-linear-gradient(135deg,var(--good-soft) 0 6px,#fff 6px 10px);border:2px dashed var(--pos);box-sizing:border-box}
+@media (max-width:760px){.tcodiff{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:420px){.td-k strong{font-size:1.45rem}.td-k{padding-right:14px}.td-k+.td-k{padding-left:14px}}
 </style>
 </head>
 <body>
@@ -739,15 +754,18 @@ function updateTco(){
   const d=a-b;
   const box=document.getElementById('tco-diff'),mx=Math.max(a,b,1),pct=a>0?Math.abs(d)/a*100:0,good=d>=0;
   box.className='tcodiff '+(good?'is-pos':'is-neg');
+  const cw=b/mx*100,iw=a/mx*100;
   box.innerHTML=`<div class="td-main">
      <span class="td-l">${good?'Ersparnis':'Mehrkosten'} im laufenden Betrieb</span>
-     <strong class="num ${good?'pos':'neg'}">${eur(Math.abs(d))} €</strong>
-     <span class="td-s">pro Jahr · <b class="${good?'pos':'neg'}">${good?'−':'+'}${nf(pct,0)} %</b> gegenüber heute</span>
+     <div class="td-kpis">
+      <div class="td-k"><strong class="num ${good?'pos':'neg'}">${eur(Math.abs(d))} €</strong><span>pro Jahr</span></div>
+      <div class="td-k"><strong class="num ${good?'pos':'neg'}">${a>0?(good?'−':'+')+nf(pct,0)+' %':'–'}</strong><span>gegenüber heute</span></div>
+     </div>
    </div>
    <div class="td-bars">
-     <div class="td-row"><span class="td-n">TCO heute</span><div class="td-track"><i class="td-ist" style="width:${(a/mx*100).toFixed(1)}%"></i></div><b class="num">${eur(a)} €</b></div>
-     <div class="td-row"><span class="td-n">TCO Cloud</span><div class="td-track"><i class="td-cl" style="width:${(b/mx*100).toFixed(1)}%"></i></div><b class="num">${eur(b)} €</b></div>
-     <p class="td-note">Laufende Betriebskosten pro Jahr, ohne Migrationsbetrag.</p>
+     <div class="td-row"><span class="td-n">TCO heute</span><div class="td-track"><i class="td-ist" style="width:${iw.toFixed(1)}%"></i></div><b class="num">${eur(a)} €</b></div>
+     <div class="td-row"><span class="td-n">TCO Cloud</span><div class="td-track"><i class="td-cl" style="width:${cw.toFixed(1)}%"></i>${good&&d>0?`<i class="td-sv" style="left:${cw.toFixed(1)}%;width:${(iw-cw).toFixed(1)}%"></i>`:''}</div><b class="num">${eur(b)} €</b></div>
+     <p class="td-note">Laufende Betriebskosten pro Jahr, ohne Migrationsbetrag. ${good&&d>0?'Gestrichelt: Ersparnis.':''}</p>
    </div>`;
 }
 function hint(c,v){return c.h[v-1]||('Zwischen „'+c.h[v-2]+'“ und „'+c.h[v]+'“')}
