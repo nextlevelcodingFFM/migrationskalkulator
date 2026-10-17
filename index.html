@@ -711,6 +711,7 @@ function renderEditor(){
   if(S.sel>=S.rows.length)S.sel=S.rows.length-1;
   const r=S.rows[S.sel];
   ed.innerHTML=`<div class="ed-head"><div class="ed-hl"><span class="eyebrow">Fachverfahren bearbeiten</span><h2 id="ed-title">${esc(r.name||'Ohne Namen')}</h2></div><button class="danger" id="b-del">Verfahren entfernen</button></div>
+   <div class="tcodiff" id="tco-diff" role="status" aria-live="polite"></div>
    <div class="ed-grid">
     <div class="field f-name"><label for="e-name">Name des Verfahrens</label><input id="e-name" type="text" value="${esc(r.name)}"></div>
     <div class="field"><label for="e-form">Ausgangsform</label><select id="e-form">${FORMS.map(f=>`<option ${f===r.form?'selected':''}>${f}</option>`).join('')}</select></div>
@@ -722,7 +723,6 @@ function renderEditor(){
     ${tcoCol('ti','TCO heute',IST_LINES,r.ti,'s-ist')}
     ${tcoCol('tc','TCO in der Cloud',CLOUD_LINES,r.tc,'s-cloud')}
    </div>
-   <div class="tcodiff" id="tco-diff" role="status" aria-live="polite"></div>
    <section class="sfbox" aria-labelledby="sfbox-t">
     <div class="sfbox-h"><div class="sfbox-l"><span class="sfbox-t" id="sfbox-t">Schwierigkeitsfaktor (SF)</span><span class="sfbox-u">10 Kriterien · Bewertung 1 = einfach bis 5 = sehr schwer · gewichtet</span></div><div class="sfbox-r" id="sf-live"></div></div>
     <div class="sfscale" aria-hidden="true">
