@@ -269,6 +269,22 @@ button.danger:hover{background:var(--crit-soft)}
 .store.local{border-left:4px solid var(--olive)}
 .store.db{border-left:4px solid var(--good)}
 @media (max-width:600px){.sfticks i{display:none}.crit .c{grid-template-columns:1fr}.crit .c .seg{grid-row:auto;grid-column:1;justify-self:start}.crit .c .wbar{grid-column:1}}
+
+.tcodiff{display:grid;grid-template-columns:minmax(220px,1fr) 2fr;gap:14px 28px;align-items:center;padding:16px 18px;border:1px solid var(--line-strong);border-left:6px solid var(--pos);border-radius:6px;background:var(--surface)}
+.tcodiff.is-neg{border-left-color:var(--neg)}
+.td-main{display:flex;flex-direction:column;gap:2px;min-width:0}
+.td-l{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--teal-text)}
+.td-main strong{font-size:1.8rem;line-height:1.15}
+.td-s{font-size:.82rem;color:var(--muted)}
+.td-bars{display:flex;flex-direction:column;gap:8px;min-width:0}
+.td-row{display:grid;grid-template-columns:82px minmax(0,1fr) 92px;align-items:center;gap:10px}
+.td-n{font-size:.8rem;font-weight:600;color:var(--fg)}
+.td-track{height:14px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.td-track i{display:block;height:100%;border-radius:3px;transition:width .2s}
+.td-ist{background:var(--muted)}.td-cl{background:var(--teal)}
+.td-row b{text-align:right;font-weight:700;color:var(--ink);font-size:.9rem}
+.td-note{margin:0;font-size:.74rem;color:var(--muted)}
+@media (max-width:700px){.tcodiff{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -612,7 +628,7 @@ function renderEditor(){
     ${tcoCol('ti','TCO heute',IST_LINES,r.ti,'s-ist')}
     ${tcoCol('tc','TCO in der Cloud',CLOUD_LINES,r.tc,'s-cloud')}
    </div>
-   <p class="note" id="tco-diff"></p>
+   <div class="tcodiff" id="tco-diff" role="status" aria-live="polite"></div>
    <section class="sfbox" aria-labelledby="sfbox-t">
     <div class="sfbox-h"><div class="sfbox-l"><span class="sfbox-t" id="sfbox-t">Schwierigkeitsfaktor (SF)</span><span class="sfbox-u">10 Kriterien · Bewertung 1 = einfach bis 5 = sehr schwer · gewichtet</span></div><div class="sfbox-r" id="sf-live"></div></div>
     <div class="sfscale" aria-hidden="true">
@@ -648,7 +664,18 @@ function updateTco(){
   document.getElementById('s-ist').textContent=eur(a)+' €';
   document.getElementById('s-cloud').textContent=eur(b)+' €';
   const d=a-b;
-  document.getElementById('tco-diff').textContent=d>=0?`Die Cloud ist im laufenden Betrieb ${eur(d)} € pro Jahr günstiger (${nf(a>0?d/a*100:0,0)} %).`:`Die Cloud ist im laufenden Betrieb ${eur(-d)} € pro Jahr teurer.`;
+  const box=document.getElementById('tco-diff'),mx=Math.max(a,b,1),pct=a>0?Math.abs(d)/a*100:0,good=d>=0;
+  box.className='tcodiff '+(good?'is-pos':'is-neg');
+  box.innerHTML=`<div class="td-main">
+     <span class="td-l">${good?'Ersparnis':'Mehrkosten'} im laufenden Betrieb</span>
+     <strong class="num ${good?'pos':'neg'}">${eur(Math.abs(d))} €</strong>
+     <span class="td-s">pro Jahr · <b class="${good?'pos':'neg'}">${good?'−':'+'}${nf(pct,0)} %</b> gegenüber heute</span>
+   </div>
+   <div class="td-bars">
+     <div class="td-row"><span class="td-n">TCO heute</span><div class="td-track"><i class="td-ist" style="width:${(a/mx*100).toFixed(1)}%"></i></div><b class="num">${eur(a)} €</b></div>
+     <div class="td-row"><span class="td-n">TCO Cloud</span><div class="td-track"><i class="td-cl" style="width:${(b/mx*100).toFixed(1)}%"></i></div><b class="num">${eur(b)} €</b></div>
+     <p class="td-note">Laufende Betriebskosten pro Jahr, ohne Migrationsbetrag.</p>
+   </div>`;
 }
 function hint(c,v){return c.h[v-1]||('Zwischen „'+c.h[v-2]+'“ und „'+c.h[v]+'“')}
 function renderResult(){
