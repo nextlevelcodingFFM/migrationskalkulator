@@ -103,8 +103,14 @@ tr.thinfo td{white-space:normal;text-align:left;background:var(--teal-soft);colo
 tr.thinfo strong{display:block;margin-bottom:2px;font-weight:600}
 tr.thinfo span{display:block;max-width:90ch}
 .ro{display:block;padding:6px 8px;border:1px dashed var(--line);border-radius:4px;background:var(--sunk);font-family:var(--f-num);font-variant-numeric:tabular-nums}
-.tco{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 28px;align-items:start}
-.tcol{display:flex;flex-direction:column;min-width:0}
+.tco{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 32px;align-items:start}
+.tcol{display:flex;flex-direction:column;min-width:0;border:1px solid var(--line-strong);border-radius:6px;overflow:hidden;background:var(--surface)}
+.tcol-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:12px 16px;background:var(--muted);color:#fff}
+.tcol-tc .tcol-h{background:var(--teal)}
+.tcol-t{font-size:1.1rem;font-weight:700;letter-spacing:-.005em}
+.tcol-u{font-size:.78rem;font-weight:500;opacity:.9}
+.tcol-b{padding:2px 16px 14px}
+.tcol-ti .tsum strong{color:var(--fg)}.tcol-tc .tsum strong{color:var(--teal-text)}
 .tl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:10px 0;border-bottom:1px solid var(--line)}
 .tl-t{display:flex;flex-direction:column;gap:2px;min-width:0}
 .tl-t .t{font-weight:500}
@@ -113,8 +119,8 @@ tr.thinfo span{display:block;max-width:90ch}
 .tl-in{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap}
 .mini{display:flex;flex-direction:column;gap:2px;font-size:.72rem;color:var(--muted)}
 .mini input{width:150px;max-width:100%}
-.tsum{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0 0;font-weight:600}
-.tsum strong{font-weight:500;font-size:1.05rem}
+.tsum{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:10px -16px -14px;padding:12px 16px;font-weight:600;background:var(--sunk);border-top:2px solid var(--line-strong)}
+.tsum strong{font-weight:700;font-size:1.15rem}
 .seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:4px;overflow:hidden}
 .seg button{border:none;border-right:1px solid var(--line);border-radius:0;padding:4px 0;width:30px;font-family:var(--f-num);background:var(--surface)}
 .seg button:last-child{border-right:none}
@@ -558,12 +564,12 @@ function renderEditor(){
   renderResult();updateTco();
 }
 function tcoCol(g,title,L,o,sid){
-  return `<div class="tcol"><div class="eyebrow">${title} · € pro Jahr</div>
+  return `<div class="tcol tcol-${g}"><div class="tcol-h"><span class="tcol-t">${title}</span><span class="tcol-u">€ pro Jahr</span></div><div class="tcol-b">
    ${L.map(l=>`<div class="tl"><div class="tl-t"><span class="t">${l.t}</span><span class="d">${l.d}</span></div>
      <div class="tl-v num" id="v-${g}-${l.id}"></div>
      <div class="tl-in">${l.f.map(([k,lab])=>`<label class="mini"><span>${lab}</span><input id="i-${g}-${k}" type="number" min="0" step="any" data-g="${g}" data-k="${k}" value="${o[k]??0}"></label>`).join('')}</div>
      ${NOTES[g+'-'+l.id]?`<details class="more"><summary>Wie ermittle ich den Wert?</summary><p>${NOTES[g+'-'+l.id]}</p></details>`:''}</div>`).join('')}
-   <div class="tsum"><span>Summe</span><strong class="num" id="${sid}"></strong></div></div>`;
+   <div class="tsum"><span>Summe ${title}</span><strong class="num" id="${sid}"></strong></div></div></div>`;
 }
 function updateTco(){
   const r=S.rows[S.sel];if(!r||!document.getElementById('s-ist'))return;
