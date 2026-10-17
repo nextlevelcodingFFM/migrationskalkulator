@@ -35,6 +35,10 @@ Die öffentliche Webseite kann eine eigene Supabase-Datenbank nutzen. Dann sind 
 
 Ohne diese Werte speichert die Webseite nur im Browser.
 
+### Zugang per Link (ohne Anmeldung)
+
+Zusätzlich zur Anmeldung gibt es Zugangslinks der Form `https://nextlevelcodingffm.github.io/migrationskalkulator/?zugang=<Schlüssel>`. Wer einen solchen Link hat, kann die Kommunen ohne Anmeldung sehen und ändern. Die Schlüssel liegen nur in der Datenbank (`privat.zugangslinks`), nicht im Repository; Einrichtung, neue Links und Abschalten siehe `supabase/migrations/20261017010000_zugang_per_link.sql`.
+
 ## Formeln
 
 ```
