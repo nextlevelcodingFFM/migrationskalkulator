@@ -188,8 +188,9 @@ tfoot td{background:var(--sunk);border-top:2px solid var(--line-strong)}
 .tile.hl{background:var(--good-soft);box-shadow:none;border-color:var(--line);border-top-color:var(--good)}
 .tile.hl .eyebrow{color:var(--good)}
 button:hover{background:var(--teal-soft)}
-button.primary:hover{background:var(--teal);border-color:var(--teal);filter:none}
-a.btn:hover{background:var(--teal);border-color:var(--teal)}
+button.primary,a.btn{background:var(--teal);border-color:var(--teal);color:#fff}
+button.primary:hover,a.btn:hover{background:var(--teal-text);border-color:var(--teal-text);filter:none}
+.seg button[aria-pressed=true]{background:var(--teal);color:#fff}
 button.danger{color:var(--crit);border-color:var(--crit-soft)}
 button.danger:hover{background:var(--crit-soft)}
 .editor{border-top:4px solid var(--teal)}
