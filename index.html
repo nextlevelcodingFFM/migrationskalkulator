@@ -346,6 +346,7 @@ button.danger.armed,button.danger.armed:hover{background:var(--crit);border-colo
 
 .tile .tabs{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:auto;padding-top:8px;border-top:1px solid var(--line);font-size:.76rem;color:var(--muted)}
 .tile .tabs b{font-size:.95rem;color:var(--ink);font-weight:700;white-space:nowrap}
+.tile .tabs b.pos{color:var(--pos)}.tile .tabs b.neg{color:var(--neg)}
 @media (max-width:520px){.tile .tabs{flex-direction:column;align-items:flex-start;gap:1px}}
 
 @media (max-width:860px){.tiles .tile:nth-child(5){grid-column:1/-1}}
@@ -424,7 +425,7 @@ button.danger.armed,button.danger.armed:hover{background:var(--crit);border-colo
     <div class="panel tile"><span class="eyebrow">Kosten heute</span><span class="v" id="t-ist-abs"></span><span class="s">pro Jahr, alle Verfahren</span><span class="tabs"><span>pro Bürger und Jahr</span><b class="num" id="t-ist"></b></span></div>
     <div class="panel tile"><span class="eyebrow">Kosten in der Cloud</span><span class="v" id="t-cloud-abs"></span><span class="s">pro Jahr, alle Verfahren</span><span class="tabs"><span>pro Bürger und Jahr</span><b class="num" id="t-cloud"></b></span></div>
     <div class="panel tile t-pct"><span class="eyebrow" id="t-pct-l">Ersparnis im Betrieb</span><span class="v" id="t-pct"></span><span class="s" id="t-pct-s"></span><span class="tabs"><span id="t-pct-al">pro Jahr</span><b class="num" id="t-pct-abs"></b></span></div>
-    <div class="panel tile hl"><span class="eyebrow">Netto-Ersparnis</span><span class="v" id="t-e"></span><span class="s" id="t-e-s"></span></div>
+    <div class="panel tile hl"><span class="eyebrow">Netto-Ersparnis</span><span class="v" id="t-e-abs"></span><span class="s" id="t-e-s"></span><span class="tabs"><span>pro Bürger und Jahr</span><b class="num" id="t-e"></b></span></div>
     <div class="panel tile"><span class="eyebrow">Amortisation gesamt</span><span class="v" id="t-t"></span><span class="s" id="t-t-s"></span></div>
   </section>
 
@@ -691,8 +692,9 @@ function render(){
   document.getElementById('t-pct-l').textContent=pc>=0?'Ersparnis im Betrieb':'Mehrkosten im Betrieb';
   document.getElementById('t-pct-s').textContent=pc>=0?'geringere Betriebskosten in der Cloud als heute':'höhere Betriebskosten in der Cloud als heute';
   document.getElementById('t-pct-abs').textContent=eur(Math.abs(dT))+' €';
-  const te=document.getElementById('t-e');te.textContent=nf(E,2)+' €';te.className='v '+(E<0?'neg':'pos');
-  document.getElementById('t-e-s').textContent=`pro Bürger und Jahr in den ersten ${S.n} Jahren, danach ${nf(G,2)} €`;
+  const te=document.getElementById('t-e');te.textContent=nf(E,2)+' €';te.className='num '+(E<0?'neg':'pos');
+  const NE=dT-sM/(S.n>0?S.n:1),tea=document.getElementById('t-e-abs');tea.textContent=eur(NE)+' €';tea.className='v '+(NE<0?'neg':'pos');
+  document.getElementById('t-e-s').textContent=`pro Jahr in den ersten ${S.n} Jahren, danach ${eur(dT)} €`;
   document.getElementById('t-t').textContent=Number.isFinite(T)?nf(T,1)+' Jahre':'nie';
   document.getElementById('t-t-s').textContent=`${eur(sM)} € Migrationsbetrag ÷ ${eur(dT)} € Einsparung pro Jahr`;
   renderResult();
