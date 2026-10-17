@@ -342,6 +342,12 @@ button.danger.armed,button.danger.armed:hover{background:var(--crit);border-colo
 .ktable thead th:first-child{padding-left:12px}
 .ktable .thi{width:16px;height:16px}
 .ovw-stats~.ovw-i{margin-top:10px}
+
+.tile .vrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tile .vrow .pctb{font-size:.86rem;padding:3px 8px}
+.tile .tabs{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:auto;padding-top:8px;border-top:1px solid var(--line);font-size:.76rem;color:var(--muted)}
+.tile .tabs b{font-size:.95rem;color:var(--ink);font-weight:700;white-space:nowrap}
+@media (max-width:520px){.tile .tabs{flex-direction:column;align-items:flex-start;gap:1px}}
 </style>
 </head>
 <body>
@@ -405,8 +411,8 @@ button.danger.armed,button.danger.armed:hover{background:var(--crit);border-colo
   </section>
 
   <section class="tiles" aria-label="Gesamtergebnis">
-    <div class="panel tile"><span class="eyebrow">Kosten heute</span><span class="v" id="t-ist"></span><span class="s">€ pro Bürger und Jahr, alle Verfahren</span></div>
-    <div class="panel tile"><span class="eyebrow">Kosten in der Cloud</span><span class="v" id="t-cloud"></span><span class="s">€ pro Bürger und Jahr</span></div>
+    <div class="panel tile"><span class="eyebrow">Kosten heute</span><span class="v" id="t-ist"></span><span class="s">€ pro Bürger und Jahr, alle Verfahren</span><span class="tabs"><span>Gesamt pro Jahr</span><b class="num" id="t-ist-abs"></b></span></div>
+    <div class="panel tile"><span class="eyebrow">Kosten in der Cloud</span><span class="vrow"><span class="v" id="t-cloud"></span><span class="pctb" id="t-pct"></span></span><span class="s" id="t-cloud-s">€ pro Bürger und Jahr</span><span class="tabs"><span>Gesamt pro Jahr</span><b class="num" id="t-cloud-abs"></b></span></div>
     <div class="panel tile hl"><span class="eyebrow">Netto-Ersparnis</span><span class="v" id="t-e"></span><span class="s" id="t-e-s"></span></div>
     <div class="panel tile"><span class="eyebrow">Amortisation gesamt</span><span class="v" id="t-t"></span><span class="s" id="t-t-s"></span></div>
   </section>
@@ -661,6 +667,12 @@ function render(){
   document.getElementById('tf').innerHTML=`<tr><td>Summe (${S.rows.length})</td><td></td><td class="num">${eur(sIst)}</td><td class="num">${eur(sCl)}</td><td class="num">${eur(sM)}</td><td class="num">${nf(kI,2)}</td><td class="num">${nf(kC,2)}</td><td class="num ${E<0?'neg':'pos'}">${nf(E,2)}</td><td class="num">${Number.isFinite(T)?nf(T,1):'nie'}</td><td></td></tr>`;
   document.getElementById('t-ist').textContent=nf(kI,2)+' €';
   document.getElementById('t-cloud').textContent=nf(kC,2)+' €';
+  document.getElementById('t-ist-abs').textContent=eur(sIst)+' €';
+  document.getElementById('t-cloud-abs').textContent=eur(sCl)+' €';
+  const pc=sIst>0?dT/sIst*100:0,tp=document.getElementById('t-pct');
+  tp.hidden=!(sIst>0);tp.textContent=(pc>=0?'−':'+')+nf(Math.abs(pc),0)+' %';tp.className='pctb '+(pc<0?'is-neg':'is-pos');
+  tp.title=pc>=0?'Ersparnis im Betrieb gegenüber heute':'Mehrkosten im Betrieb gegenüber heute';
+  document.getElementById('t-cloud-s').textContent=sIst>0?`€ pro Bürger und Jahr · ${nf(Math.abs(pc),0)} % ${pc>=0?'weniger':'mehr'} als heute`:'€ pro Bürger und Jahr';
   const te=document.getElementById('t-e');te.textContent=nf(E,2)+' €';te.className='v '+(E<0?'neg':'pos');
   document.getElementById('t-e-s').textContent=`pro Bürger und Jahr in den ersten ${S.n} Jahren, danach ${nf(G,2)} €`;
   document.getElementById('t-t').textContent=Number.isFinite(T)?nf(T,1)+' Jahre':'nie';
