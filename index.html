@@ -82,11 +82,24 @@ td .sub{display:block;font-size:.72rem;color:var(--muted);font-family:var(--f-bo
 .editor{padding:18px 16px;display:flex;flex-direction:column;gap:18px}
 .ed-top{display:grid;grid-template-columns:2fr 1.2fr 1fr 1fr 1fr 1fr;gap:12px}
 .ed-top .field input,.ed-top .field select{width:100%}
-.crit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 28px}
-.c{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
-.c .t{font-weight:500}
-.c .g{font-size:.72rem;color:var(--muted);font-family:var(--f-num)}
-.c .h{grid-column:1/-1;font-size:.78rem;color:var(--muted);min-height:1.2em}
+.sfbox{border:1px solid var(--line-strong);border-radius:6px;overflow:hidden;background:var(--surface)}
+.sfbox-h{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px 20px;padding:12px 16px;background:var(--sunk);border-bottom:3px solid var(--teal)}
+.sfbox-l{display:flex;flex-direction:column;gap:2px;min-width:0}
+.sfbox-t{font-size:1.1rem;font-weight:700;color:var(--ink)}
+.sfbox-u{font-size:.78rem;color:var(--muted)}
+.sfbox-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sfv{font-size:1.15rem;font-weight:700;color:var(--ink)}
+.sfm{font-size:.78rem;color:var(--muted)}
+.crit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:14px 16px 16px}
+.c{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.c:hover{border-color:var(--line-strong)}
+.c-top{display:flex;align-items:baseline;gap:8px;min-width:0;flex-wrap:wrap}
+.c .t{font-weight:700;color:var(--ink)}
+.wbadge{font-size:.72rem;font-weight:600;color:var(--teal-text);background:var(--teal-soft);padding:1px 7px;border-radius:999px}
+.c .seg{grid-row:1/3;grid-column:2}
+.wbar{height:4px;background:var(--sunk);border-radius:2px;overflow:hidden;grid-column:1}
+.wbar i{display:block;height:100%;background:var(--teal)}
+.c .h{grid-column:1/-1;font-size:.8rem;color:var(--fg);min-height:1.2em;padding:6px 10px;background:var(--sunk);border-left:3px solid var(--teal);border-radius:0 4px 4px 0}
 .more{grid-column:1/-1;font-size:.82rem}
 .more summary{cursor:pointer;color:var(--accent);font-weight:500;width:max-content;max-width:100%}
 .more summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -113,7 +126,8 @@ tr.thinfo span{display:block;max-width:90ch}
 .tcol-ti .tsum strong{color:var(--fg)}.tcol-tc .tsum strong{color:var(--teal-text)}
 .tl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:10px 0;border-bottom:1px solid var(--line)}
 .tl-t{display:flex;flex-direction:column;gap:2px;min-width:0}
-.tl-t .t{font-weight:500}
+.tl-t .t{font-weight:700;font-size:.98rem;color:var(--ink)}
+.tl-v{font-weight:700!important;color:var(--ink)}
 .tl-t .d{font-size:.78rem;color:var(--muted);line-height:1.45}
 .tl-v{grid-column:2;grid-row:1;text-align:right;font-weight:500;white-space:nowrap}
 .tl-in{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap}
@@ -556,11 +570,15 @@ function renderEditor(){
     ${tcoCol('tc','TCO in der Cloud',CLOUD_LINES,r.tc,'s-cloud')}
    </div>
    <p class="note" id="tco-diff"></p>
-   <div><div class="eyebrow" style="margin-bottom:4px">Schwierigkeitskriterien · 1 einfach bis 5 sehr schwer</div>
-   <div class="crit">${CRIT.map((c,k)=>`<div class="c"><div><div class="t">${c.t}</div><div class="g">Gewicht ${Math.round(c.w*100)} %</div></div>
+   <section class="sfbox" aria-labelledby="sfbox-t">
+    <div class="sfbox-h"><div class="sfbox-l"><span class="sfbox-t" id="sfbox-t">Schwierigkeitsfaktor (SF)</span><span class="sfbox-u">10 Kriterien · Bewertung 1 = einfach bis 5 = sehr schwer · gewichtet</span></div><div class="sfbox-r" id="sf-live"></div></div>
+    <div class="crit">${CRIT.map((c,k)=>`<div class="c">
+     <div class="c-top"><span class="t">${c.t}</span><span class="wbadge num" title="Gewicht im Schwierigkeitsfaktor">${Math.round(c.w*100)} %</span></div>
      <div class="seg" role="group" aria-label="${c.t}">${[1,2,3,4,5].map(v=>`<button data-k="${k}" data-v="${v}" aria-pressed="${r.s[k]===v}">${v}</button>`).join('')}</div>
+     <div class="wbar" aria-hidden="true"><i style="width:${Math.round(c.w/0.30*100)}%"></i></div>
      <div class="h" id="h-${k}">${hint(c,r.s[k])}</div>
-     <details class="more"><summary>Was bedeutet das Kriterium?</summary><p>${c.d}</p></details></div>`).join('')}</div></div>`;
+     <details class="more"><summary>Was bedeutet das Kriterium?</summary><p>${c.d}</p></details></div>`).join('')}</div>
+   </section>`;
   renderResult();updateTco();
 }
 function tcoCol(g,title,L,o,sid){
@@ -587,6 +605,7 @@ function hint(c,v){return c.h[v-1]||('Zwischen „'+c.h[v-2]+'“ und „'+c.h[v
 function renderResult(){
   const el=document.getElementById('ed-res');if(!el||!S.rows[S.sel])return;
   const x=calc(S.rows[S.sel]);
+  const sl=document.getElementById('sf-live');if(sl)sl.innerHTML=`<span class="sfv num">SF ${nf(x.sf,2)}</span><span class="pill p${x.cls}">${CLS[x.cls]}</span><span class="sfm">Aufschlag × ${nf(S.aufs[x.cls],1)}</span>`;
   el.innerHTML=`<div><span>Schwierigkeitsfaktor</span><strong>${nf(x.sf,2)} · ${CLS[x.cls]}</strong></div>
    <div><span>Migration M (× ${nf(S.aufs[x.cls],1)})</span><strong>${eur(x.M)} €</strong></div>
    <div><span>Kosten pro Bürger heute → Cloud</span><strong>${nf(x.kI,2)} → ${nf(x.kC,2)} €</strong></div>
