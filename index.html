@@ -329,6 +329,19 @@ button.danger.armed,button.danger.armed:hover{background:var(--crit);border-colo
 .op-save em{font-style:normal;font-weight:700;font-size:.78rem;color:var(--pos);white-space:nowrap}
 .op-v{text-align:right;font-weight:700;color:var(--ink);font-size:.86rem}
 .op-note{margin:8px 0 0;font-size:.76rem;color:var(--muted)}
+
+.ovw .thi{color:var(--muted);vertical-align:middle;margin-left:3px;width:16px;height:16px}
+.ovw .thi:hover{background:var(--line);color:var(--fg)}
+.ovw .thi[aria-expanded=true]{color:var(--teal-text);background:var(--teal-soft)}
+.ovw-l,.ovw-ct,.ovw-stats span{display:inline-flex;align-items:center}
+.ovw-i{margin:4px 0 6px;padding:8px 10px;background:var(--teal-soft);border-radius:4px;font-size:.8rem;line-height:1.45;color:var(--fg);max-width:60ch}
+.ovw-stats .ovw-i{font-size:.78rem}
+.ktable thead th.tl-left .thw{justify-content:flex-start}
+
+.ktable thead th{letter-spacing:0;padding-left:5px;padding-right:5px}
+.ktable thead th:first-child{padding-left:12px}
+.ktable .thi{width:16px;height:16px}
+.ovw-stats~.ovw-i{margin-top:10px}
 </style>
 </head>
 <body>
@@ -366,10 +379,7 @@ button.danger.armed,button.danger.armed:hover{background:var(--crit);border-colo
     <section class="ovw" id="k-overall" hidden aria-labelledby="ovw-t"></section>
     <div class="panel tblwrap" id="k-wrap">
       <table class="ktable">
-        <thead>
-         <tr class="r1"><th rowspan="2" class="tl-left">Kommune</th><th rowspan="2">Einwohner</th><th rowspan="2">Verfahren</th><th colspan="3" class="grp">Kosten pro Bürger<span class="gu">€ pro Jahr</span></th><th colspan="2" class="grp">Ersparnis Betrieb<span class="gu">pro Jahr</span></th><th rowspan="2">Migrations-<br>betrag €</th><th rowspan="2"><span class="sr">Aktionen</span></th></tr>
-         <tr class="r2"><th>Heute</th><th>Cloud</th><th>Netto-Ersparnis</th><th>€</th><th>in %</th></tr>
-        </thead>
+        <thead id="khd"></thead>
         <tbody id="kb"></tbody>
         <tfoot id="kf"></tfoot>
       </table>
@@ -829,6 +839,7 @@ function summarize(st){
 }
 function setTitle(){const m=meta(CUR);const n=(m&&m.name.trim())||'Kommune ohne Namen';document.getElementById('k-title').textContent=n;document.title=n+' · Migrationskalkulator'}
 function renderOverall(L){
+  LAST_OV=L;
   const el=document.getElementById('k-overall');
   if(!L.length){el.hidden=true;el.innerHTML='';return}
   el.hidden=false;
@@ -839,19 +850,20 @@ function renderOverall(L){
   el.innerHTML=`<div class="ovw-h"><span class="ovw-t" id="ovw-t">Gesamtübersicht aller Kommunen</span><span class="ovw-u">${L.length} ${L.length===1?'Kommune':'Kommunen'} mit Fachverfahren · ${eur(B)} Einwohner</span></div>
    <div class="ovw-b">
     <div class="ovw-kpi">
-     <span class="ovw-l">${good?'Gesamtersparnis':'Mehrkosten'} im laufenden Betrieb</span>
+     <span class="ovw-l">${good?'Gesamtersparnis':'Mehrkosten'} im laufenden Betrieb${oBtn('tot')}</span>${oInfo('tot')}
      <strong class="num ${good?'pos':'neg'}">${eur(Math.abs(D))} €</strong>
      <span class="ovw-s">pro Jahr, Summe aller Kommunen</span>
      <div class="ovw-stats">
-      <div><span>Betriebskosten heute</span><b class="num">${eur(I)} €</b></div>
-      <div><span>Betriebskosten Cloud</span><b class="num">${eur(C)} €</b></div>
-      <div><span>Migrationsbetrag</span><b class="num">${eur(M)} €</b></div>
-      <div><span>Amortisation</span><b class="num ${Number.isFinite(T)?'':'neg'}">${Number.isFinite(T)?nf(T,1)+' Jahre':'nie'}</b></div>
-      <div class="ovw-wide"><span>Netto-Ersparnis nach Migrationsbetrag</span><b class="num ${NET<0?'neg':'pos'}">${eur(NET)} € pro Jahr</b></div>
+      <div><span>Betriebskosten heute${oBtn('ist')}</span><b class="num">${eur(I)} €</b></div>
+      <div><span>Betriebskosten Cloud${oBtn('cloud')}</span><b class="num">${eur(C)} €</b></div>
+      <div><span>Migrationsbetrag${oBtn('mig')}</span><b class="num">${eur(M)} €</b></div>
+      <div><span>Amortisation${oBtn('amort')}</span><b class="num ${Number.isFinite(T)?'':'neg'}">${Number.isFinite(T)?nf(T,1)+' Jahre':'nie'}</b></div>
+      <div class="ovw-wide"><span>Netto-Ersparnis nach Migrationsbetrag${oBtn('net')}</span><b class="num ${NET<0?'neg':'pos'}">${eur(NET)} € pro Jahr</b></div>
      </div>
+     ${['ist','cloud','mig','amort','net'].filter(k=>OPEN_O.has(k)).map(oInfo).join('')}
     </div>
     <div class="ovw-chart">
-     <div class="ovw-ct">Gesamtersparnis im Betrieb in Prozent</div>
+     <div class="ovw-ct">Gesamtersparnis im Betrieb in Prozent${oBtn('pct')}</div>${oInfo('pct')}
      <div class="op-big"><strong class="num ${good?'pos':'neg'}">${good?'−':'+'}${nf(Math.abs(pct),0)} %</strong><span>${good?'geringere':'höhere'} Betriebskosten pro Jahr in der Cloud</span></div>
      <div class="op-bars">
       <div class="op-row"><span class="op-n">Heute</span><div class="op-track"><i class="op-ist" style="width:${over?(I/C*100):100}%"></i></div><span class="op-v num">100 %</span></div>
@@ -861,6 +873,55 @@ function renderOverall(L){
     </div>
    </div>`;
 }
+const KGROUPS={kb:{l:'Kosten pro Bürger',u:'€ pro Jahr'},eb:{l:'Ersparnis Betrieb',u:'pro Jahr'}};
+const KCOLS=[
+ {l:'Kommune',a:'left',i:'Name der Kommune mit dem Datum der letzten Änderung. Ein Klick auf den Namen oder auf „Öffnen“ öffnet die Kalkulation mit den Fachverfahren dieser Kommune.'},
+ {l:'Einwohner',i:'Einwohnerzahl der Kommune. Sie ist die Grundlage für alle Werte pro Bürger und wird in der Kalkulation der Kommune gepflegt.'},
+ {l:'Verfahren',i:'Anzahl der Fachverfahren, die für diese Kommune erfasst sind. Kommunen ohne Verfahren zeigen keine Kosten und fließen nicht in die Gesamtübersicht ein.'},
+ {g:'kb',l:'Heute',i:'Laufende Kosten heute pro Bürger und Jahr: Summe der TCO heute aller Fachverfahren (Hardware, Rechenzentrum, Lizenzen, Betriebspersonal, Client, Netz), geteilt durch die Einwohnerzahl.'},
+ {g:'kb',l:'Cloud',i:'Laufende Kosten nach der Migration pro Bürger und Jahr: Summe der TCO Cloud aller Fachverfahren (Rechenleistung, Speicher, Backup, Plattformumlage, Lizenzen, Personal, Client, Netz), geteilt durch die Einwohnerzahl.'},
+ {g:'kb',l:'Netto-Ersparnis',i:'Ersparnis pro Bürger und Jahr nach Abzug der Migrationskosten: (TCO heute − TCO Cloud − Migrationsbetrag ÷ Verteilungszeitraum) ÷ Einwohner. Grün bedeutet Ersparnis, Rot bedeutet Mehrkosten.'},
+ {g:'eb',l:'€',n:'Ersparnis Betrieb in €',i:'Ersparnis im laufenden Betrieb pro Jahr: TCO heute minus TCO Cloud, summiert über alle Fachverfahren der Kommune. Der einmalige Migrationsbetrag ist hier nicht abgezogen.'},
+ {g:'eb',l:'in %',n:'Ersparnis Betrieb in %',i:'Ersparnis im laufenden Betrieb im Verhältnis zu den heutigen Betriebskosten: (TCO heute − TCO Cloud) ÷ TCO heute. In der Zeile „Alle Kommunen“ über alle Kommunen zusammen.'},
+ {l:'Migrations-<br>betrag €',n:'Migrationsbetrag',i:'Einmalige Kosten der Migration, summiert über alle Fachverfahren: Migration Basis × Aufschlag nach Schwierigkeitsfaktor (gering × 1,0, mittel × 1,5, hoch × 2,5, sehr hoch × 4,0).'},
+ {act:1}
+];
+let openK=-1;
+const kName=c=>c.n||(c.g?KGROUPS[c.g].l+' · '+c.l:c.l);
+function kBtn(c,i){return `<button class="thi" type="button" data-kc="${i}" aria-expanded="${openK===i}" aria-controls="kthinfo" aria-label="Info zu ${kName(c).replace(/<br>/g,'')}"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1.5 7.5 5 3 8.5z"/></svg></button>`}
+function renderKHead(){
+  let r1='',r2='';
+  KCOLS.forEach((c,i)=>{
+    if(c.act){r1+='<th rowspan="2"><span class="sr">Aktionen</span></th>';return}
+    if(c.g){
+      if(KCOLS[i-1].g!==c.g){const n=KCOLS.filter(x=>x.g===c.g).length;r1+=`<th colspan="${n}" class="grp">${KGROUPS[c.g].l}<span class="gu">${KGROUPS[c.g].u}</span></th>`}
+      r2+=`<th><span class="thw">${c.l}${kBtn(c,i)}</span></th>`;
+    }else r1+=`<th rowspan="2" class="${c.a==='left'?'tl-left':''}"><span class="thw"><span class="thl">${c.l}</span>${kBtn(c,i)}</span></th>`;
+  });
+  const c=KCOLS[openK];
+  const info=c?`<tr class="thinfo"><td colspan="${KCOLS.length}" id="kthinfo"><strong>${kName(c).replace(/<br>/g,'')}</strong><span>${c.i}</span></td></tr>`:'';
+  document.getElementById('khd').innerHTML=`<tr class="r1">${r1}</tr><tr class="r2">${r2}</tr>${info}`;
+}
+document.getElementById('khd').addEventListener('click',e=>{const b=e.target.closest('button.thi');if(!b)return;const i=+b.dataset.kc;openK=openK===i?-1:i;renderKHead();const nb=document.querySelector(`button.thi[data-kc="${i}"]`);if(nb)nb.focus()});
+renderKHead();
+const OINFO={
+ tot:'Summe aus TCO heute minus TCO Cloud über alle Kommunen mit Fachverfahren, pro Jahr. Der einmalige Migrationsbetrag ist hier nicht abgezogen.',
+ ist:'Summe der laufenden Kosten heute (TCO heute) aller Fachverfahren aller Kommunen pro Jahr.',
+ cloud:'Summe der laufenden Kosten in der Cloud (TCO Cloud) aller Fachverfahren aller Kommunen pro Jahr.',
+ mig:'Summe der einmaligen Migrationskosten aller Fachverfahren: Migration Basis × Aufschlag nach Schwierigkeitsfaktor.',
+ amort:'Migrationsbetrag ÷ Gesamtersparnis im Betrieb. Nach so vielen Jahren haben die geringeren Betriebskosten die Migration bezahlt. „nie“ bedeutet: Die Cloud ist im Betrieb nicht günstiger.',
+ net:'Gesamtersparnis im Betrieb minus Migrationsbetrag, verteilt auf den Verteilungszeitraum der jeweiligen Kommune (Standard 5 Jahre). So viel bleibt pro Jahr, solange die Migration abbezahlt wird.',
+ pct:'Gesamtersparnis im Betrieb ÷ Betriebskosten heute. Die Balken zeigen die Betriebskosten heute als 100 % und die Cloud-Kosten als Anteil davon; der gestrichelte Teil ist die Ersparnis.'
+};
+const OPEN_O=new Set();
+const oBtn=k=>`<button class="thi" type="button" data-o="${k}" aria-expanded="${OPEN_O.has(k)}" aria-controls="oi-${k}" aria-label="Erklärung anzeigen"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1.5 7.5 5 3 8.5z"/></svg></button>`;
+const oInfo=k=>`<p class="ovw-i" id="oi-${k}"${OPEN_O.has(k)?'':' hidden'}>${OINFO[k]}</p>`;
+document.getElementById('k-overall').addEventListener('click',e=>{const b=e.target.closest('button.thi[data-o]');if(!b)return;const k=b.dataset.o;
+  const ST=['ist','cloud','mig','amort','net'];
+  if(OPEN_O.has(k))OPEN_O.delete(k);else{if(ST.includes(k))ST.forEach(x=>OPEN_O.delete(x));OPEN_O.add(k)}
+  if(ST.includes(k)){renderOverall(LAST_OV);const nb=document.querySelector(`#k-overall button[data-o="${k}"]`);if(nb)nb.focus();return}
+  const on=OPEN_O.has(k);b.setAttribute('aria-expanded',on);document.getElementById('oi-'+k).hidden=!on});
+let LAST_OV=[];
 function renderHome(){
   const L=IX.list.slice().sort((a,b)=>a.name.localeCompare(b.name,'de'));
   document.getElementById('k-cnt').textContent=L.length?`(${L.length})`:'';
