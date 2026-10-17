@@ -10,37 +10,48 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: Arbeitswerkzeug – Annahmen oben, Kennzahlen, Verfahrensliste, darunter Editor des gewählten Verfahrens */
+/* Farbschema: Teal #03878A · Dunkelblau #004B65 · Oliv #AAB414 · Grau #707070 · Hellgrau #B2B2B2 · Fast-Weiß #E4E4E4 · Grün #647D2D · Weinrot #5F1937
+   Dunkelblau = Überschriften, Schaltflächen, Links · Teal = Markierung und Hervorhebung
+   Einstufung: gering = Grün, mittel = Teal, hoch = Oliv, sehr hoch = Weinrot · positiv = Grün, negativ = Weinrot */
 :root{
-  --bg:#f5f7fa; --surface:#ffffff; --sunk:#eef2f6; --line:#d8dee6; --fg:#16202b; --muted:#5a6878;
-  --accent:#1d4f7c; --accent-soft:#e3edf6; --on-accent:#ffffff;
-  --good:#1f7a4d; --good-soft:#e2f2e9; --warn:#9a6400; --warn-soft:#fbf0d9; --crit:#b3261e; --crit-soft:#fbe5e3;
-  --sel:#f0f5fb;
+  --bg:#f3f3f3; --surface:#ffffff; --sunk:#e4e4e4; --line:#d2d2d2; --line-strong:#b2b2b2;
+  --fg:#1d2a30; --ink:#004b65; --muted:#707070;
+  --accent:#004b65; --accent-soft:#e1f1f1; --on-accent:#ffffff;
+  --teal:#03878a; --teal-text:#03676a; --teal-soft:#e1f1f1;
+  --olive:#aab414; --good:#647d2d; --good-soft:#edf1e2; --warn:#6b7210; --warn-soft:#f2f4d6; --crit:#5f1937; --crit-soft:#f3e4eb;
+  --sel:#ebf5f5;
   --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-num:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#10161d; --surface:#18212b; --sunk:#131a22; --line:#2b3744; --fg:#e4eaf0; --muted:#93a2b2;
-  --accent:#7fb3e3; --accent-soft:#1e3347; --on-accent:#0d1620;
-  --good:#6cc89a; --good-soft:#173528; --warn:#e3b45a; --warn-soft:#3a2d12; --crit:#f08a82; --crit-soft:#3d1c1a;
-  --sel:#1c2a38; color-scheme:dark}}
+  --bg:#0c1b21; --surface:#12262d; --sunk:#0a161b; --line:#27404a; --line-strong:#3b5862;
+  --fg:#e4e4e4; --ink:#e4e4e4; --muted:#b2b2b2;
+  --accent:#4fbfc1; --accent-soft:#103a3e; --on-accent:#04191d;
+  --teal:#4fbfc1; --teal-text:#7fd3d4; --teal-soft:#103a3e;
+  --olive:#aab414; --good:#a8c26a; --good-soft:#212e18; --warn:#c9d340; --warn-soft:#2c300e; --crit:#e09ab8; --crit-soft:#3a1626;
+  --sel:#123139; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#10161d; --surface:#18212b; --sunk:#131a22; --line:#2b3744; --fg:#e4eaf0; --muted:#93a2b2;
-  --accent:#7fb3e3; --accent-soft:#1e3347; --on-accent:#0d1620;
-  --good:#6cc89a; --good-soft:#173528; --warn:#e3b45a; --warn-soft:#3a2d12; --crit:#f08a82; --crit-soft:#3d1c1a;
-  --sel:#1c2a38; color-scheme:dark}
+  --bg:#0c1b21; --surface:#12262d; --sunk:#0a161b; --line:#27404a; --line-strong:#3b5862;
+  --fg:#e4e4e4; --ink:#e4e4e4; --muted:#b2b2b2;
+  --accent:#4fbfc1; --accent-soft:#103a3e; --on-accent:#04191d;
+  --teal:#4fbfc1; --teal-text:#7fd3d4; --teal-soft:#103a3e;
+  --olive:#aab414; --good:#a8c26a; --good-soft:#212e18; --warn:#c9d340; --warn-soft:#2c300e; --crit:#e09ab8; --crit-soft:#3a1626;
+  --sel:#123139; color-scheme:dark}
+body{border-top:4px solid var(--teal)}
+h1,h2{color:var(--ink)}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.45}
 .wrap{max-width:1180px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:22px}
 h1{font-size:1.6rem;font-weight:700;margin:0;letter-spacing:-.01em;text-wrap:balance}
 h2{font-size:1.05rem;font-weight:600;margin:0;text-wrap:balance}
 .lead{color:var(--muted);margin:4px 0 0;max-width:68ch}
-.eyebrow{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.eyebrow{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--teal-text);font-weight:600}
 .num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:6px}
 .params{display:flex;flex-wrap:wrap;gap:14px 22px;padding:14px 16px;align-items:flex-end}
 .field{display:flex;flex-direction:column;gap:4px;min-width:0}
 .field label{font-size:.75rem;color:var(--muted);font-weight:500}
-input[type=number],input[type=text],input[type=email],select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px 8px;min-width:0}
+input[type=number],input[type=text],input[type=email],select{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line-strong);border-radius:4px;padding:6px 8px;min-width:0}
 input[type=number]{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .w-lg{width:130px}.w-sm{width:70px}
@@ -53,7 +64,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 .tile{padding:14px 16px;display:flex;flex-direction:column;gap:4px}
 .tile .v{font-family:var(--f-num);font-size:1.45rem;font-weight:500}
 .tile .s{font-size:.78rem;color:var(--muted)}
-.tile.hl{background:var(--accent-soft);border-color:transparent}
+.tile.hl{background:var(--teal-soft);border-color:transparent;box-shadow:inset 0 3px 0 var(--teal)}
 .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
 .btns{display:flex;gap:8px;flex-wrap:wrap}
 button{font:inherit;font-weight:500;border-radius:4px;padding:7px 12px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
@@ -68,11 +79,11 @@ th{font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;
 th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
 tbody tr{cursor:pointer}
 tbody tr:hover{background:var(--sunk)}
-tbody tr.on{background:var(--sel);box-shadow:inset 3px 0 0 var(--accent)}
+tbody tr.on{background:var(--sel);box-shadow:inset 3px 0 0 var(--teal)}
 tfoot td{font-weight:600;border-bottom:none;background:var(--sunk)}
 td .sub{display:block;font-size:.72rem;color:var(--muted);font-family:var(--f-body)}
 .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.74rem;font-weight:600;font-family:var(--f-body)}
-.p0{background:var(--good-soft);color:var(--good)}.p1{background:var(--accent-soft);color:var(--accent)}
+.p0{background:var(--good-soft);color:var(--good)}.p1{background:var(--teal-soft);color:var(--teal-text)}
 .p2{background:var(--warn-soft);color:var(--warn)}.p3{background:var(--crit-soft);color:var(--crit)}
 .ecell{display:flex;align-items:center;gap:8px;justify-content:flex-end}
 .ebar{position:relative;width:70px;height:8px;background:var(--sunk);border-radius:2px}
@@ -99,7 +110,7 @@ th[style] .thw{flex-direction:row}
 .thi svg{width:10px;height:10px;fill:currentColor;transition:transform .15s}
 .thi[aria-expanded=true]{color:var(--accent)}
 .thi[aria-expanded=true] svg{transform:rotate(90deg)}
-tr.thinfo td{white-space:normal;text-align:left;background:var(--accent-soft);color:var(--fg);font-size:.84rem;line-height:1.5;padding:10px 12px;border-bottom:1px solid var(--line)}
+tr.thinfo td{white-space:normal;text-align:left;background:var(--teal-soft);color:var(--fg);font-size:.84rem;line-height:1.5;padding:10px 12px;border-bottom:1px solid var(--line)}
 tr.thinfo strong{display:block;margin-bottom:2px;font-weight:600}
 tr.thinfo span{display:block;max-width:90ch}
 .ro{display:block;padding:6px 8px;border:1px dashed var(--line);border-radius:4px;background:var(--sunk);font-family:var(--f-num);font-variant-numeric:tabular-nums}
@@ -115,7 +126,7 @@ tr.thinfo span{display:block;max-width:90ch}
 .mini input{width:150px;max-width:100%}
 .tsum{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0 0;font-weight:600}
 .tsum strong{font-weight:500;font-size:1.05rem}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:4px;overflow:hidden}
 .seg button{border:none;border-right:1px solid var(--line);border-radius:0;padding:4px 0;width:30px;font-family:var(--f-num);background:var(--surface)}
 .seg button:last-child{border-right:none}
 .seg button[aria-pressed=true]{background:var(--accent);color:var(--on-accent)}
@@ -155,7 +166,7 @@ button.armed,button.armed:hover{background:var(--crit);border-color:var(--crit);
 .savestate{font-size:.78rem;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
 .savestate::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--muted)}
 .savestate.ok::before{background:var(--good)}
-.savestate.pending::before{background:var(--warn)}
+.savestate.pending::before{background:var(--olive)}
 .savestate.err{color:var(--crit)}.savestate.err::before{background:var(--crit)}
 .storebar{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
 .store{margin:0;flex:1 1 320px;font-size:.8rem;color:var(--muted);max-width:90ch;padding:10px 12px;border-radius:4px;background:var(--sunk);line-height:1.5}
@@ -208,7 +219,7 @@ button.armed,button.armed:hover{background:var(--crit);border-color:var(--crit);
     <div class="bar"><h2>Kommunen <span class="cnt num" id="k-cnt"></span></h2></div>
     <div class="panel tblwrap" id="k-wrap">
       <table class="ktable">
-        <thead><tr><th>Kommune</th><th>Einwohner</th><th>Verfahren</th><th>Kosten heute<br>€/Bürger</th><th>Kosten Cloud<br>€/Bürger</th><th>E netto<br>€/Bürger</th><th>Ersparnis Betrieb<br>€/Jahr</th><th>Migration<br>€</th><th>Geändert</th><th></th></tr></thead>
+        <thead><tr><th>Kommune</th><th>Einwohner</th><th>Verfahren</th><th>Kosten heute<br>€/Bürger</th><th>Kosten Cloud<br>€/Bürger</th><th>E netto<br>€/Bürger</th><th>Ersparnis Betrieb<br>€/Jahr</th><th>Migration<br>€</th><th></th></tr></thead>
         <tbody id="kb"></tbody>
         <tfoot id="kf"></tfoot>
       </table>
@@ -647,14 +658,13 @@ function renderHome(){
   document.getElementById('kb').innerHTML=L.map(k=>{const s=summarize(loadK(k.id));tB+=s.B;tn+=s.n;td+=s.d;tM+=s.M;
     const has=s.n>0;
     return `<tr data-id="${k.id}">
-     <td><a class="kn" href="#k-${k.id}">${esc(k.name||'Kommune ohne Namen')}</a></td>
+     <td><a class="kn" href="#k-${k.id}">${esc(k.name||'Kommune ohne Namen')}</a><span class="sub">Geändert ${dfmt(k.updated)}</span></td>
      <td class="num">${eur(s.B)}</td><td class="num">${s.n}</td>
      <td class="num">${has?nf(s.kI,2):'–'}</td><td class="num">${has?nf(s.kC,2):'–'}</td>
      <td class="num ${has?(s.E<0?'neg':'pos'):''}">${has?nf(s.E,2):'–'}</td>
      <td class="num">${has?eur(s.d):'–'}</td><td class="num">${has?eur(s.M):'–'}</td>
-     <td class="num">${dfmt(k.updated)}</td>
      <td class="act"><div class="btns"><a class="btn" href="#k-${k.id}">Öffnen</a><button type="button" class="danger" data-del="${k.id}">Löschen</button></div></td></tr>`}).join('');
-  document.getElementById('kf').innerHTML=L.length>1?`<tr><td>Alle Kommunen</td><td class="num">${eur(tB)}</td><td class="num">${tn}</td><td></td><td></td><td></td><td class="num ${td<0?'neg':''}">${eur(td)}</td><td class="num">${eur(tM)}</td><td></td><td></td></tr>`:'';
+  document.getElementById('kf').innerHTML=L.length>1?`<tr><td>Alle Kommunen</td><td class="num">${eur(tB)}</td><td class="num">${tn}</td><td></td><td></td><td></td><td class="num ${td<0?'neg':''}">${eur(td)}</td><td class="num">${eur(tM)}</td><td></td></tr>`:'';
 }
 document.getElementById('kb').addEventListener('click',e=>{
   const del=e.target.closest('button[data-del]');
