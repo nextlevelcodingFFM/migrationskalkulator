@@ -420,18 +420,18 @@ button.danger.armed,button.danger.armed:hover{background:var(--crit);border-colo
     <p class="lead">Schwierigkeitsfaktor aus zehn gewichteten Kriterien, Kosten pro Bürger heute und in der Cloud, Netto-Ersparnis nach Abzug der verteilten Migrationskosten.</p>
   </header>
 
-  <section class="panel params" aria-label="Annahmen">
-    <div class="field"><label for="g-name">Name der Kommune</label><input id="g-name" type="text" class="w-xl" autocomplete="off"></div>
-    <div class="field"><label for="g-b">Einwohner der Kommune</label><input id="g-b" class="w-lg" type="number" min="1" step="100"></div>
-    <div class="field"><label for="g-n">Verteilung Migrationskosten (Jahre)</label><input id="g-n" class="w-sm" type="number" min="1" max="20" step="1"></div>
-  </section>
-
   <section class="tiles" aria-label="Gesamtergebnis">
     <div class="panel tile"><span class="eyebrow">Kosten heute</span><span class="v" id="t-ist-abs"></span><span class="s">pro Jahr, alle Verfahren</span><span class="tabs"><span>pro Bürger und Jahr</span><b class="num" id="t-ist"></b></span></div>
     <div class="panel tile"><span class="eyebrow">Kosten in der Cloud</span><span class="v" id="t-cloud-abs"></span><span class="s">pro Jahr, alle Verfahren</span><span class="tabs"><span>pro Bürger und Jahr</span><b class="num" id="t-cloud"></b></span></div>
     <div class="panel tile t-pct"><span class="eyebrow" id="t-pct-l">Ersparnis im Betrieb</span><span class="v" id="t-pct"></span><span class="s" id="t-pct-s"></span><span class="tabs"><span id="t-pct-al">pro Jahr</span><b class="num" id="t-pct-abs"></b></span></div>
     <div class="panel tile hl"><span class="eyebrow">Netto-Ersparnis</span><span class="v" id="t-e"></span><span class="s" id="t-e-s"></span></div>
     <div class="panel tile"><span class="eyebrow">Amortisation gesamt</span><span class="v" id="t-t"></span><span class="s" id="t-t-s"></span></div>
+  </section>
+
+  <section class="panel params" aria-label="Annahmen">
+    <div class="field"><label for="g-name">Name der Kommune</label><input id="g-name" type="text" class="w-xl" autocomplete="off"></div>
+    <div class="field"><label for="g-b">Einwohner der Kommune</label><input id="g-b" class="w-lg" type="number" min="1" step="100"></div>
+    <div class="field"><label for="g-n">Verteilung Migrationskosten (Jahre)</label><input id="g-n" class="w-sm" type="number" min="1" max="20" step="1"></div>
   </section>
 
   <section style="display:flex;flex-direction:column;gap:10px">
