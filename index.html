@@ -355,8 +355,8 @@ function loadK(id){let st=MEM[id]||(MODE==='local'?lsGet(KP+id):null);if(!st||!A
 let MODE='load', DB=null, READONLY=false, DBERR='';
 /* Eigene Datenbank (Supabase) für die öffentliche Webseite. Beide Werte dürfen öffentlich sein;
    der Schutz erfolgt über Anmeldung und Zugriffsregeln in der Datenbank. Niemals den service_role-Key eintragen. */
-const SUPABASE_URL='https://kogkczqejhykhqftrqhb.supabase.co';
-const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvZ2tjenFlamh5a2hxZnRycWhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxODU3NDQsImV4cCI6MjEwNzc2MTc0NH0.0k955fKra4WK28u6khq4_hSFvcmNadCbnvtlcFLRB28';
+const SUPABASE_URL='https://riemevecgamybqoglydm.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpZW1ldmVjZ2FteWJxb2dseWRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxODY3NTAsImV4cCI6MjEwNzc2Mjc1MH0.OlbS9TfyoJJpJ_rNi7gcFJIiFCaKcUzn783mxttuSA8';
 const SUPABASE_LIB='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
 let SUB='', SB=null, SBUSER=null;
 /* Einheitliche Schreib-/Löschschnittstelle für beide Datenbanken */
