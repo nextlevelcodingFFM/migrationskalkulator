@@ -87,6 +87,9 @@ thead tr.r1 th:not(.tl-left) .thl{align-items:flex-end}
 .sfcell .pill{margin:0}
 .sfcell .sub{padding:0;margin:0}
 .rc-base{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.aufsbox{padding:16px;display:flex;flex-direction:column;gap:10px;border-top:4px solid var(--olive)}
+.aufsbox .note{margin:0;max-width:80ch}
+.aufsbox .chip{min-width:130px}
 .ro-mini{display:inline-block;padding:1px 6px;border:1px dashed var(--line-strong);border-radius:3px;background:var(--sunk);color:var(--fg);font-size:.74rem;line-height:1.4;cursor:default;user-select:text}
 .ktable thead th{letter-spacing:.02em}
 tbody tr{cursor:pointer}
@@ -311,9 +314,6 @@ button.danger:hover{background:var(--crit-soft)}
     <div class="field"><label for="g-name">Name der Kommune</label><input id="g-name" type="text" class="w-xl" autocomplete="off"></div>
     <div class="field"><label for="g-b">Einwohner der Kommune</label><input id="g-b" class="w-lg" type="number" min="1" step="100"></div>
     <div class="field"><label for="g-n">Verteilung Migrationskosten (Jahre)</label><input id="g-n" class="w-sm" type="number" min="1" max="20" step="1"></div>
-    <div class="field"><span class="flabel">Aufschlag auf Migration Basis, ergibt sich aus der Einstufung (nicht änderbar)</span>
-      <div class="aufs" id="g-aufs"></div>
-    </div>
   </section>
 
   <section class="tiles" aria-label="Gesamtergebnis">
@@ -344,6 +344,12 @@ button.danger:hover{background:var(--crit-soft)}
   </section>
 
   <section class="panel editor" id="editor" aria-label="Verfahren bearbeiten"></section>
+
+  <section class="panel aufsbox" aria-labelledby="aufs-t">
+    <h2 id="aufs-t">Aufschlag auf den Migrationsbetrag</h2>
+    <p class="note">Der Migrationsbetrag Basis wird mit einem Faktor multipliziert, der sich aus der Einstufung des Schwierigkeitsfaktors (SF) ergibt. Schwierige Migrationen kosten erfahrungsgemäß ein Vielfaches, etwa durch mehr Testschleifen, längeren Parallelbetrieb und Nacharbeit. Die Faktoren sind fest vorgegeben und nicht änderbar.</p>
+    <div class="aufs" id="g-aufs"></div>
+  </section>
  </div>
 </div>
 
@@ -635,8 +641,8 @@ function renderResult(){
   const r=S.rows[S.sel];
   el.innerHTML=`<div class="rc"><span>TCO heute</span><strong>${eur(r.ist)} €</strong><small>pro Jahr</small></div>
    <div class="rc"><span>TCO Cloud</span><strong>${eur(r.cloud)} €</strong><small>pro Jahr</small></div>
-   <div class="rc"><span>Schwierigkeit</span><strong>SF ${nf(x.sf,2)}</strong><small class="rc-base"><span class="pill p${x.cls}">${CLS[x.cls]}</span><span>× ${nf(S.aufs[x.cls],1)}</span></small></div>
-   <div class="rc"><span>Migrationsbetrag</span><strong>${eur(x.M)} €</strong><small class="rc-base"><span>Basis</span><output class="ro-mini num" aria-label="Migrationsbetrag Basis (schreibgeschützt)">${eur(r.mb)} €</output></small></div>
+   <div class="rc"><span>Schwierigkeit</span><strong>SF ${nf(x.sf,2)}</strong><small><span class="pill p${x.cls}">${CLS[x.cls]}</span></small></div>
+   <div class="rc"><span>Migrationsbetrag</span><strong>${eur(x.M)} €</strong><small class="rc-base"><span>Basis</span><output class="ro-mini num" aria-label="Migrationsbetrag Basis (schreibgeschützt)">${eur(r.mb)} €</output></small><small>× ${nf(S.aufs[x.cls],1)} Aufschlag</small></div>
    <div class="rc"><span>Kosten pro Bürger</span><strong>${nf(x.kI,2)} → ${nf(x.kC,2)} €</strong><small>heute → Cloud</small></div>
    <div class="rc rc-hl"><span>Netto-Ersparnis</span><strong class="${x.E<0?'neg':'pos'}">${nf(x.E,2)} €</strong><small>pro Bürger und Jahr</small></div>
    <div class="rc"><span>Amortisation</span><strong class="${Number.isFinite(x.T)&&x.T<=S.n?'':'neg'}">${Number.isFinite(x.T)?nf(x.T,1)+' Jahre':'nie'}</strong><small>Ziel ≤ ${S.n} Jahre</small></div>`;
