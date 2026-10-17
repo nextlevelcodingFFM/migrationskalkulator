@@ -334,7 +334,13 @@ button.danger.armed,button.danger.armed:hover{background:var(--crit);border-colo
 .ovw .thi{color:var(--muted);vertical-align:middle;margin-left:3px;width:16px;height:16px}
 .ovw .thi:hover{background:var(--line);color:var(--fg)}
 .ovw .thi[aria-expanded=true]{color:var(--teal-text);background:var(--teal-soft)}
-.ovw-l,.ovw-ct,.ovw-stats span{display:inline-flex;align-items:center}
+.ovw-l,.ovw-ct{display:inline-flex;align-items:center}
+.ovw-stats span{display:block}
+.ovw-stats span.nw{display:inline;white-space:nowrap}
+.ovw-stats b small{font-size:.74rem;font-weight:500;color:var(--muted);font-family:inherit}
+@media (max-width:480px){.ovw-stats b small{display:block}}
+.ovw-stats span .thi{display:inline-flex;vertical-align:-3px}
+.ovw-stats b.pos{color:var(--pos)}.ovw-stats b.neg{color:var(--neg)}
 .ovw-i{margin:4px 0 6px;padding:8px 10px;background:var(--teal-soft);border-radius:4px;font-size:.8rem;line-height:1.45;color:var(--fg);max-width:60ch}
 .ovw-stats .ovw-i{font-size:.78rem}
 .ktable thead th.tl-left .thw{justify-content:flex-start}
@@ -897,9 +903,10 @@ function renderOverall(L){
       <div><span>Betriebskosten Cloud${oBtn('cloud')}</span><b class="num">${eur(C)} €</b></div>
       <div><span>Migrationsbetrag${oBtn('mig')}</span><b class="num">${eur(M)} €</b></div>
       <div><span>Amortisation${oBtn('amort')}</span><b class="num ${Number.isFinite(T)?'':'neg'}">${Number.isFinite(T)?nf(T,1)+' Jahre':'nie'}</b></div>
-      <div class="ovw-wide"><span>Netto-Ersparnis nach Migrationsbetrag${oBtn('net')}</span><b class="num ${NET<0?'neg':'pos'}">${eur(NET)} € pro Jahr</b></div>
+      <div><span>Netto-Ersparnis nach <span class="nw">Migration${oBtn('net')}</span></span><b class="num ${NET<0?'neg':'pos'}">${eur(NET)} €<small> pro Jahr</small></b></div>
+      <div><span>Ersparnis pro Jahr nach <span class="nw">Verteilung${oBtn('after')}</span></span><b class="num ${D<0?'neg':'pos'}">${eur(D)} €<small> pro Jahr</small></b></div>
      </div>
-     ${['ist','cloud','mig','amort','net'].filter(k=>OPEN_O.has(k)).map(oInfo).join('')}
+     ${['ist','cloud','mig','amort','net','after'].filter(k=>OPEN_O.has(k)).map(oInfo).join('')}
     </div>
     <div class="ovw-chart">
      <div class="ovw-ct">Gesamtersparnis im Betrieb in Prozent${oBtn('pct')}</div>${oInfo('pct')}
@@ -950,13 +957,14 @@ const OINFO={
  mig:'Summe der einmaligen Migrationskosten aller Fachverfahren: Migration Basis × Aufschlag nach Schwierigkeitsfaktor.',
  amort:'Migrationsbetrag ÷ Gesamtersparnis im Betrieb. Nach so vielen Jahren haben die geringeren Betriebskosten die Migration bezahlt. „nie“ bedeutet: Die Cloud ist im Betrieb nicht günstiger.',
  net:'Ersparnis im Betrieb minus Jahresrate der Migration (Migrationsbetrag ÷ Verteilungszeitraum der jeweiligen Kommune, Standard 5 Jahre). Die Migrationskosten werden gleichmäßig auf den Verteilungszeitraum verteilt; nach dessen Ende bleibt die volle Ersparnis im Betrieb.',
+ after:'Ersparnis pro Jahr, sobald der Verteilungszeitraum der Migrationskosten vorbei ist (Standard 5 Jahre). Dann fällt die Jahresrate der Migration weg, und die volle Ersparnis im Betrieb bleibt: TCO heute minus TCO Cloud, summiert über alle Kommunen.',
  pct:'Gesamtersparnis im Betrieb ÷ Betriebskosten heute. Die Balken zeigen die Betriebskosten heute als 100 % und die Cloud-Kosten als Anteil davon; der gestrichelte Teil ist die Ersparnis.'
 };
 const OPEN_O=new Set();
 const oBtn=k=>`<button class="thi" type="button" data-o="${k}" aria-expanded="${OPEN_O.has(k)}" aria-controls="oi-${k}" aria-label="Erklärung anzeigen"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1.5 7.5 5 3 8.5z"/></svg></button>`;
 const oInfo=k=>`<p class="ovw-i" id="oi-${k}"${OPEN_O.has(k)?'':' hidden'}>${OINFO[k]}</p>`;
 document.getElementById('k-overall').addEventListener('click',e=>{const b=e.target.closest('button.thi[data-o]');if(!b)return;const k=b.dataset.o;
-  const ST=['ist','cloud','mig','amort','net'];
+  const ST=['ist','cloud','mig','amort','net','after'];
   if(OPEN_O.has(k))OPEN_O.delete(k);else{if(ST.includes(k))ST.forEach(x=>OPEN_O.delete(x));OPEN_O.add(k)}
   if(ST.includes(k)){renderOverall(LAST_OV);const nb=document.querySelector(`#k-overall button[data-o="${k}"]`);if(nb)nb.focus();return}
   const on=OPEN_O.has(k);b.setAttribute('aria-expanded',on);document.getElementById('oi-'+k).hidden=!on});
