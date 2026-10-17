@@ -11,12 +11,13 @@ Webbasierter Kalkulator zur Vorbereitung der Migration von Fachverfahren (On-Pre
 - **Kosten pro Bürger:** heute und nach Migration, Netto-Ersparnis nach Abzug der verteilten Migrationskosten, Amortisationsdauer.
 - **Empfehlung:** Migrationsreihenfolge oder Prüfung von SaaS, Weiterbetrieb oder Ablösung.
 - **Export:** Tabelle als CSV in die Zwischenablage kopieren und in Excel einfügen.
+- **Farbschema:** Teal, Dunkelblau, Oliv, Grün, Weinrot und Grautöne; heller und dunkler Modus.
 
 ## Nutzung
 
 `index.html` im Browser öffnen. Es ist keine Installation und kein Server nötig.
 
-**Speicherung:** Auf GitHub Pages oder als lokale Datei werden die Kommunen nur im jeweiligen Browser gespeichert (localStorage). Andere Geräte und Personen sehen sie nicht, und Browserdaten löschen entfernt sie. In der Claude-Version des Kalkulators liegen die Kommunen dagegen in einer gemeinsamen, dauerhaften Datenbank; die Seite erkennt das automatisch und zeigt die Betriebsart auf der Startseite an.
+**Speicherung:** Die Webseite auf GitHub Pages speichert die Kommunen in einer Supabase-Datenbank (Rechenzentrum Frankfurt). Zugriff haben nur freigeschaltete Personen nach Anmeldung per E-Mail-Link; die Daten bleiben erhalten, auch wenn der Browser-Cache gelöscht wird. Ist keine Datenbank eingetragen oder nicht erreichbar, speichert die Seite nur im jeweiligen Browser (localStorage). In der Claude-Version des Kalkulators liegen die Kommunen in einer eigenen, davon getrennten Datenbank. Die Seite erkennt die Betriebsart automatisch und zeigt sie auf der Startseite an.
 
 Ein Link der Form `index.html#k-<id>` öffnet direkt die Kalkulation einer Kommune.
 
