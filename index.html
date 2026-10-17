@@ -81,6 +81,13 @@ thead tr.r1 th:not(.tl-left) .thl{align-items:flex-end}
 #v-calc #tb td:last-child{white-space:normal;min-width:120px;line-height:1.3}
 #v-calc .ebar{width:56px}
 #v-calc thead th{letter-spacing:.02em}
+#v-calc th.c-sf,#v-calc td.c-sf{text-align:left}
+#v-calc th.c-sf .thw{justify-content:flex-start}
+.sfcell{display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.sfcell .pill{margin:0}
+.sfcell .sub{padding:0;margin:0}
+.rc-base{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ro-mini{display:inline-block;padding:1px 6px;border:1px dashed var(--line-strong);border-radius:3px;background:var(--sunk);color:var(--fg);font-size:.74rem;line-height:1.4;cursor:default;user-select:text}
 .ktable thead th{letter-spacing:.02em}
 tbody tr{cursor:pointer}
 tbody tr:hover{background:var(--sunk)}
@@ -553,7 +560,7 @@ function render(){
     const bar=x.E>=0?`<i style="left:50%;width:${w}%;background:var(--pos)"></i>`:`<i style="left:${50-w}%;width:${w}%;background:var(--neg)"></i>`;
     return `<tr data-i="${i}" class="${i===S.sel?'on':''}" tabindex="0">
       <td><strong>${esc(r.name||'Ohne Namen')}</strong><span class="sub">${esc(r.form)}${r.b>0?' · '+eur(r.b)+' Bürger':''}</span></td>
-      <td><span class="pill p${x.cls}">${CLS[x.cls]}</span><span class="sub num">SF ${nf(x.sf,1)}</span></td>
+      <td class="c-sf"><div class="sfcell"><span class="pill p${x.cls}">${CLS[x.cls]}</span><span class="sub num">SF ${nf(x.sf,1)}</span></div></td>
       <td class="num">${eur(r.ist)}</td><td class="num">${eur(r.cloud)}</td><td class="num">${eur(x.M)}</td>
       <td class="num">${nf(x.kI,2)}</td><td class="num">${nf(x.kC,2)}</td>
       <td><div class="ecell"><span class="num ${x.E<0?'neg':'pos'}">${nf(x.E,2)}</span><span class="ebar" aria-hidden="true"><b></b>${bar}</span></div></td>
@@ -628,8 +635,8 @@ function renderResult(){
   const r=S.rows[S.sel];
   el.innerHTML=`<div class="rc"><span>TCO heute</span><strong>${eur(r.ist)} €</strong><small>pro Jahr</small></div>
    <div class="rc"><span>TCO Cloud</span><strong>${eur(r.cloud)} €</strong><small>pro Jahr</small></div>
-   <div class="rc"><span>Schwierigkeit</span><strong>SF ${nf(x.sf,2)}</strong><small><span class="pill p${x.cls}">${CLS[x.cls]}</span></small></div>
-   <div class="rc"><span>Migrationsbetrag</span><strong>${eur(x.M)} €</strong><small>inkl. Aufschlag × ${nf(S.aufs[x.cls],1)}</small></div>
+   <div class="rc"><span>Schwierigkeit</span><strong>SF ${nf(x.sf,2)}</strong><small class="rc-base"><span class="pill p${x.cls}">${CLS[x.cls]}</span><span>× ${nf(S.aufs[x.cls],1)}</span></small></div>
+   <div class="rc"><span>Migrationsbetrag</span><strong>${eur(x.M)} €</strong><small class="rc-base"><span>Basis</span><output class="ro-mini num" aria-label="Migrationsbetrag Basis (schreibgeschützt)">${eur(r.mb)} €</output></small></div>
    <div class="rc"><span>Kosten pro Bürger</span><strong>${nf(x.kI,2)} → ${nf(x.kC,2)} €</strong><small>heute → Cloud</small></div>
    <div class="rc rc-hl"><span>Netto-Ersparnis</span><strong class="${x.E<0?'neg':'pos'}">${nf(x.E,2)} €</strong><small>pro Bürger und Jahr</small></div>
    <div class="rc"><span>Amortisation</span><strong class="${Number.isFinite(x.T)&&x.T<=S.n?'':'neg'}">${Number.isFinite(x.T)?nf(x.T,1)+' Jahre':'nie'}</strong><small>Ziel ≤ ${S.n} Jahre</small></div>`;
@@ -649,7 +656,7 @@ function bindGlobals(){
 const GROUPS={tco:{l:'Betriebskosten',u:'€ pro Jahr'},kb:{l:'Kosten pro Bürger',u:'€ pro Jahr'}};
 const COLS=[
  {l:'Fachverfahren',a:'left',i:'Name des Verfahrens und seine heutige Betriebsform (On-Premises, andere Cloud, Client-Server). Ist für das Verfahren eine eigene Bürgerzahl hinterlegt, steht sie darunter; sonst gilt die Einwohnerzahl der Kommune. Ein Klick auf die Zeile öffnet das Verfahren unten zur Bearbeitung.'},
- {l:'Schwierigkeit',a:'left',i:'Einstufung und Schwierigkeitsfaktor (SF, 1,0 bis 5,0). Der SF ist der gewichtete Mittelwert der zehn Kriterien, die unten beim Verfahren mit 1 (einfach) bis 5 (sehr schwer) bewertet werden. Gewichte: Architektur und Cloudfähigkeit 30 %, Schnittstellen 12 %, Technologiealter 12 %, Client- und Hardwarebindung 10 %, Datenmigration 8 %, Kritikalität 8 %, Lizenz 7 %, Schutzbedarf 6 %, Organisation 4 %, Ausgangsform 3 %. Daraus folgt die Einstufung: gering (SF 1,0–1,9, Aufschlag × 1,0), mittel (2,0–2,9, × 1,5), hoch (3,0–3,9, × 2,5) oder sehr hoch (4,0–5,0, × 4,0).'},
+ {l:'Schwierigkeit',a:'left',cls:'c-sf',i:'Einstufung und Schwierigkeitsfaktor (SF, 1,0 bis 5,0). Der SF ist der gewichtete Mittelwert der zehn Kriterien, die unten beim Verfahren mit 1 (einfach) bis 5 (sehr schwer) bewertet werden. Gewichte: Architektur und Cloudfähigkeit 30 %, Schnittstellen 12 %, Technologiealter 12 %, Client- und Hardwarebindung 10 %, Datenmigration 8 %, Kritikalität 8 %, Lizenz 7 %, Schutzbedarf 6 %, Organisation 4 %, Ausgangsform 3 %. Daraus folgt die Einstufung: gering (SF 1,0–1,9, Aufschlag × 1,0), mittel (2,0–2,9, × 1,5), hoch (3,0–3,9, × 2,5) oder sehr hoch (4,0–5,0, × 4,0).'},
  {l:'Heute',g:'tco',i:'Jährliche Gesamtbetriebskosten (TCO) im heutigen Betrieb. Summe der sechs Kostenblöcke unter „TCO heute“: Hardware-Abschreibung, Rechenzentrum, Lizenzen und Wartung, Betriebspersonal, Arbeitsplatz und Client, Netz und Sonstiges. Einmalige Kosten sind über ihre Nutzungsdauer verteilt.'},
  {l:'Cloud',g:'tco',i:'Erwartete jährliche Gesamtbetriebskosten (TCO) nach der Migration. Summe der acht Kostenblöcke unter „TCO in der Cloud“: Rechenleistung, Speicher, Backup, Plattformumlage, Lizenzen oder SaaS, Betriebspersonal, Arbeitsplatz, Netzanbindung. Der Migrationsbetrag ist hier nicht enthalten.'},
  {l:'Migrationsbetrag',lh:'Migrations-<br>betrag',u:'€',i:'Kosten der Umstellung: Basis-Migrationsaufwand multipliziert mit dem Aufschlag der Einstufung. Der Basisaufwand umfasst Umbau, Tests, Datenübernahme, Parallelbetrieb und Schulung für einen glatten Verlauf. Der Aufschlag bildet das Mehraufwandsrisiko schwieriger Verfahren ab.'},
@@ -670,7 +677,7 @@ function renderHead(){
       if(i===0||COLS[i-1].g!==c.g){const n=COLS.filter(x=>x.g===c.g).length;r1+=`<th colspan="${n}" class="grp">${GROUPS[c.g].l}<span class="gu">${GROUPS[c.g].u}</span></th>`}
       r2+=`<th><span class="thw">${c.l}${thBtn(c,i)}</span></th>`;
     }else{
-      r1+=`<th rowspan="2" class="${c.a==='left'?'tl-left':''}"><span class="thw"><span class="thl">${c.lh||c.l}${c.u?'<span class="gu">'+c.u+'</span>':''}</span>${thBtn(c,i)}</span></th>`;
+      r1+=`<th rowspan="2" class="${c.a==='left'?'tl-left':''}${c.cls?' '+c.cls:''}"><span class="thw"><span class="thl">${c.lh||c.l}${c.u?'<span class="gu">'+c.u+'</span>':''}</span>${thBtn(c,i)}</span></th>`;
     }
   });
   const info=openCol>=0?`<tr class="thinfo"><td colspan="${COLS.length}" id="thinfo"><strong>${colName(COLS[openCol])}${colUnit(COLS[openCol])?' ('+colUnit(COLS[openCol])+')':''}</strong><span>${COLS[openCol].i}</span></td></tr>`:'';
