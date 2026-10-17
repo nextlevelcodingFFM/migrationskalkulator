@@ -712,13 +712,13 @@ function renderEditor(){
   const r=S.rows[S.sel];
   ed.innerHTML=`<div class="ed-head"><div class="ed-hl"><span class="eyebrow">Fachverfahren bearbeiten</span><h2 id="ed-title">${esc(r.name||'Ohne Namen')}</h2></div><button class="danger" id="b-del">Verfahren entfernen</button></div>
    <div class="tcodiff" id="tco-diff" role="status" aria-live="polite"></div>
+   <div class="result" id="ed-res" aria-label="Ergebnis für dieses Verfahren"></div>
    <div class="ed-grid">
     <div class="field f-name"><label for="e-name">Name des Verfahrens</label><input id="e-name" type="text" value="${esc(r.name)}"></div>
     <div class="field"><label for="e-form">Ausgangsform</label><select id="e-form">${FORMS.map(f=>`<option ${f===r.form?'selected':''}>${f}</option>`).join('')}</select></div>
     <div class="field"><label for="e-b">Bürger</label><input id="e-b" type="number" min="0" step="1000" value="${r.b>0?r.b:''}" placeholder="${eur(S.B)}"><span class="fhelp">leer = Einwohner der Kommune</span></div>
     <div class="field"><label for="e-mb">Migrationsbetrag Basis €</label><input id="e-mb" type="number" min="0" step="1000" value="${r.mb}"><span class="fhelp">ohne Aufschlag</span></div>
    </div>
-   <div class="result" id="ed-res" aria-label="Ergebnis für dieses Verfahren"></div>
    <div class="tco">
     ${tcoCol('ti','TCO heute',IST_LINES,r.ti,'s-ist')}
     ${tcoCol('tc','TCO in der Cloud',CLOUD_LINES,r.tc,'s-cloud')}
