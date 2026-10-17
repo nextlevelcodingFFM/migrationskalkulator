@@ -316,7 +316,7 @@ button.danger.armed,button.danger.armed:hover{background:var(--crit);border-colo
 @media (max-width:820px){.ovw-b{grid-template-columns:1fr}}
 
 .op-big{display:flex;flex-direction:column;gap:2px;margin-bottom:6px}
-.op-big strong{font-size:2.6rem;line-height:1.05}
+.op-big strong{font-size:2.2rem;line-height:1.1}
 .op-big span{font-size:.84rem;color:var(--muted)}
 .op-bars{display:flex;flex-direction:column;gap:10px;margin-top:6px}
 .op-row{display:grid;grid-template-columns:52px minmax(0,1fr) 48px;align-items:center;gap:10px}
@@ -851,7 +851,7 @@ function renderOverall(L){
     </div>
     <div class="ovw-chart">
      <div class="ovw-ct">Gesamtersparnis im Betrieb in Prozent</div>
-     <div class="op-big"><strong class="num ${good?'pos':'neg'}">${good?'−':'+'}${nf(Math.abs(pct),1)} %</strong><span>${good?'geringere':'höhere'} Betriebskosten pro Jahr in der Cloud</span></div>
+     <div class="op-big"><strong class="num ${good?'pos':'neg'}">${good?'−':'+'}${nf(Math.abs(pct),0)} %</strong><span>${good?'geringere':'höhere'} Betriebskosten pro Jahr in der Cloud</span></div>
      <div class="op-bars">
       <div class="op-row"><span class="op-n">Heute</span><div class="op-track"><i class="op-ist" style="width:${over?(I/C*100):100}%"></i></div><span class="op-v num">100 %</span></div>
       <div class="op-row"><span class="op-n">Cloud</span><div class="op-track"><i class="op-cloud" style="width:${over?100:cw}%"></i>${good&&sw>0?`<i class="op-save" style="left:${cw}%;width:${sw}%"><em>−${nf(pct,0)} %</em></i>`:''}</div><span class="op-v num">${I>0?nf(C/I*100,0):'–'} %</span></div>
