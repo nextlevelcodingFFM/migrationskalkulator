@@ -375,6 +375,23 @@ button.danger.armed,button.danger.armed:hover{background:var(--crit);border-colo
 .td-sv{background:repeating-linear-gradient(135deg,var(--good-soft) 0 6px,#fff 6px 10px);border:2px dashed var(--pos);box-sizing:border-box}
 @media (max-width:760px){.tcodiff{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:420px){.td-k strong{font-size:1.45rem}.td-k{padding-right:14px}.td-k+.td-k{padding-left:14px}}
+
+#v-calc th,#v-calc td{padding-left:8px;padding-right:8px}
+#v-calc thead th{letter-spacing:0}
+#v-calc tbody td:last-child{white-space:normal;min-width:96px;line-height:1.3}
+#v-calc th.c-inc,#v-calc td.c-inc{text-align:center;width:40px;padding-left:10px;padding-right:2px}
+#v-calc th.c-inc .thl{font-size:1rem;letter-spacing:0}
+#v-calc th.c-inc .thw{justify-content:center}
+td.c-inc input{width:18px;height:18px;margin:0;accent-color:var(--teal);cursor:pointer;vertical-align:middle}
+tbody tr.off td:not(.c-inc){opacity:.55}
+tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--muted)}
+.draft{display:inline-block;padding:0 6px;margin-right:2px;border:1px dashed var(--muted);border-radius:3px;font-size:.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+#tf .sub{display:block;font-weight:400}
+.ed-act{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.incsw{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--good);border-radius:999px;background:var(--good-soft);color:var(--pos);font-size:.84rem;font-weight:600;cursor:pointer}
+.incsw input{width:16px;height:16px;margin:0;accent-color:var(--teal)}
+.incsw.is-off{border-style:dashed;border-color:var(--muted);background:var(--sunk);color:var(--muted)}
+.ktable td .sub{display:block;font-size:.72rem;color:var(--muted);font-weight:400}
 </style>
 </head>
 <body>
@@ -462,7 +479,7 @@ button.danger.armed,button.danger.armed:hover{background:var(--crit);border-colo
         <tfoot id="tf"></tfoot>
       </table>
     </div>
-    <p class="note">Zeile anklicken, um Bewertung und Kosten unten zu bearbeiten. Die Dreiecke im Tabellenkopf erklären jede Spalte.</p>
+    <p class="note">Zeile anklicken, um Bewertung und Kosten unten zu bearbeiten. Nur Verfahren mit Häkchen in der Spalte „Σ“ fließen in die Summen und Gesamtwerte der Kommune ein; neue Verfahren starten als Entwurf ohne Häkchen. Die Dreiecke im Tabellenkopf erklären jede Spalte.</p>
   </section>
 
   <section class="panel editor" id="editor" aria-label="Verfahren bearbeiten"></section>
@@ -660,6 +677,7 @@ const eur=v=>nf(v,0);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const num=v=>{const x=parseFloat(v);return Number.isFinite(x)?x:0};
 
+const isInc=r=>r.inc!==false;
 function calc(r){
   r.ist=tco(IST_LINES,r.ti);r.cloud=tco(CLOUD_LINES,r.tc);
   let sum=0;CRIT.forEach((c,i)=>sum+=c.w*r.s[i]);
@@ -681,18 +699,21 @@ function render(){
   document.getElementById('tb').innerHTML=S.rows.map((r,i)=>{const x=res[i];
     const w=Math.min(50,Math.abs(x.E)/maxE*50);
     const bar=x.E>=0?`<i style="left:50%;width:${w}%;background:var(--pos)"></i>`:`<i style="left:${50-w}%;width:${w}%;background:var(--neg)"></i>`;
-    return `<tr data-i="${i}" class="${i===S.sel?'on':''}" tabindex="0">
-      <td><strong>${esc(r.name||'Ohne Namen')}</strong><span class="sub">${esc(r.form)}${r.b>0?' · '+eur(r.b)+' Bürger':''}</span></td>
+    const on=isInc(r);
+    return `<tr data-i="${i}" class="${i===S.sel?'on':''}${on?'':' off'}" tabindex="0">
+      <td class="c-inc"><input type="checkbox" class="incb" data-inc="${i}" ${on?'checked':''} aria-label="${esc(r.name||'Verfahren')} in die Gesamtberechnung einbeziehen" title="${on?'Fließt in die Gesamtberechnung ein':'Nicht in der Gesamtberechnung (Entwurf)'}"></td>
+      <td><strong>${esc(r.name||'Ohne Namen')}</strong><span class="sub">${on?'':'<span class="draft">Entwurf</span> '}${esc(r.form)}${r.b>0?' · '+eur(r.b)+' Bürger':''}</span></td>
       <td class="c-sf"><div class="sfcell"><span class="pill p${x.cls}">${CLS[x.cls]}</span><span class="sub num">SF ${nf(x.sf,1)}</span></div></td>
       <td class="num">${eur(r.ist)}</td><td class="num">${eur(r.cloud)}</td><td class="num">${eur(x.M)}</td>
       <td class="num">${nf(x.kI,2)}</td><td class="num">${nf(x.kC,2)}</td>
       <td><div class="ecell"><span class="num ${x.E<0?'neg':'pos'}">${nf(x.E,2)}</span><span class="ebar" aria-hidden="true"><b></b>${bar}</span></div></td>
       <td class="num ${x.T>S.n?'neg':''}">${Number.isFinite(x.T)?nf(x.T,1):'nie'}</td>
       <td style="text-align:left">${x.rec}</td></tr>`}).join('');
-  const sIst=S.rows.reduce((a,r)=>a+r.ist,0), sCl=S.rows.reduce((a,r)=>a+r.cloud,0), sM=res.reduce((a,x)=>a+x.M,0);
-  const kI=res.reduce((a,x)=>a+x.kI,0), kC=res.reduce((a,x)=>a+x.kC,0), E=res.reduce((a,x)=>a+x.E,0), G=res.reduce((a,x)=>a+x.gross,0);
+  const IR=S.rows.filter(isInc), IX=res.filter((x,i)=>isInc(S.rows[i]));
+  const sIst=IR.reduce((a,r)=>a+r.ist,0), sCl=IR.reduce((a,r)=>a+r.cloud,0), sM=IX.reduce((a,x)=>a+x.M,0);
+  const kI=IX.reduce((a,x)=>a+x.kI,0), kC=IX.reduce((a,x)=>a+x.kC,0), E=IX.reduce((a,x)=>a+x.E,0), G=IX.reduce((a,x)=>a+x.gross,0);
   const dT=sIst-sCl, T=dT>0?sM/dT:Infinity;
-  document.getElementById('tf').innerHTML=`<tr><td>Summe (${S.rows.length})</td><td></td><td class="num">${eur(sIst)}</td><td class="num">${eur(sCl)}</td><td class="num">${eur(sM)}</td><td class="num">${nf(kI,2)}</td><td class="num">${nf(kC,2)}</td><td class="num ${E<0?'neg':'pos'}">${nf(E,2)}</td><td class="num">${Number.isFinite(T)?nf(T,1):'nie'}</td><td></td></tr>`;
+  document.getElementById('tf').innerHTML=`<tr><td></td><td>Summe (${IR.length===S.rows.length?IR.length:IR.length+' von '+S.rows.length})${IR.length<S.rows.length?'<span class="sub">nur angehakte Verfahren</span>':''}</td><td></td><td class="num">${eur(sIst)}</td><td class="num">${eur(sCl)}</td><td class="num">${eur(sM)}</td><td class="num">${nf(kI,2)}</td><td class="num">${nf(kC,2)}</td><td class="num ${E<0?'neg':'pos'}">${nf(E,2)}</td><td class="num">${Number.isFinite(T)?nf(T,1):'nie'}</td><td></td></tr>`;
   document.getElementById('t-ist').textContent=nf(kI,2)+' €';
   document.getElementById('t-cloud').textContent=nf(kC,2)+' €';
   document.getElementById('t-ist-abs').textContent=eur(sIst)+' €';
@@ -716,7 +737,7 @@ function renderEditor(){
   if(!S.rows.length){ed.innerHTML='<h2>Kein Verfahren erfasst</h2><p class="note">Mit „Verfahren hinzufügen“ ein erstes Fachverfahren anlegen.</p>';return}
   if(S.sel>=S.rows.length)S.sel=S.rows.length-1;
   const r=S.rows[S.sel];
-  ed.innerHTML=`<div class="ed-head"><div class="ed-hl"><span class="eyebrow">Fachverfahren bearbeiten</span><h2 id="ed-title">${esc(r.name||'Ohne Namen')}</h2></div><button class="danger" id="b-del">Verfahren entfernen</button></div>
+  ed.innerHTML=`<div class="ed-head"><div class="ed-hl"><span class="eyebrow">Fachverfahren bearbeiten</span><h2 id="ed-title">${esc(r.name||'Ohne Namen')}</h2></div><div class="ed-act"><label class="incsw" id="e-inc-l"><input type="checkbox" id="e-inc" ${isInc(r)?'checked':''}><span id="e-inc-t"></span></label><button class="danger" id="b-del">Verfahren entfernen</button></div></div>
    <div class="tcodiff" id="tco-diff" role="status" aria-live="polite"></div>
    <div class="result" id="ed-res" aria-label="Ergebnis für dieses Verfahren"></div>
    <div class="ed-grid">
@@ -746,7 +767,7 @@ function renderEditor(){
      <div class="h" id="h-${k}">${hint(c,r.s[k])}</div>
      <details class="more"><summary>Was bedeutet das Kriterium?</summary><p>${c.d}</p></details></div>`).join('')}</div>
    </section>`;
-  renderResult();updateTco();
+  renderResult();updateTco();syncInc();
 }
 function tcoCol(g,title,L,o,sid){
   return `<div class="tcol tcol-${g}"><div class="tcol-h"><span class="tcol-t">${title}</span><span class="tcol-u">€ pro Jahr</span></div><div class="tcol-b">
@@ -807,6 +828,7 @@ function bindGlobals(){
 
 const GROUPS={tco:{l:'Betriebskosten',u:'€ pro Jahr'},kb:{l:'Kosten pro Bürger',u:'€ pro Jahr'}};
 const COLS=[
+ {l:'In Gesamtberechnung',lh:'<span title="In Gesamtberechnung" aria-hidden="true">Σ</span><span class="sr">In Gesamtberechnung</span>',cls:'c-inc',i:'Häkchen gesetzt: Das Verfahren fließt in die Summen, die Kacheln oben und die Startseite ein. Ohne Häkchen ist es ein Entwurf: Es bleibt gespeichert und wird einzeln berechnet, zählt aber nicht zu den Gesamtwerten der Kommune. Neue Verfahren starten ohne Häkchen, damit halb erfasste Werte nicht in die Gesamtkosten einfließen.'},
  {l:'Fachverfahren',a:'left',i:'Name des Verfahrens und seine heutige Betriebsform (On-Premises, andere Cloud, Client-Server). Ist für das Verfahren eine eigene Bürgerzahl hinterlegt, steht sie darunter; sonst gilt die Einwohnerzahl der Kommune. Ein Klick auf die Zeile öffnet das Verfahren unten zur Bearbeitung.'},
  {l:'Schwierigkeit',a:'left',cls:'c-sf',i:'Einstufung und Schwierigkeitsfaktor (SF, 1,0 bis 5,0). Der SF ist der gewichtete Mittelwert der zehn Kriterien, die unten beim Verfahren mit 1 (einfach) bis 5 (sehr schwer) bewertet werden. Gewichte: Architektur und Cloudfähigkeit 30 %, Schnittstellen 12 %, Technologiealter 12 %, Client- und Hardwarebindung 10 %, Datenmigration 8 %, Kritikalität 8 %, Lizenz 7 %, Schutzbedarf 6 %, Organisation 4 %, Ausgangsform 3 %. Daraus folgt die Einstufung: gering (SF 1,0–1,9, Aufschlag × 1,0), mittel (2,0–2,9, × 1,5), hoch (3,0–3,9, × 2,5) oder sehr hoch (4,0–5,0, × 4,0).'},
  {l:'Heute',g:'tco',i:'Jährliche Gesamtbetriebskosten (TCO) im heutigen Betrieb. Summe der sechs Kostenblöcke unter „TCO heute“: Hardware-Abschreibung, Rechenzentrum, Lizenzen und Wartung, Betriebspersonal, Arbeitsplatz und Client, Netz und Sonstiges. Einmalige Kosten sind über ihre Nutzungsdauer verteilt.'},
@@ -815,7 +837,7 @@ const COLS=[
  {l:'Heute',g:'kb',i:'Heutige Kosten pro Bürger und Jahr: Betriebskosten heute geteilt durch die Zahl der Bürger im Zuständigkeitsgebiet des Verfahrens.'},
  {l:'Cloud',g:'kb',i:'Kosten pro Bürger und Jahr nach der Migration: Betriebskosten in der Cloud geteilt durch die Bürgerzahl. Der Migrationsbetrag ist hier noch nicht berücksichtigt, er steckt erst in der Netto-Ersparnis.'},
  {l:'Netto-Ersparnis',g:'kb',i:'Netto-Ersparnis pro Bürger und Jahr im Betrachtungszeitraum: (Betriebskosten heute − Betriebskosten Cloud − Migrationsbetrag ÷ Verteilungsjahre) ÷ Bürger. Grün heißt, die Migration rechnet sich schon im Zeitraum. Rot heißt, der Migrationsbetrag zehrt die laufende Ersparnis auf. Der Balken zeigt die Größe im Vergleich zu den anderen Verfahren.'},
- {l:'Amortisation',u:'Jahre',i:'Wie viele Jahre es dauert, bis die laufende Ersparnis den Migrationsbetrag wieder eingespielt hat: Migrationsbetrag ÷ (Betriebskosten heute − Betriebskosten Cloud). Rot markiert, wenn es länger dauert als der Verteilungszeitraum. „nie“ bedeutet, dass die Cloud im Betrieb nicht günstiger ist.'},
+ {l:'Amortisation',lh:'Amorti-<br>sation',u:'Jahre',i:'Wie viele Jahre es dauert, bis die laufende Ersparnis den Migrationsbetrag wieder eingespielt hat: Migrationsbetrag ÷ (Betriebskosten heute − Betriebskosten Cloud). Rot markiert, wenn es länger dauert als der Verteilungszeitraum. „nie“ bedeutet, dass die Cloud im Betrieb nicht günstiger ist.'},
  {l:'Empfehlung',a:'left',i:'Automatische Einordnung für die Reihenfolge. „Zuerst migrieren“: wirtschaftlich und Einstufung gering oder mittel. „Danach migrieren“: wirtschaftlich, aber hoch oder sehr hoch eingestuft. „Prüfen“: Netto-Ersparnis negativ oder Amortisation länger als der Verteilungszeitraum; dann SaaS, Weiterbetrieb bis Vertragsende oder Ablösung prüfen.'}
 ];
 let openCol=-1;
@@ -838,8 +860,9 @@ function renderHead(){
 document.getElementById('thd').addEventListener('click',e=>{const b=e.target.closest('button.thi');if(!b)return;const i=+b.dataset.c;openCol=openCol===i?-1:i;renderHead();const nb=document.querySelector(`button.thi[data-c="${i}"]`);if(nb)nb.focus()});
 renderHead();
 
-document.getElementById('tb').addEventListener('click',e=>{const tr=e.target.closest('tr[data-i]');if(!tr)return;S.sel=+tr.dataset.i;render();renderEditor()});
-document.getElementById('tb').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const tr=e.target.closest('tr[data-i]');if(!tr)return;e.preventDefault();S.sel=+tr.dataset.i;render();renderEditor();document.getElementById('editor').scrollIntoView({behavior:'smooth',block:'start'})});
+document.getElementById('tb').addEventListener('change',e=>{const c=e.target.closest('input.incb');if(!c)return;const r=S.rows[+c.dataset.inc];if(!r)return;r.inc=c.checked;render();const ei=document.getElementById('e-inc');if(ei&&S.sel===+c.dataset.inc)syncInc();const nc=document.querySelector(`#tb input[data-inc="${c.dataset.inc}"]`);if(nc)nc.focus();flash(c.checked?'Verfahren fließt in die Gesamtberechnung ein':'Verfahren aus der Gesamtberechnung genommen')});
+document.getElementById('tb').addEventListener('click',e=>{if(e.target.closest('input.incb,td.c-inc'))return;const tr=e.target.closest('tr[data-i]');if(!tr)return;S.sel=+tr.dataset.i;render();renderEditor()});
+document.getElementById('tb').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;if(e.target.closest('input.incb'))return;const tr=e.target.closest('tr[data-i]');if(!tr)return;e.preventDefault();S.sel=+tr.dataset.i;render();renderEditor();document.getElementById('editor').scrollIntoView({behavior:'smooth',block:'start'})});
 
 const ed=document.getElementById('editor');
 ed.addEventListener('input',e=>{const r=S.rows[S.sel];if(!r)return;const t=e.target;
@@ -848,7 +871,10 @@ ed.addEventListener('input',e=>{const r=S.rows[S.sel];if(!r)return;const t=e.tar
   else if(t.dataset.g){r[t.dataset.g][t.dataset.k]=num(t.value);render();updateTco();return}
   else if(t.id==='e-mb')r.mb=num(t.value);
   else return;render()});
-ed.addEventListener('change',e=>{if(e.target.id==='e-form'){S.rows[S.sel].form=e.target.value;render()}});
+ed.addEventListener('change',e=>{if(e.target.id==='e-form'){S.rows[S.sel].form=e.target.value;render()}
+  else if(e.target.id==='e-inc'){S.rows[S.sel].inc=e.target.checked;render();syncInc()}});
+function syncInc(){const r=S.rows[S.sel],c=document.getElementById('e-inc');if(!r||!c)return;const on=isInc(r);c.checked=on;
+  document.getElementById('e-inc-t').textContent=on?'In Gesamtberechnung':'Entwurf – nicht in Gesamtberechnung';document.getElementById('e-inc-l').classList.toggle('is-off',!on)}
 ed.addEventListener('click',e=>{
   const b=e.target.closest('button[data-k]');
   if(b){const k=+b.dataset.k,v=+b.dataset.v;S.rows[S.sel].s[k]=v;
@@ -857,7 +883,7 @@ ed.addEventListener('click',e=>{
   if(e.target.id==='b-del'){S.rows.splice(S.sel,1);S.sel=Math.max(0,S.sel-1);render();renderEditor();flash('Verfahren entfernt')}
 });
 
-document.getElementById('b-add').addEventListener('click',()=>{S.rows.push({name:'Neues Verfahren',form:'On-Premises',b:null,mb:50000,s:[3,3,3,3,3,3,3,3,3,3],ti:splitIst(100000,S.ts),tc:splitCloud(80000,S.ts)});S.sel=S.rows.length-1;render();renderEditor();const n=document.getElementById('e-name');n.focus();n.select()});
+document.getElementById('b-add').addEventListener('click',()=>{S.rows.push({inc:false,name:'Neues Verfahren',form:'On-Premises',b:null,mb:50000,s:[3,3,3,3,3,3,3,3,3,3],ti:splitIst(100000,S.ts),tc:splitCloud(80000,S.ts)});S.sel=S.rows.length-1;render();renderEditor();const n=document.getElementById('e-name');n.focus();n.select();flash('Neues Verfahren als Entwurf angelegt – Häkchen „Σ“ setzen, wenn die Werte vollständig sind')});
 function arm(btn,label,fn){
   if(btn.classList.contains('armed')){clearTimeout(btn._t);btn.classList.remove('armed');btn.innerHTML=btn._l;fn();return}
   btn._l=btn.innerHTML;btn.textContent=label;btn.classList.add('armed');
@@ -865,8 +891,8 @@ function arm(btn,label,fn){
 }
 document.getElementById('b-reset').addEventListener('click',e=>arm(e.currentTarget,'Verfahren ersetzen? Nochmal klicken',()=>{const B=S.B;S=prepState(EXAMPLE());S.B=B;bindGlobals();render();renderEditor();flash('Beispieldaten geladen')}));
 document.getElementById('b-csv').addEventListener('click',()=>{
-  const h=['Fachverfahren','Ausgangsform','Bürger','SF','Einstufung','Betriebskosten heute €/Jahr','Betriebskosten Cloud €/Jahr','Migrationsbetrag €','Kosten pro Bürger heute','Kosten pro Bürger Cloud','Netto-Ersparnis pro Bürger','Amortisation Jahre','Empfehlung',...CRIT.map(c=>c.t)];
-  const lines=[h.join(';')].concat(S.rows.map(r=>{const x=calc(r);return [r.name,r.form,x.B,nf(x.sf,2),CLS[x.cls],r.ist,r.cloud,Math.round(x.M),nf(x.kI,2),nf(x.kC,2),nf(x.E,2),Number.isFinite(x.T)?nf(x.T,1):'nie',x.rec,...r.s].map(v=>/[;"\n]/.test(String(v))?'"'+String(v).replace(/"/g,'""')+'"':v).join(';')}));
+  const h=['In Gesamtberechnung','Fachverfahren','Ausgangsform','Bürger','SF','Einstufung','Betriebskosten heute €/Jahr','Betriebskosten Cloud €/Jahr','Migrationsbetrag €','Kosten pro Bürger heute','Kosten pro Bürger Cloud','Netto-Ersparnis pro Bürger','Amortisation Jahre','Empfehlung',...CRIT.map(c=>c.t)];
+  const lines=[h.join(';')].concat(S.rows.map(r=>{const x=calc(r);return [isInc(r)?'ja':'nein',r.name,r.form,x.B,nf(x.sf,2),CLS[x.cls],r.ist,r.cloud,Math.round(x.M),nf(x.kI,2),nf(x.kC,2),nf(x.E,2),Number.isFinite(x.T)?nf(x.T,1):'nie',x.rec,...r.s].map(v=>/[;"\n]/.test(String(v))?'"'+String(v).replace(/"/g,'""')+'"':v).join(';')}));
   const txt=lines.join('\n');
   const done=()=>flash('Tabelle kopiert – in Excel einfügen');
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done).catch(()=>fallback(txt))}else fallback(txt);
@@ -877,10 +903,11 @@ let ft;function flash(m){const t=document.getElementById('toast');t.textContent=
 /* ---------- Kommunen: Startseite und Navigation ---------- */
 const dfmt=t=>{try{return new Date(t).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'})}catch(e){return ''}};
 function summarize(st){
-  const prev=S;S=st;const res=st.rows.map(calc);S=prev;
+  const rows=st.rows.filter(isInc);
+  const prev=S;S=st;const res=rows.map(calc);S=prev;
   const sum=f=>res.reduce((a,x)=>a+f(x),0);
-  const I=st.rows.reduce((a,r)=>a+(r.ist||0),0),C=st.rows.reduce((a,r)=>a+(r.cloud||0),0);
-  return {B:st.B,n:st.rows.length,yrs:st.n>0?st.n:5,kI:sum(x=>x.kI),kC:sum(x=>x.kC),E:sum(x=>x.E),d:sum(x=>x.d),M:sum(x=>x.M),I,C};
+  const I=rows.reduce((a,r)=>a+(r.ist||0),0),C=rows.reduce((a,r)=>a+(r.cloud||0),0);
+  return {B:st.B,n:rows.length,nAll:st.rows.length,yrs:st.n>0?st.n:5,kI:sum(x=>x.kI),kC:sum(x=>x.kC),E:sum(x=>x.E),d:sum(x=>x.d),M:sum(x=>x.M),I,C};
 }
 function setTitle(){const m=meta(CUR);const n=(m&&m.name.trim())||'Kommune ohne Namen';document.getElementById('k-title').textContent=n;document.title=n+' · Migrationskalkulator'}
 function renderOverall(L){
@@ -923,7 +950,7 @@ const KGROUPS={kb:{l:'Kosten pro Bürger',u:'€ pro Jahr'},eb:{l:'Ersparnis Bet
 const KCOLS=[
  {l:'Kommune',a:'left',i:'Name der Kommune mit dem Datum der letzten Änderung. Ein Klick auf den Namen oder auf „Öffnen“ öffnet die Kalkulation mit den Fachverfahren dieser Kommune.'},
  {l:'Einwohner',i:'Einwohnerzahl der Kommune. Sie ist die Grundlage für alle Werte pro Bürger und wird in der Kalkulation der Kommune gepflegt.'},
- {l:'Verfahren',i:'Anzahl der Fachverfahren, die für diese Kommune erfasst sind. Kommunen ohne Verfahren zeigen keine Kosten und fließen nicht in die Gesamtübersicht ein.'},
+ {l:'Verfahren',i:'Anzahl der Fachverfahren, die in die Gesamtberechnung der Kommune einfließen (Häkchen „Σ“ in der Kalkulation). Entwürfe ohne Häkchen sind darunter als „+ … Entwurf“ vermerkt und zählen nicht zu den Kosten. Kommunen ohne einbezogene Verfahren zeigen keine Kosten und fließen nicht in die Gesamtübersicht ein.'},
  {g:'kb',l:'Heute',i:'Laufende Kosten heute pro Bürger und Jahr: Summe der TCO heute aller Fachverfahren (Hardware, Rechenzentrum, Lizenzen, Betriebspersonal, Client, Netz), geteilt durch die Einwohnerzahl.'},
  {g:'kb',l:'Cloud',i:'Laufende Kosten nach der Migration pro Bürger und Jahr: Summe der TCO Cloud aller Fachverfahren (Rechenleistung, Speicher, Backup, Plattformumlage, Lizenzen, Personal, Client, Netz), geteilt durch die Einwohnerzahl.'},
  {g:'kb',l:'Netto-Ersparnis',i:'Ersparnis pro Bürger und Jahr nach Abzug der Migrationskosten: (TCO heute − TCO Cloud − Migrationsbetrag ÷ Verteilungszeitraum) ÷ Einwohner. Grün bedeutet Ersparnis, Rot bedeutet Mehrkosten.'},
@@ -982,7 +1009,7 @@ function renderHome(){
     const pct=s.I>0?s.d/s.I*100:0;
     return `<tr data-id="${k.id}">
      <td><a class="kn" href="#k-${k.id}">${esc(k.name||'Kommune ohne Namen')}</a><span class="sub">Geändert ${dfmt(k.updated)}</span></td>
-     <td class="num">${eur(s.B)}</td><td class="num">${s.n}</td>
+     <td class="num">${eur(s.B)}</td><td class="num">${s.n}${s.nAll>s.n?`<span class="sub">+ ${s.nAll-s.n} Entwurf</span>`:''}</td>
      <td class="num">${has?nf(s.kI,2):'–'}</td><td class="num">${has?nf(s.kC,2):'–'}</td>
      <td class="num ${has?(s.E<0?'neg':'pos'):''}">${has?nf(s.E,2):'–'}</td>
      <td class="num ${has?(s.d<0?'neg':''):''}">${has?eur(s.d):'–'}</td>

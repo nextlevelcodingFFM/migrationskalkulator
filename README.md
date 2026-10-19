@@ -10,6 +10,7 @@ Webbasierter Kalkulator zur Vorbereitung der Migration von Fachverfahren (On-Pre
 - **TCO heute und in der Cloud:** Aufbau aus einzelnen Kostenblöcken (Hardware, Rechenzentrum, Lizenzen, Personal, Client, Netz bzw. Rechenleistung, Speicher, Backup, Plattformumlage).
 - **Kosten pro Bürger:** heute und nach Migration, Netto-Ersparnis nach Abzug der verteilten Migrationskosten, Amortisationsdauer.
 - **Empfehlung:** Migrationsreihenfolge oder Prüfung von SaaS, Weiterbetrieb oder Ablösung.
+- **Entwürfe:** Häkchen „Σ“ je Fachverfahren. Nur angehakte Verfahren fließen in Summen, Kacheln und Startseite ein; neue Verfahren starten als Entwurf ohne Häkchen, damit halb erfasste Werte die Gesamtkosten nicht verfälschen.
 - **Export:** Tabelle als CSV in die Zwischenablage kopieren und in Excel einfügen.
 - **Farbschema:** weißer Hintergrund mit Dunkelblau, Teal, Oliv, Grün, Weinrot und Grautönen.
 
