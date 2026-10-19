@@ -476,7 +476,15 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 
 @media (max-width:1199px) and (min-width:861px){.result{grid-template-columns:repeat(4,minmax(0,1fr))}.rc{border-bottom:1px solid var(--line)}}
 @media (max-width:420px){.rc>span.ei-h{letter-spacing:.01em;font-size:.64rem}.rc{padding:10px 9px}}
-@media (max-width:360px){.result{grid-template-columns:1fr}}
+@media (max-width:360px){.result{grid-template-columns:1fr}.tiles{grid-template-columns:1fr}.tiles .tile:nth-child(5){grid-column:auto}}
+
+.ti-h .nw{white-space:nowrap}
+.ti-h .thi{display:inline-flex;vertical-align:-3px;margin-left:3px}
+#ti-panel{margin-top:-4px}
+.result{grid-template-columns:1fr 1fr 1fr 1.08fr 1.3fr 1.08fr 1fr}
+@media (max-width:1199px) and (min-width:861px){.result{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:860px){.result{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:360px){.result{grid-template-columns:1fr}.tiles{grid-template-columns:1fr}.tiles .tile:nth-child(5){grid-column:auto}}
 </style>
 </head>
 <body>
@@ -537,12 +545,13 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
   <section id="k-note" aria-label="Notizen zur Kommune" hidden></section>
 
   <section class="tiles" aria-label="Gesamtergebnis">
-    <div class="panel tile"><span class="eyebrow">Kosten heute</span><span class="v" id="t-ist-abs"></span><span class="s">pro Jahr, alle Verfahren</span><span class="tabs"><span>pro Bürger und Jahr</span><b class="num" id="t-ist"></b></span></div>
-    <div class="panel tile"><span class="eyebrow">Kosten in der Cloud</span><span class="v" id="t-cloud-abs"></span><span class="s">pro Jahr, alle Verfahren</span><span class="tabs"><span>pro Bürger und Jahr</span><b class="num" id="t-cloud"></b></span></div>
-    <div class="panel tile t-pct"><span class="eyebrow" id="t-pct-l">Ersparnis im Betrieb</span><span class="v" id="t-pct"></span><span class="s" id="t-pct-s"></span><span class="tabs"><span id="t-pct-al">pro Jahr</span><b class="num" id="t-pct-abs"></b></span></div>
-    <div class="panel tile hl"><span class="eyebrow">Netto-Ersparnis</span><span class="v" id="t-e-abs"></span><span class="s" id="t-e-s"></span><span class="tabs"><span>pro Bürger und Jahr</span><b class="num" id="t-e"></b></span></div>
-    <div class="panel tile"><span class="eyebrow">Amortisation gesamt</span><span class="v" id="t-t"></span><span class="s" id="t-t-s"></span></div>
+    <div class="panel tile"><span class="eyebrow ti-h">Kosten <span class="nw">heute<button type="button" class="thi thi-d ebi" data-ti="t_ist" aria-expanded="false" aria-label="Erklärung zu Kosten heute"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1.5 7.5 5 3 8.5z"/></svg></button></span></span><span class="v" id="t-ist-abs"></span><span class="s">pro Jahr, alle Verfahren</span><span class="tabs"><span>pro Bürger und Jahr</span><b class="num" id="t-ist"></b></span></div>
+    <div class="panel tile"><span class="eyebrow ti-h">Kosten in der <span class="nw">Cloud<button type="button" class="thi thi-d ebi" data-ti="t_cl" aria-expanded="false" aria-label="Erklärung zu Kosten in der Cloud"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1.5 7.5 5 3 8.5z"/></svg></button></span></span><span class="v" id="t-cloud-abs"></span><span class="s">pro Jahr, alle Verfahren</span><span class="tabs"><span>pro Bürger und Jahr</span><b class="num" id="t-cloud"></b></span></div>
+    <div class="panel tile t-pct"><span class="eyebrow ti-h"><span id="t-pct-l">Ersparnis im</span> <span class="nw"><span id="t-pct-l2">Betrieb</span><button type="button" class="thi thi-d ebi" data-ti="t_pct" aria-expanded="false" aria-label="Erklärung zu Ersparnis im Betrieb"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1.5 7.5 5 3 8.5z"/></svg></button></span></span><span class="v" id="t-pct"></span><span class="s" id="t-pct-s"></span><span class="tabs"><span id="t-pct-al">pro Jahr</span><b class="num" id="t-pct-abs"></b></span></div>
+    <div class="panel tile hl"><span class="eyebrow ti-h"><span class="nw">Netto-Ersparnis<button type="button" class="thi thi-d ebi" data-ti="t_e" aria-expanded="false" aria-label="Erklärung zu Netto-Ersparnis"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1.5 7.5 5 3 8.5z"/></svg></button></span></span><span class="v" id="t-e-abs"></span><span class="s" id="t-e-s"></span><span class="tabs"><span>pro Bürger und Jahr</span><b class="num" id="t-e"></b></span></div>
+    <div class="panel tile"><span class="eyebrow ti-h">Amortisation <span class="nw">gesamt<button type="button" class="thi thi-d ebi" data-ti="t_t" aria-expanded="false" aria-label="Erklärung zu Amortisation gesamt"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1.5 7.5 5 3 8.5z"/></svg></button></span></span><span class="v" id="t-t"></span><span class="s" id="t-t-s"></span></div>
   </section>
+  <div class="ei" id="ti-panel" hidden></div>
 
   <section class="panel params" aria-label="Annahmen">
     <div class="field"><label for="g-name">Name der Kommune</label><input id="g-name" type="text" class="w-xl" autocomplete="off"></div>
@@ -814,7 +823,7 @@ function render(){
   document.getElementById('t-cloud-abs').textContent=eur(sCl)+' €';
   const pc=sIst>0?dT/sIst*100:0,tp=document.getElementById('t-pct');
   tp.textContent=sIst>0?(pc>=0?'−':'+')+nf(Math.abs(pc),0)+' %':'–';tp.className='v '+(pc<0?'neg':'pos');
-  document.getElementById('t-pct-l').textContent=pc>=0?'Ersparnis im Betrieb':'Mehrkosten im Betrieb';
+  document.getElementById('t-pct-l').textContent=pc>=0?'Ersparnis im':'Mehrkosten im';
   document.getElementById('t-pct-s').textContent=pc>=0?'geringere Betriebskosten in der Cloud als heute':'höhere Betriebskosten in der Cloud als heute';
   document.getElementById('t-pct-abs').textContent=eur(Math.abs(dT))+' €';
   const te=document.getElementById('t-e');te.textContent=nf(E,2)+' €';te.className='num '+(E<0?'neg':'pos');
@@ -1026,6 +1035,18 @@ function renderHead(){
 document.getElementById('thd').addEventListener('click',e=>{const b=e.target.closest('button.thi');if(!b)return;const i=+b.dataset.c;openCol=openCol===i?-1:i;renderHead();const nb=document.querySelector(`button.thi[data-c="${i}"]`);if(nb)nb.focus()});
 renderHead();
 
+
+const TI={
+ t_ist:['Kosten heute','Summe der jährlichen Betriebskosten (TCO heute) aller Fachverfahren mit Häkchen „Σ“. Entwürfe ohne Häkchen zählen nicht. Unten derselbe Wert geteilt durch die Bürger: Kosten pro Bürger und Jahr.'],
+ t_cl:['Kosten in der Cloud','Summe der erwarteten jährlichen Betriebskosten nach der Migration (TCO Cloud) aller einbezogenen Fachverfahren. Unten: pro Bürger und Jahr.'],
+ t_pct:['Ersparnis im Betrieb','Um wie viel Prozent die jährlichen Betriebskosten in der Cloud niedriger sind als heute: (Kosten heute − Kosten Cloud) ÷ Kosten heute. Der einmalige Migrationsbetrag ist nicht abgezogen. Unten der Betrag in Euro pro Jahr.'],
+ t_e:['Netto-Ersparnis','Ersparnis im Betrieb minus Jahresrate der Migration (Summe Migrationsbetrag ÷ Verteilungszeitraum). Das bleibt pro Jahr, solange die Migrationskosten verteilt werden; danach gilt die volle Ersparnis. Unten: pro Bürger und Jahr.'],
+ t_t:['Amortisation gesamt','Nach wie vielen Jahren die jährliche Ersparnis im Betrieb den gesamten Migrationsbetrag aller einbezogenen Verfahren wieder eingespielt hat: Summe Migrationsbetrag ÷ Ersparnis pro Jahr. „nie“ bedeutet: Die Cloud ist im Betrieb nicht günstiger.']
+};
+let TI_OPEN=null;
+document.querySelector('section.tiles').addEventListener('click',e=>{const b=e.target.closest('button[data-ti]');if(!b)return;const k=b.dataset.ti;TI_OPEN=TI_OPEN===k?null:k;
+  document.querySelectorAll('section.tiles button[data-ti]').forEach(x=>x.setAttribute('aria-expanded',x.dataset.ti===TI_OPEN));
+  const pn=document.getElementById('ti-panel');if(TI_OPEN){pn.hidden=false;pn.innerHTML=`<strong>${TI[k][0]}</strong><span>${TI[k][1]}</span>`}else{pn.hidden=true;pn.innerHTML=''}});
 document.getElementById('tb').addEventListener('change',e=>{const c=e.target.closest('input.incb');if(!c)return;const r=S.rows[+c.dataset.inc];if(!r)return;r.inc=c.checked;render();const ei=document.getElementById('e-inc');if(ei&&S.sel===+c.dataset.inc)syncInc();const nc=document.querySelector(`#tb input[data-inc="${c.dataset.inc}"]`);if(nc)nc.focus();flash(c.checked?'Verfahren fließt in die Gesamtberechnung ein':'Verfahren aus der Gesamtberechnung genommen')});
 document.getElementById('tb').addEventListener('click',e=>{if(e.target.closest('input.incb,td.c-inc'))return;const tr=e.target.closest('tr[data-i]');if(!tr)return;if(+tr.dataset.i!==S.sel){NOTE_EDIT=-1;NOTE_OPEN=-1}S.sel=+tr.dataset.i;render();renderEditor()});
 document.getElementById('tb').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;if(e.target.closest('input.incb'))return;const tr=e.target.closest('tr[data-i]');if(!tr)return;e.preventDefault();S.sel=+tr.dataset.i;render();renderEditor();document.getElementById('editor').scrollIntoView({behavior:'smooth',block:'start'})});
