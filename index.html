@@ -470,8 +470,13 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 .sfbox .ei{margin:10px 16px 0}
 .notes .ei{margin:0}
 .notes-h .thi svg{width:10px;height:10px;fill:currentColor;stroke:none}
-.rc>span.ei-h{display:block;white-space:nowrap;letter-spacing:.02em}
+.rc>span.ei-h{display:block;white-space:normal;letter-spacing:.04em;line-height:1.35}
+.rc>span.ei-h .nw{white-space:nowrap}
 .rc>span.ei-h .thi{display:inline-flex;vertical-align:-3px;margin-left:2px}
+
+@media (max-width:1199px) and (min-width:861px){.result{grid-template-columns:repeat(4,minmax(0,1fr))}.rc{border-bottom:1px solid var(--line)}}
+@media (max-width:420px){.rc>span.ei-h{letter-spacing:.01em;font-size:.64rem}.rc{padding:10px 9px}}
+@media (max-width:360px){.result{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -862,6 +867,7 @@ const EI_GROUP={r_ist:'res',r_cl:'res',r_sf:'res',r_m:'res',r_kb:'res',r_e:'res'
 const EI_OPEN={};
 const eiG=k=>EI_GROUP[k]||k;
 function iBtn(k,dark){const on=EI_OPEN[eiG(k)]===k;return `<button type="button" class="thi ebi${dark?' thi-d':''}" data-ei="${k}" aria-expanded="${on}" aria-label="Erklärung zu ${EI[k][0]}"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1.5 7.5 5 3 8.5z"/></svg></button>`}
+const eiLbl=(t,k)=>{const i=t.lastIndexOf(' ');return (i>0?t.slice(0,i+1):'')+`<span class="nw">${i>0?t.slice(i+1):t}${iBtn(k,1)}</span>`};
 const eiPanel=k=>`<div class="ei" data-eipanel="${k}" hidden></div>`;
 function eiSync(){const ed=document.getElementById('editor');if(!ed)return;
   ed.querySelectorAll('button[data-ei]').forEach(b=>b.setAttribute('aria-expanded',EI_OPEN[eiG(b.dataset.ei)]===b.dataset.ei));
@@ -963,13 +969,13 @@ function renderResult(){
   const sl=document.getElementById('sf-live');if(sl)sl.innerHTML=`<span class="sfv num">SF ${nf(x.sf,2)}</span><span class="pill p${x.cls}">${CLS[x.cls]}</span>`;
   const mk=document.getElementById('sf-mark');if(mk){mk.style.left=Math.max(0,Math.min(100,(x.sf-1)/4*100))+'%';document.getElementById('sf-mark-v').textContent=nf(x.sf,2)}
   const r=S.rows[S.sel];
-  el.innerHTML=`<div class="rc"><span class="ei-h">TCO heute${iBtn('r_ist',1)}</span><strong>${eur(r.ist)} €</strong><small>pro Jahr</small></div>
-   <div class="rc"><span class="ei-h">TCO Cloud${iBtn('r_cl',1)}</span><strong>${eur(r.cloud)} €</strong><small>pro Jahr</small></div>
-   <div class="rc"><span class="ei-h">Schwierigkeit${iBtn('r_sf',1)}</span><strong>SF ${nf(x.sf,2)}</strong><small><span class="pill p${x.cls}">${CLS[x.cls]}</span></small></div>
-   <div class="rc"><span class="ei-h">Migrationsbetrag${iBtn('r_m',1)}</span><strong>${eur(x.M)} €</strong><small class="rc-base"><span>Basis</span><output class="ro-mini num" aria-label="Migrationsbetrag Basis (schreibgeschützt)">${eur(r.mb)} €</output></small><small>× ${nf(S.aufs[x.cls],1)} Aufschlag</small></div>
-   <div class="rc"><span class="ei-h">Kosten pro Bürger${iBtn('r_kb',1)}</span><strong>${nf(x.kI,2)} → ${nf(x.kC,2)} €</strong><small>heute → Cloud</small></div>
-   <div class="rc rc-hl"><span class="ei-h">Netto-Ersparnis${iBtn('r_e',1)}</span><strong class="${x.E<0?'neg':'pos'}">${nf(x.E,2)} €</strong><small>pro Bürger und Jahr</small></div>
-   <div class="rc"><span class="ei-h">Amortisation${iBtn('r_t',1)}</span><strong class="${Number.isFinite(x.T)&&x.T<=S.n?'':'neg'}">${Number.isFinite(x.T)?nf(x.T,1)+' Jahre':'nie'}</strong><small>Ziel ≤ ${S.n} Jahre</small></div>`;
+  el.innerHTML=`<div class="rc"><span class="ei-h">${eiLbl('TCO heute','r_ist')}</span><strong>${eur(r.ist)} €</strong><small>pro Jahr</small></div>
+   <div class="rc"><span class="ei-h">${eiLbl('TCO Cloud','r_cl')}</span><strong>${eur(r.cloud)} €</strong><small>pro Jahr</small></div>
+   <div class="rc"><span class="ei-h">${eiLbl('Schwierigkeit','r_sf')}</span><strong>SF ${nf(x.sf,2)}</strong><small><span class="pill p${x.cls}">${CLS[x.cls]}</span></small></div>
+   <div class="rc"><span class="ei-h">${eiLbl('Migrationsbetrag','r_m')}</span><strong>${eur(x.M)} €</strong><small class="rc-base"><span>Basis</span><output class="ro-mini num" aria-label="Migrationsbetrag Basis (schreibgeschützt)">${eur(r.mb)} €</output></small><small>× ${nf(S.aufs[x.cls],1)} Aufschlag</small></div>
+   <div class="rc"><span class="ei-h">${eiLbl('Kosten pro Bürger','r_kb')}</span><strong>${nf(x.kI,2)} → ${nf(x.kC,2)} €</strong><small>heute → Cloud</small></div>
+   <div class="rc rc-hl"><span class="ei-h">${eiLbl('Netto-Ersparnis','r_e')}</span><strong class="${x.E<0?'neg':'pos'}">${nf(x.E,2)} €</strong><small>pro Bürger und Jahr</small></div>
+   <div class="rc"><span class="ei-h">${eiLbl('Amortisation','r_t')}</span><strong class="${Number.isFinite(x.T)&&x.T<=S.n?'':'neg'}">${Number.isFinite(x.T)?nf(x.T,1)+' Jahre':'nie'}</strong><small>Ziel ≤ ${S.n} Jahre</small></div>`;
 }
 
 function bindGlobals(){
