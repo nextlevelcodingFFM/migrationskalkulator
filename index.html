@@ -392,6 +392,18 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 .incsw input{width:16px;height:16px;margin:0;accent-color:var(--teal)}
 .incsw.is-off{border-style:dashed;border-color:var(--muted);background:var(--sunk);color:var(--muted)}
 .ktable td .sub{display:block;font-size:.72rem;color:var(--muted);font-weight:400}
+
+.notes{border:1px solid var(--line-strong);border-left:4px solid var(--olive);border-radius:6px;background:linear-gradient(180deg,#fbfcf3,var(--surface));padding:12px 14px 10px;display:flex;flex-direction:column;gap:8px}
+.notes-h{display:flex;align-items:center;gap:8px}
+.notes-h svg{width:18px;height:18px;fill:none;stroke:var(--good);stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round;flex:none}
+.notes-h label{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--good)}
+.notes-c{margin-left:auto;font-size:.72rem;color:var(--muted)}
+.notes textarea{width:100%;box-sizing:border-box;min-height:84px;resize:vertical;padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:#fff;font:inherit;font-size:.92rem;line-height:1.55;color:var(--fg);overflow:hidden}
+.notes textarea:focus{outline:2px solid var(--teal);outline-offset:0;border-color:var(--teal)}
+.notes textarea::placeholder{color:#9a9a9a;font-style:italic}
+.nicon{display:inline-flex;vertical-align:-2px;margin-left:6px;color:var(--good)}
+.nicon svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+@media (max-width:520px){.notes-c{display:none}}
 </style>
 </head>
 <body>
@@ -702,7 +714,7 @@ function render(){
     const on=isInc(r);
     return `<tr data-i="${i}" class="${i===S.sel?'on':''}${on?'':' off'}" tabindex="0">
       <td class="c-inc"><input type="checkbox" class="incb" data-inc="${i}" ${on?'checked':''} aria-label="${esc(r.name||'Verfahren')} in die Gesamtberechnung einbeziehen" title="${on?'Fließt in die Gesamtberechnung ein':'Nicht in der Gesamtberechnung (Entwurf)'}"></td>
-      <td><strong>${esc(r.name||'Ohne Namen')}</strong><span class="sub">${on?'':'<span class="draft">Entwurf</span> '}${esc(r.form)}${r.b>0?' · '+eur(r.b)+' Bürger':''}</span></td>
+      <td><strong>${esc(r.name||'Ohne Namen')}</strong>${(r.note||'').trim()?`<span class="nicon" title="${esc(r.note.trim().slice(0,300))}" aria-label="Hat Notizen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10l4 4v12H5z"/><path d="M8 12h8M8 16h6"/></svg></span>`:''}<span class="sub">${on?'':'<span class="draft">Entwurf</span> '}${esc(r.form)}${r.b>0?' · '+eur(r.b)+' Bürger':''}</span></td>
       <td class="c-sf"><div class="sfcell"><span class="pill p${x.cls}">${CLS[x.cls]}</span><span class="sub num">SF ${nf(x.sf,1)}</span></div></td>
       <td class="num">${eur(r.ist)}</td><td class="num">${eur(r.cloud)}</td><td class="num">${eur(x.M)}</td>
       <td class="num">${nf(x.kI,2)}</td><td class="num">${nf(x.kC,2)}</td>
@@ -740,6 +752,10 @@ function renderEditor(){
   ed.innerHTML=`<div class="ed-head"><div class="ed-hl"><span class="eyebrow">Fachverfahren bearbeiten</span><h2 id="ed-title">${esc(r.name||'Ohne Namen')}</h2></div><div class="ed-act"><label class="incsw" id="e-inc-l"><input type="checkbox" id="e-inc" ${isInc(r)?'checked':''}><span id="e-inc-t"></span></label><button class="danger" id="b-del">Verfahren entfernen</button></div></div>
    <div class="tcodiff" id="tco-diff" role="status" aria-live="polite"></div>
    <div class="result" id="ed-res" aria-label="Ergebnis für dieses Verfahren"></div>
+   <div class="notes">
+    <div class="notes-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8 12h8M8 16h6"/></svg><label for="e-note">Notizen zum Fachverfahren</label><span class="notes-c" id="e-note-c"></span></div>
+    <textarea id="e-note" rows="3" placeholder="Freie Notizen, z. B. Ansprechpartner, Hersteller und Vertragslaufzeit, Abhängigkeiten zu anderen Verfahren, offene Fragen, nächste Schritte …">${esc(r.note||'')}</textarea>
+   </div>
    <div class="ed-grid">
     <div class="field f-name"><label for="e-name">Name des Verfahrens</label><input id="e-name" type="text" value="${esc(r.name)}"></div>
     <div class="field"><label for="e-form">Ausgangsform</label><select id="e-form">${FORMS.map(f=>`<option ${f===r.form?'selected':''}>${f}</option>`).join('')}</select></div>
@@ -767,7 +783,7 @@ function renderEditor(){
      <div class="h" id="h-${k}">${hint(c,r.s[k])}</div>
      <details class="more"><summary>Was bedeutet das Kriterium?</summary><p>${c.d}</p></details></div>`).join('')}</div>
    </section>`;
-  renderResult();updateTco();syncInc();
+  renderResult();updateTco();syncInc();noteUi();
 }
 function tcoCol(g,title,L,o,sid){
   return `<div class="tcol tcol-${g}"><div class="tcol-h"><span class="tcol-t">${title}</span><span class="tcol-u">€ pro Jahr</span></div><div class="tcol-b">
@@ -866,6 +882,7 @@ document.getElementById('tb').addEventListener('keydown',e=>{if(e.key!=='Enter'&
 
 const ed=document.getElementById('editor');
 ed.addEventListener('input',e=>{const r=S.rows[S.sel];if(!r)return;const t=e.target;
+  if(t.id==='e-note'){r.note=t.value;noteUi();render();return}
   if(t.id==='e-name'){r.name=t.value;document.getElementById('ed-title').textContent=t.value||'Ohne Namen'}
   else if(t.id==='e-b')r.b=t.value===''?null:num(t.value);
   else if(t.dataset.g){r[t.dataset.g][t.dataset.k]=num(t.value);render();updateTco();return}
@@ -873,6 +890,8 @@ ed.addEventListener('input',e=>{const r=S.rows[S.sel];if(!r)return;const t=e.tar
   else return;render()});
 ed.addEventListener('change',e=>{if(e.target.id==='e-form'){S.rows[S.sel].form=e.target.value;render()}
   else if(e.target.id==='e-inc'){S.rows[S.sel].inc=e.target.checked;render();syncInc()}});
+function noteUi(){const t=document.getElementById('e-note');if(!t)return;t.style.height='auto';t.style.height=Math.max(t.scrollHeight+2,84)+'px';
+  const n=t.value.trim().length;document.getElementById('e-note-c').textContent=n?n.toLocaleString('de-DE')+' Zeichen · wird automatisch gespeichert':'wird automatisch gespeichert'}
 function syncInc(){const r=S.rows[S.sel],c=document.getElementById('e-inc');if(!r||!c)return;const on=isInc(r);c.checked=on;
   document.getElementById('e-inc-t').textContent=on?'In Gesamtberechnung':'Entwurf – nicht in Gesamtberechnung';document.getElementById('e-inc-l').classList.toggle('is-off',!on)}
 ed.addEventListener('click',e=>{
@@ -891,8 +910,8 @@ function arm(btn,label,fn){
 }
 document.getElementById('b-reset').addEventListener('click',e=>arm(e.currentTarget,'Verfahren ersetzen? Nochmal klicken',()=>{const B=S.B;S=prepState(EXAMPLE());S.B=B;bindGlobals();render();renderEditor();flash('Beispieldaten geladen')}));
 document.getElementById('b-csv').addEventListener('click',()=>{
-  const h=['In Gesamtberechnung','Fachverfahren','Ausgangsform','Bürger','SF','Einstufung','Betriebskosten heute €/Jahr','Betriebskosten Cloud €/Jahr','Migrationsbetrag €','Kosten pro Bürger heute','Kosten pro Bürger Cloud','Netto-Ersparnis pro Bürger','Amortisation Jahre','Empfehlung',...CRIT.map(c=>c.t)];
-  const lines=[h.join(';')].concat(S.rows.map(r=>{const x=calc(r);return [isInc(r)?'ja':'nein',r.name,r.form,x.B,nf(x.sf,2),CLS[x.cls],r.ist,r.cloud,Math.round(x.M),nf(x.kI,2),nf(x.kC,2),nf(x.E,2),Number.isFinite(x.T)?nf(x.T,1):'nie',x.rec,...r.s].map(v=>/[;"\n]/.test(String(v))?'"'+String(v).replace(/"/g,'""')+'"':v).join(';')}));
+  const h=['In Gesamtberechnung','Fachverfahren','Ausgangsform','Bürger','SF','Einstufung','Betriebskosten heute €/Jahr','Betriebskosten Cloud €/Jahr','Migrationsbetrag €','Kosten pro Bürger heute','Kosten pro Bürger Cloud','Netto-Ersparnis pro Bürger','Amortisation Jahre','Empfehlung',...CRIT.map(c=>c.t),'Notizen'];
+  const lines=[h.join(';')].concat(S.rows.map(r=>{const x=calc(r);return [isInc(r)?'ja':'nein',r.name,r.form,x.B,nf(x.sf,2),CLS[x.cls],r.ist,r.cloud,Math.round(x.M),nf(x.kI,2),nf(x.kC,2),nf(x.E,2),Number.isFinite(x.T)?nf(x.T,1):'nie',x.rec,...r.s,(r.note||'').trim()].map(v=>/[;"\n]/.test(String(v))?'"'+String(v).replace(/"/g,'""')+'"':v).join(';')}));
   const txt=lines.join('\n');
   const done=()=>flash('Tabelle kopiert – in Excel einfügen');
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done).catch(()=>fallback(txt))}else fallback(txt);
