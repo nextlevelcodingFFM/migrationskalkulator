@@ -494,6 +494,7 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
     <div class="field"><label for="g-b">Einwohner der Kommune</label><input id="g-b" class="w-lg" type="number" min="1" step="100"></div>
     <div class="field"><label for="g-n">Verteilung Migrationskosten (Jahre)</label><input id="g-n" class="w-sm" type="number" min="1" max="20" step="1"></div>
   </section>
+  <section id="k-note" aria-label="Notizen zur Kommune"></section>
 
   <section style="display:flex;flex-direction:column;gap:10px">
     <div class="bar">
@@ -693,7 +694,7 @@ function applySnapshot(snap){
     const sel=MEM[id]?MEM[id].sel:0;
     MEM[id]=prepState(clone(incoming));MEM[id].sel=Math.min(sel,Math.max(0,MEM[id].rows.length-1));
     LAST[id]=stateJS(MEM[id]);
-    if(id===CUR){S=MEM[id];render();const ae=document.activeElement;if(!ae||!document.getElementById('editor').contains(ae))renderEditor();else renderResult()}
+    if(id===CUR){S=MEM[id];render();renderKNote();const ae=document.activeElement;if(!ae||!document.getElementById('editor').contains(ae))renderEditor();else renderResult()}
   });
   // Lokale Namensänderung, die gerade gespeichert wird, nicht überschreiben
   list.forEach(k=>{const old=meta(k.id);if(old&&(TIMERS[k.id]||INFLIGHT[k.id]))k.name=old.name});
@@ -782,7 +783,11 @@ function noteSet(box,ed){const t=box.querySelector('textarea'),b=box.querySelect
   t.readOnly=!ed;box.classList.toggle('is-edit',ed);box.classList.toggle('is-ro',!ed);b.setAttribute('aria-pressed',ed);b.innerHTML=ed?OK_ICON+'Fertig':PEN_ICON+'Ändern';
   t.placeholder=ed?(box.dataset.ph||''):'Noch keine Notizen. Zum Erfassen auf „Ändern“ klicken.';noteSize(t);noteCount(t);
   if(ed){t.focus();const n=t.value.length;t.setSelectionRange(n,n)}}
-let NOTE_EDIT=-1;
+let NOTE_EDIT=-1,KC_EDIT=null;
+const KN_PH='Freie Notizen zur Kommune, z. B. Ansprechpartner, Stand der Abstimmung, Termine, Besonderheiten der IT-Landschaft …';
+function renderKNote(){const host=document.getElementById('k-note');if(!host||!S)return;const t=document.getElementById('g-note');if(t&&document.activeElement===t&&!t.readOnly)return;
+  host.innerHTML=noteBox({key:'kc',tid:'g-note',label:'Notizen zur Kommune',value:S.note,edit:KC_EDIT===CUR,ph:KN_PH});
+  const bx=host.querySelector('.notes');bx.dataset.ph=KN_PH;const nt=bx.querySelector('textarea');noteSize(nt);noteCount(nt)}
 function renderEditor(){
   const ed=document.getElementById('editor');
   if(!S.rows.length){ed.innerHTML='<h2>Kein Verfahren erfasst</h2><p class="note">Mit „Verfahren hinzufügen“ ein erstes Fachverfahren anlegen.</p>';return}
@@ -876,7 +881,11 @@ function bindGlobals(){
   gn.value=m?m.name:'';
   gn.oninput=()=>{const mm=meta(CUR);if(!mm)return;mm.name=gn.value;mm.updated=Date.now();saveIdx();setTitle()};
   gn.disabled=READONLY;
+  renderKNote();
 }
+document.getElementById('k-note').addEventListener('input',e=>{const t=e.target;if(t.id!=='g-note'||t.readOnly)return;S.note=t.value;save();noteSize(t);noteCount(t)});
+document.getElementById('k-note').addEventListener('click',e=>{const b=e.target.closest('button[data-noteedit="kc"]');if(!b)return;
+  const box=b.closest('.notes'),on=!box.classList.contains('is-edit');KC_EDIT=on?CUR:null;noteSet(box,on);if(!on)flash('Notiz zur Kommune gespeichert')});
 
 const GROUPS={tco:{l:'Betriebskosten',u:'€ pro Jahr'},kb:{l:'Kosten pro Bürger',u:'€ pro Jahr'}};
 const COLS=[
@@ -945,7 +954,7 @@ function arm(btn,label,fn){
   btn._l=btn.innerHTML;btn.textContent=label;btn.classList.add('armed');
   btn._t=setTimeout(()=>{btn.classList.remove('armed');btn.innerHTML=btn._l},4000);
 }
-document.getElementById('b-reset').addEventListener('click',e=>arm(e.currentTarget,'Verfahren ersetzen? Nochmal klicken',()=>{const B=S.B;S=prepState(EXAMPLE());S.B=B;bindGlobals();render();renderEditor();flash('Beispieldaten geladen')}));
+document.getElementById('b-reset').addEventListener('click',e=>arm(e.currentTarget,'Verfahren ersetzen? Nochmal klicken',()=>{const B=S.B,N=S.note;S=prepState(EXAMPLE());S.B=B;if(N)S.note=N;bindGlobals();render();renderEditor();flash('Beispieldaten geladen')}));
 document.getElementById('b-csv').addEventListener('click',()=>{
   const h=['In Gesamtberechnung','Fachverfahren','Ausgangsform','Bürger','SF','Einstufung','Betriebskosten heute €/Jahr','Betriebskosten Cloud €/Jahr','Migrationsbetrag €','Kosten pro Bürger heute','Kosten pro Bürger Cloud','Netto-Ersparnis pro Bürger','Amortisation Jahre','Empfehlung',...CRIT.map(c=>c.t),'Notizen'];
   const lines=[h.join(';')].concat(S.rows.map(r=>{const x=calc(r);return [isInc(r)?'ja':'nein',r.name,r.form,x.B,nf(x.sf,2),CLS[x.cls],r.ist,r.cloud,Math.round(x.M),nf(x.kI,2),nf(x.kC,2),nf(x.E,2),Number.isFinite(x.T)?nf(x.T,1):'nie',x.rec,...r.s,(r.note||'').trim()].map(v=>/[;"\n]/.test(String(v))?'"'+String(v).replace(/"/g,'""')+'"':v).join(';')}));
@@ -1053,7 +1062,6 @@ document.getElementById('k-overall').addEventListener('click',e=>{const b=e.targ
   const on=OPEN_O.has(k);b.setAttribute('aria-expanded',on);document.getElementById('oi-'+k).hidden=!on});
 let LAST_OV=[];
 const KN_OPEN=new Set();let KN_EDIT=null;
-const KN_PH='Freie Notizen zur Kommune, z. B. Ansprechpartner, Stand der Abstimmung, Termine, Besonderheiten der IT-Landschaft …';
 function knAfter(){document.querySelectorAll('#kb .kn-row .notes').forEach(bx=>{bx.dataset.ph=KN_PH;const t=bx.querySelector('textarea');noteSize(t);noteCount(t)})}
 function renderHome(){
   const ae=document.activeElement,keep=ae&&ae.id&&ae.id.startsWith('kn-')&&ae.tagName==='TEXTAREA'?[ae.id,ae.selectionStart,ae.selectionEnd]:null;
@@ -1143,7 +1151,7 @@ function show(v){document.getElementById('v-home').hidden=v!=='home';document.ge
 function route(fromSnap){
   const m=/^#k-([a-z0-9]+)$/.exec(location.hash);
   if(m&&meta(m[1])){
-    if(CUR!==m[1]){CUR=m[1];S=loadK(CUR);if(LAST[CUR]===undefined)LAST[CUR]=stateJS(S);openCol=-1;renderHead();bindGlobals();setTitle();render();renderEditor();setSave('ok');window.scrollTo(0,0)}
+    if(CUR!==m[1]){CUR=m[1];KC_EDIT=null;S=loadK(CUR);if(LAST[CUR]===undefined)LAST[CUR]=stateJS(S);openCol=-1;renderHead();bindGlobals();setTitle();render();renderEditor();setSave('ok');window.scrollTo(0,0)}
     show('calc');
   }else if(m&&MODE==='load'){
     show('home');renderHome();
