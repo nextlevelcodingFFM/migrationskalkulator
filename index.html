@@ -1022,7 +1022,7 @@ function renderResult(){
    <div class="rc"><span class="ei-h">${eiLbl('Migrationsbetrag','r_m')}</span><strong>${eur(x.M)} €</strong><small class="rc-base"><span>Basis</span><output class="ro-mini num" aria-label="Migrationsbetrag Basis (schreibgeschützt)">${eur(r.mb)} €</output></small><small>× ${nf(S.aufs[x.cls],1)} Aufschlag</small></div>
    <div class="rc"><span class="ei-h">${eiLbl('Kosten pro Bürger','r_kb')}</span><strong>${nf(x.kI,2)} → ${nf(x.kC,2)} €</strong><small>heute → Cloud</small></div>
    <div class="rc rc-hl"><span class="ei-h">${eiLbl('Netto-Ersparnis','r_e')}</span><strong class="${x.E<0?'neg':'pos'}">${nf(x.E,2)} €</strong><small>pro Bürger und Jahr</small></div>
-   <div class="rc"><span class="ei-h">${eiLbl('Amortisation','r_t')}</span><strong class="${Number.isFinite(x.T)&&x.T<=x.n?'':'neg'}">${Number.isFinite(x.T)?nf(x.T,1)+' Jahre':'nie'}</strong><small>Ziel ≤ ${x.n} Jahre</small></div>`;
+   <div class="rc"><span class="ei-h">${eiLbl('Amortisation','r_t')}</span><strong class="${Number.isFinite(x.T)&&x.T<=x.n?'':'neg'}">${Number.isFinite(x.T)?nf(x.T,1)+' Jahre':'nie'}</strong><small>Ziel ≤ ${x.n} ${x.n===1?'Jahr':'Jahre'}</small></div>`;
 }
 
 function bindGlobals(){
