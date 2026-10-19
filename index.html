@@ -425,6 +425,17 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 
 .ktable tbody tr:not(.kn-row) td:first-child{white-space:normal;min-width:150px}
 .ktable tr.kn-row td{padding-left:12px!important;padding-right:12px!important}
+
+.view>header{position:relative}
+.hd-note{position:absolute;top:18px;right:20px;display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.08);color:#fff;font-size:.84rem;font-weight:600;cursor:pointer}
+.hd-note svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+.hd-note:hover{background:rgba(255,255,255,.18)}
+.hd-note[aria-expanded=true]{background:#fff;color:var(--teal-text);border-color:#fff}
+.hd-dot{display:none;width:8px;height:8px;border-radius:50%;background:var(--olive);box-shadow:0 0 0 2px var(--teal)}
+.hd-note.has-note .hd-dot{display:inline-block}
+.hd-note[aria-expanded=true] .hd-dot{box-shadow:0 0 0 2px #fff}
+#v-calc>header h1{padding-right:130px}
+@media (max-width:520px){.hd-note span{display:none}.hd-note{padding:7px 9px;top:14px;right:14px}#v-calc>header h1,#v-calc>header .eyebrow{padding-right:48px}}
 </style>
 </head>
 <body>
@@ -477,9 +488,12 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
   <nav class="crumb"><a href="#start" id="back">← Alle Kommunen</a><span class="savestate" id="savestate" role="status"></span></nav>
   <header>
     <div class="eyebrow">Migrationskalkulator · Fachverfahren</div>
+    <button type="button" class="hd-note" id="b-knote" aria-expanded="false" aria-controls="k-note" title="Notizen zur Kommune"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8 12h8M8 16h6"/></svg><span>Notizen</span><i class="hd-dot" aria-hidden="true"></i></button>
     <h1 id="k-title">Kommune</h1>
     <p class="lead">Schwierigkeitsfaktor aus zehn gewichteten Kriterien, Kosten pro Bürger heute und in der Cloud, Netto-Ersparnis nach Abzug der verteilten Migrationskosten.</p>
   </header>
+
+  <section id="k-note" aria-label="Notizen zur Kommune" hidden></section>
 
   <section class="tiles" aria-label="Gesamtergebnis">
     <div class="panel tile"><span class="eyebrow">Kosten heute</span><span class="v" id="t-ist-abs"></span><span class="s">pro Jahr, alle Verfahren</span><span class="tabs"><span>pro Bürger und Jahr</span><b class="num" id="t-ist"></b></span></div>
@@ -494,7 +508,6 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
     <div class="field"><label for="g-b">Einwohner der Kommune</label><input id="g-b" class="w-lg" type="number" min="1" step="100"></div>
     <div class="field"><label for="g-n">Verteilung Migrationskosten (Jahre)</label><input id="g-n" class="w-sm" type="number" min="1" max="20" step="1"></div>
   </section>
-  <section id="k-note" aria-label="Notizen zur Kommune"></section>
 
   <section style="display:flex;flex-direction:column;gap:10px">
     <div class="bar">
@@ -783,9 +796,12 @@ function noteSet(box,ed){const t=box.querySelector('textarea'),b=box.querySelect
   t.readOnly=!ed;box.classList.toggle('is-edit',ed);box.classList.toggle('is-ro',!ed);b.setAttribute('aria-pressed',ed);b.innerHTML=ed?OK_ICON+'Fertig':PEN_ICON+'Ändern';
   t.placeholder=ed?(box.dataset.ph||''):'Noch keine Notizen. Zum Erfassen auf „Ändern“ klicken.';noteSize(t);noteCount(t);
   if(ed){t.focus();const n=t.value.length;t.setSelectionRange(n,n)}}
-let NOTE_EDIT=-1,KC_EDIT=null;
+let NOTE_EDIT=-1,KC_EDIT=null,KC_OPEN=false;
 const KN_PH='Freie Notizen zur Kommune, z. B. Ansprechpartner, Stand der Abstimmung, Termine, Besonderheiten der IT-Landschaft …';
-function renderKNote(){const host=document.getElementById('k-note');if(!host||!S)return;const t=document.getElementById('g-note');if(t&&document.activeElement===t&&!t.readOnly)return;
+function kNoteBtn(){const b=document.getElementById('b-knote');if(!b||!S)return;const has=!!(S.note||'').trim();
+  b.classList.toggle('has-note',has);b.setAttribute('aria-expanded',KC_OPEN);b.title=has?'Notizen zur Kommune anzeigen':'Notiz zur Kommune erfassen';
+  document.getElementById('k-note').hidden=!KC_OPEN}
+function renderKNote(){const host=document.getElementById('k-note');if(!host||!S)return;kNoteBtn();if(!KC_OPEN){host.innerHTML='';return}const t=document.getElementById('g-note');if(t&&document.activeElement===t&&!t.readOnly)return;
   host.innerHTML=noteBox({key:'kc',tid:'g-note',label:'Notizen zur Kommune',value:S.note,edit:KC_EDIT===CUR,ph:KN_PH});
   const bx=host.querySelector('.notes');bx.dataset.ph=KN_PH;const nt=bx.querySelector('textarea');noteSize(nt);noteCount(nt)}
 function renderEditor(){
@@ -883,7 +899,8 @@ function bindGlobals(){
   gn.disabled=READONLY;
   renderKNote();
 }
-document.getElementById('k-note').addEventListener('input',e=>{const t=e.target;if(t.id!=='g-note'||t.readOnly)return;S.note=t.value;save();noteSize(t);noteCount(t)});
+document.getElementById('k-note').addEventListener('input',e=>{const t=e.target;if(t.id!=='g-note'||t.readOnly)return;S.note=t.value;save();noteSize(t);noteCount(t);kNoteBtn()});
+document.getElementById('b-knote').addEventListener('click',()=>{KC_OPEN=!KC_OPEN;if(!KC_OPEN)KC_EDIT=null;renderKNote()});
 document.getElementById('k-note').addEventListener('click',e=>{const b=e.target.closest('button[data-noteedit="kc"]');if(!b)return;
   const box=b.closest('.notes'),on=!box.classList.contains('is-edit');KC_EDIT=on?CUR:null;noteSet(box,on);if(!on)flash('Notiz zur Kommune gespeichert')});
 
@@ -1151,7 +1168,7 @@ function show(v){document.getElementById('v-home').hidden=v!=='home';document.ge
 function route(fromSnap){
   const m=/^#k-([a-z0-9]+)$/.exec(location.hash);
   if(m&&meta(m[1])){
-    if(CUR!==m[1]){CUR=m[1];KC_EDIT=null;S=loadK(CUR);if(LAST[CUR]===undefined)LAST[CUR]=stateJS(S);openCol=-1;renderHead();bindGlobals();setTitle();render();renderEditor();setSave('ok');window.scrollTo(0,0)}
+    if(CUR!==m[1]){CUR=m[1];KC_EDIT=null;KC_OPEN=false;S=loadK(CUR);if(LAST[CUR]===undefined)LAST[CUR]=stateJS(S);openCol=-1;renderHead();bindGlobals();setTitle();render();renderEditor();setSave('ok');window.scrollTo(0,0)}
     show('calc');
   }else if(m&&MODE==='load'){
     show('home');renderHome();
