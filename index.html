@@ -107,7 +107,7 @@ td .sub{display:block;font-size:.72rem;color:var(--muted);font-family:var(--f-bo
 .ed-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line)}
 .ed-hl{display:flex;flex-direction:column;gap:2px;min-width:0}
 .ed-hl h2{font-size:1.35rem}
-.ed-grid{display:grid;grid-template-columns:2fr 1.2fr 1fr 1fr;gap:16px;align-items:start}
+.ed-grid{display:grid;grid-template-columns:1.8fr 1.2fr 1fr 1fr 1fr;gap:16px;align-items:start}
 .ed-grid .field input,.ed-grid .field select{width:100%;height:36px}
 .fhelp{font-size:.72rem;color:var(--muted)}
 .sfbox{border:1px solid var(--line-strong);border-radius:6px;overflow:hidden;background:var(--surface)}
@@ -515,7 +515,7 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 .fv .toast:empty{display:none}
 .fv .toast{margin:-4px 0}
 
-.hd-params{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:14px 22px;margin-top:18px;padding:16px 0 0;border-top:1px solid rgba(255,255,255,.28)}
+.hd-params{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:14px 22px;margin-top:18px;padding:16px 0 0;border-top:1px solid rgba(255,255,255,.28)}
 .hd-params .field label{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--on-ink-muted)}
 .hd-params .field input{width:100%;height:38px;box-sizing:border-box;font-size:.95rem;background:#fff;border-color:#fff;color:var(--fg)}
 .hd-params .field input:focus{outline:3px solid var(--olive);outline-offset:0}
@@ -581,7 +581,6 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
   <div class="params hd-params" role="group" aria-label="Grunddaten der Kommune">
     <div class="field pf-name"><label for="g-name">Name der Kommune</label><input id="g-name" type="text" autocomplete="off"><span class="fhelp">erscheint auf der Startseite und im Seitentitel</span></div>
     <div class="field"><label for="g-b">Einwohner der Kommune</label><input id="g-b" type="number" min="1" step="100"><span class="fhelp">Grundlage für alle Werte pro Bürger</span></div>
-    <div class="field"><label for="g-n">Verteilung Migrationskosten</label><div class="inunit"><input id="g-n" type="number" min="1" max="20" step="1"><span>Jahre</span></div><span class="fhelp">Zeitraum für die Jahresrate der Migration</span></div>
   </div>
   </header>
 
@@ -709,7 +708,7 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
 const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const blankState=ew=>({B:ew>0?ew:10000,n:5,ts:800,sel:0,rows:[]});
-function prepState(st){ensureTco(st);st.aufs=AUFS.slice();if(!(st.sel>=0))st.sel=0;if(!(st.n>0))st.n=5;if(!(st.B>0))st.B=10000;return st}
+function prepState(st){ensureTco(st);st.aufs=AUFS.slice();if(!(st.sel>=0))st.sel=0;if(!(st.n>0))st.n=5;st.rows.forEach(r=>{if(!(r.n>0))r.n=st.n});if(!(st.B>0))st.B=10000;return st}
 function loadK(id){let st=MEM[id]||(MODE==='local'?lsGet(KP+id):null);if(!st||!Array.isArray(st.rows))st=blankState();MEM[id]=prepState(st);return MEM[id]}
 /* Speicher: MODE 'db' = gemeinsame Datenbank (Claude-Seite), 'local' = nur dieser Browser (z. B. GitHub Pages) */
 let MODE='load', DB=null, READONLY=false, DBERR='';
@@ -824,13 +823,13 @@ function calc(r){
   const sf=Math.round(sum*100)/100, sf1=Math.round(sf*10)/10;
   const cls=sf1<2?0:sf1<3?1:sf1<4?2:3;
   const M=r.mb*S.aufs[cls];
-  const B=r.b>0?r.b:S.B, n=S.n>0?S.n:1;
+  const B=r.b>0?r.b:S.B, n=r.n>0?r.n:(S.n>0?S.n:5);
   const d=r.ist-r.cloud;
   const E=(d-M/n)/B;
   const T=d>0?M/d:Infinity;
   const ok=E>=0&&T<=n;
   const rec=!ok?'Prüfen: SaaS, Retain, Ablösung':cls<=1?'Zuerst migrieren':'Danach migrieren';
-  return {sf,cls,M,B,d,kI:r.ist/B,kC:r.cloud/B,E,T,ok,rec,gross:d/B};
+  return {sf,cls,M,B,d,n,net:d-M/n,kI:r.ist/B,kC:r.cloud/B,E,T,ok,rec,gross:d/B};
 }
 
 function render(){
@@ -847,7 +846,7 @@ function render(){
       <td class="num">${eur(r.ist)}</td><td class="num">${eur(r.cloud)}</td><td class="num">${eur(x.M)}</td>
       <td class="num">${nf(x.kI,2)}</td><td class="num">${nf(x.kC,2)}</td>
       <td><div class="ecell"><span class="num ${x.E<0?'neg':'pos'}">${nf(x.E,2)}</span><span class="ebar" aria-hidden="true"><b></b>${bar}</span></div></td>
-      <td class="num ${x.T>S.n?'neg':''}">${Number.isFinite(x.T)?nf(x.T,1):'nie'}</td>
+      <td class="num ${x.T>x.n?'neg':''}">${Number.isFinite(x.T)?nf(x.T,1):'nie'}</td>
       <td style="text-align:left">${x.rec}</td></tr>`}).join('');
   const IR=S.rows.filter(isInc), IX=res.filter((x,i)=>isInc(S.rows[i]));
   const sIst=IR.reduce((a,r)=>a+r.ist,0), sCl=IR.reduce((a,r)=>a+r.cloud,0), sM=IX.reduce((a,x)=>a+x.M,0);
@@ -864,8 +863,8 @@ function render(){
   document.getElementById('t-pct-s').textContent=pc>=0?'geringere Betriebskosten in der Cloud als heute':'höhere Betriebskosten in der Cloud als heute';
   document.getElementById('t-pct-abs').textContent=eur(Math.abs(dT))+' €';
   const te=document.getElementById('t-e');te.textContent=nf(E,2)+' €';te.className='num '+(E<0?'neg':'pos');
-  const NE=dT-sM/(S.n>0?S.n:1),tea=document.getElementById('t-e-abs');tea.textContent=eur(NE)+' €';tea.className='v '+(NE<0?'neg':'pos');
-  document.getElementById('t-e-s').textContent=`pro Jahr in den ersten ${S.n} Jahren, danach ${eur(dT)} €`;
+  const NE=IX.reduce((a,x)=>a+x.net,0),NS=[...new Set(IX.map(x=>x.n))].sort((a,b)=>a-b),tea=document.getElementById('t-e-abs');tea.textContent=eur(NE)+' €';tea.className='v '+(NE<0?'neg':'pos');
+  document.getElementById('t-e-s').textContent=NS.length>1?`pro Jahr, solange die Migration verteilt wird (${NS[0]}–${NS[NS.length-1]} Jahre je Verfahren), danach ${eur(dT)} €`:`pro Jahr in den ersten ${NS[0]||5} Jahren, danach ${eur(dT)} €`;
   document.getElementById('t-t').textContent=Number.isFinite(T)?nf(T,1)+' Jahre':'nie';
   document.getElementById('t-t-s').textContent=`${eur(sM)} € Migrationsbetrag ÷ ${eur(dT)} € Einsparung pro Jahr`;
   renderResult();
@@ -898,18 +897,19 @@ const EI={
  r_sf:['Schwierigkeit','Schwierigkeitsfaktor SF von 1,0 bis 5,0: gewichteter Mittelwert der zehn Kriterien unten. Daraus folgt die Einstufung gering (unter 2), mittel (unter 3), hoch (unter 4) oder sehr hoch.'],
  r_m:['Migrationsbetrag','Einmalige Kosten der Umstellung: Migrationsbetrag Basis × Aufschlag der Einstufung (gering × 1,0, mittel × 1,5, hoch × 2,5, sehr hoch × 4,0). Die Basis wird im Feld „Migrationsbetrag Basis“ eingetragen.'],
  r_kb:['Kosten pro Bürger','Jährliche Kosten pro Bürger heute und in der Cloud: TCO heute bzw. TCO Cloud geteilt durch die Bürgerzahl des Verfahrens (leer = Einwohner der Kommune).'],
- r_e:['Netto-Ersparnis','Ersparnis pro Bürger und Jahr nach Abzug der Migrationskosten: (TCO heute − TCO Cloud − Migrationsbetrag ÷ Verteilungszeitraum) ÷ Bürger. Nach Ablauf des Verteilungszeitraums bleibt die volle Ersparnis.'],
+ r_e:['Netto-Ersparnis','Ersparnis pro Bürger und Jahr nach Abzug der Migrationskosten: (TCO heute − TCO Cloud − Migrationsbetrag ÷ Verteilungszeitraum des Verfahrens) ÷ Bürger. Nach Ablauf des Verteilungszeitraums bleibt die volle Ersparnis.'],
  r_t:['Amortisation','Nach wie vielen Jahren die laufende Ersparnis den Migrationsbetrag wieder eingespielt hat: Migrationsbetrag ÷ (TCO heute − TCO Cloud). Rot, wenn das länger dauert als der Verteilungszeitraum oder nie eintritt.'],
  note:['Notizen zum Fachverfahren','Freier Text zum Verfahren, z. B. Ansprechpartner, Hersteller, Vertragslaufzeit, Abhängigkeiten oder offene Fragen. Das Feld ist schreibgeschützt; mit „Ändern“ wird es beschreibbar, mit „Fertig“ wieder gesperrt. Gespeichert wird automatisch.'],
  f_name:['Name des Verfahrens','Bezeichnung des Fachverfahrens. Sie erscheint in der Tabelle, im CSV-Export und als Überschrift dieses Bereichs.'],
  f_form:['Ausgangsform','Heutige Betriebsform: On-Premises im eigenen Rechenzentrum, bereits in einer anderen Cloud oder als Client-Server-Anwendung. Sie dient der Einordnung in der Tabelle; wie schwierig der Wechsel dadurch wird, bewertest du im Kriterium „Ausgangsform“ unten.'],
  f_b:['Bürger','Zahl der Bürger, für die das Verfahren zuständig ist, z. B. bei Verfahren, die nur einen Teil der Bevölkerung betreffen. Leer lassen, dann gilt die Einwohnerzahl der Kommune. Grundlage aller Werte pro Bürger.'],
+ f_n:['Verteilungszeitraum','Über wie viele Jahre der Migrationsbetrag dieses Verfahrens verteilt wird, z. B. die geplante Nutzungsdauer der neuen Lösung oder der Abschreibungszeitraum. Jahresrate = Migrationsbetrag ÷ Jahre. Netto-Ersparnis und die Bewertung der Amortisation beziehen sich auf diesen Zeitraum; danach bleibt die volle Ersparnis.'],
  f_mb:['Migrationsbetrag Basis €','Geschätzter einmaliger Aufwand der Migration ohne Schwierigkeitsaufschlag: Projektleitung, Dienstleister, Anpassungen, Tests, Datenübernahme und Schulung. Er wird mit dem Aufschlag der Einstufung multipliziert und ergibt den Migrationsbetrag.'],
  tco_ti:['TCO heute','Total Cost of Ownership im heutigen Betrieb: alle laufenden Kosten des Verfahrens pro Jahr. Dazu zählen Hardware-Abschreibung, Rechenzentrum (Fläche, Strom, Klima), Lizenzen und Wartung, Betriebspersonal (Personentage × Tagessatz), Client-Kosten und Netz. Zu jeder Zeile erklärt „Wie ermittle ich den Wert?“, woher die Zahl kommt.'],
  tco_tc:['TCO in der Cloud','Erwartete laufende Kosten pro Jahr nach der Migration: Rechenleistung und Speicher (monatliche Werte × 12), Backup, Plattformumlage des Cloud-Betreibers, Lizenzen, verbleibendes Betriebspersonal, Client-Kosten und Netz. Werte am besten aus Angebot oder Preisrechner des Cloud-Anbieters übernehmen.'],
  sf:['Schwierigkeitsfaktor (SF)','Bewerte jedes der zehn Kriterien von 1 (einfach) bis 5 (sehr schwer). Der SF ist der gewichtete Mittelwert; am stärksten zählt Architektur und Cloudfähigkeit mit 30 %, weil Neuprogrammierung und umfangreiche Tests den größten Aufwand verursachen. Der SF bestimmt die Einstufung und damit den Aufschlag auf den Migrationsbetrag.']
 };
-const EI_GROUP={r_ist:'res',r_cl:'res',r_sf:'res',r_m:'res',r_kb:'res',r_e:'res',r_t:'res',f_name:'fld',f_form:'fld',f_b:'fld',f_mb:'fld'};
+const EI_GROUP={f_n:'fld',r_ist:'res',r_cl:'res',r_sf:'res',r_m:'res',r_kb:'res',r_e:'res',r_t:'res',f_name:'fld',f_form:'fld',f_b:'fld',f_mb:'fld'};
 const EI_OPEN={};
 const eiG=k=>EI_GROUP[k]||k;
 function iBtn(k,dark){const on=EI_OPEN[eiG(k)]===k;return `<button type="button" class="thi ebi${dark?' thi-d':''}" data-ei="${k}" aria-expanded="${on}" aria-label="Erklärung zu ${EI[k][0]}"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1.5 7.5 5 3 8.5z"/></svg></button>`}
@@ -950,6 +950,7 @@ function renderEditor(){
     <div class="field"><span class="lbl"><label for="e-form">Ausgangsform</label>${iBtn('f_form',1)}</span><select id="e-form">${FORMS.map(f=>`<option ${f===r.form?'selected':''}>${f}</option>`).join('')}</select></div>
     <div class="field"><span class="lbl"><label for="e-b">Bürger</label>${iBtn('f_b',1)}</span><input id="e-b" type="number" min="0" step="1000" value="${r.b>0?r.b:''}" placeholder="${eur(S.B)}"><span class="fhelp">leer = Einwohner der Kommune</span></div>
     <div class="field"><span class="lbl"><label for="e-mb">Migrationsbetrag Basis €</label>${iBtn('f_mb',1)}</span><input id="e-mb" type="number" min="0" step="1000" value="${r.mb}"><span class="fhelp">ohne Aufschlag</span></div>
+    <div class="field"><span class="lbl"><label for="e-n">Verteilungszeitraum</label>${iBtn('f_n',1)}</span><div class="inunit"><input id="e-n" type="number" min="1" max="30" step="1" value="${r.n||5}"><span>Jahre</span></div><span class="fhelp">für den Migrationsbetrag</span></div>
    </div>
    ${eiPanel('fld')}
    <div class="tco">
@@ -1021,11 +1022,11 @@ function renderResult(){
    <div class="rc"><span class="ei-h">${eiLbl('Migrationsbetrag','r_m')}</span><strong>${eur(x.M)} €</strong><small class="rc-base"><span>Basis</span><output class="ro-mini num" aria-label="Migrationsbetrag Basis (schreibgeschützt)">${eur(r.mb)} €</output></small><small>× ${nf(S.aufs[x.cls],1)} Aufschlag</small></div>
    <div class="rc"><span class="ei-h">${eiLbl('Kosten pro Bürger','r_kb')}</span><strong>${nf(x.kI,2)} → ${nf(x.kC,2)} €</strong><small>heute → Cloud</small></div>
    <div class="rc rc-hl"><span class="ei-h">${eiLbl('Netto-Ersparnis','r_e')}</span><strong class="${x.E<0?'neg':'pos'}">${nf(x.E,2)} €</strong><small>pro Bürger und Jahr</small></div>
-   <div class="rc"><span class="ei-h">${eiLbl('Amortisation','r_t')}</span><strong class="${Number.isFinite(x.T)&&x.T<=S.n?'':'neg'}">${Number.isFinite(x.T)?nf(x.T,1)+' Jahre':'nie'}</strong><small>Ziel ≤ ${S.n} Jahre</small></div>`;
+   <div class="rc"><span class="ei-h">${eiLbl('Amortisation','r_t')}</span><strong class="${Number.isFinite(x.T)&&x.T<=x.n?'':'neg'}">${Number.isFinite(x.T)?nf(x.T,1)+' Jahre':'nie'}</strong><small>Ziel ≤ ${x.n} Jahre</small></div>`;
 }
 
 function bindGlobals(){
-  const map={'g-b':'B','g-n':'n'};
+  const map={'g-b':'B'};
   for(const id in map){const el=document.getElementById(id);el.value=S[map[id]];el.oninput=()=>{S[map[id]]=Math.max(1,num(el.value));render();if(id==='g-b')renderEditor();else updateTco()}}
   const gn=document.getElementById('g-name'), m=meta(CUR);
   gn.value=m?m.name:'';
@@ -1077,7 +1078,7 @@ const TI={
  t_ist:['Kosten heute','Summe der jährlichen Betriebskosten (TCO heute) aller Fachverfahren mit Häkchen „Σ“. Entwürfe ohne Häkchen zählen nicht. Unten derselbe Wert geteilt durch die Bürger: Kosten pro Bürger und Jahr.'],
  t_cl:['Kosten in der Cloud','Summe der erwarteten jährlichen Betriebskosten nach der Migration (TCO Cloud) aller einbezogenen Fachverfahren. Unten: pro Bürger und Jahr.'],
  t_pct:['Ersparnis im Betrieb','Um wie viel Prozent die jährlichen Betriebskosten in der Cloud niedriger sind als heute: (Kosten heute − Kosten Cloud) ÷ Kosten heute. Der einmalige Migrationsbetrag ist nicht abgezogen. Unten der Betrag in Euro pro Jahr.'],
- t_e:['Netto-Ersparnis','Ersparnis im Betrieb minus Jahresrate der Migration (Summe Migrationsbetrag ÷ Verteilungszeitraum). Das bleibt pro Jahr, solange die Migrationskosten verteilt werden; danach gilt die volle Ersparnis. Unten: pro Bürger und Jahr.'],
+ t_e:['Netto-Ersparnis','Ersparnis im Betrieb minus Jahresrate der Migration (je Fachverfahren Migrationsbetrag ÷ dessen Verteilungszeitraum, summiert). Das bleibt pro Jahr, solange die Migrationskosten verteilt werden; danach gilt die volle Ersparnis. Unten: pro Bürger und Jahr.'],
  t_t:['Amortisation gesamt','Nach wie vielen Jahren die jährliche Ersparnis im Betrieb den gesamten Migrationsbetrag aller einbezogenen Verfahren wieder eingespielt hat: Summe Migrationsbetrag ÷ Ersparnis pro Jahr. „nie“ bedeutet: Die Cloud ist im Betrieb nicht günstiger.']
 };
 let TI_OPEN=null;
@@ -1095,6 +1096,7 @@ ed.addEventListener('input',e=>{const r=S.rows[S.sel];if(!r)return;const t=e.tar
   else if(t.id==='e-b')r.b=t.value===''?null:num(t.value);
   else if(t.dataset.g){r[t.dataset.g][t.dataset.k]=num(t.value);render();updateTco();return}
   else if(t.id==='e-mb')r.mb=num(t.value);
+  else if(t.id==='e-n'){const v=num(t.value);if(!(v>=1))return;r.n=Math.min(30,Math.round(v))}
   else return;render()});
 ed.addEventListener('change',e=>{if(e.target.id==='e-form'){S.rows[S.sel].form=e.target.value;render()}
   else if(e.target.id==='e-inc'){S.rows[S.sel].inc=e.target.checked;render();syncInc()}});
@@ -1118,7 +1120,7 @@ ed.addEventListener('click',e=>{
       if(!yes||S.rows[i]!==r)return;S.rows.splice(i,1);S.sel=Math.max(0,i-1);NOTE_OPEN=-1;NOTE_EDIT=-1;render();renderEditor();flash('Verfahren „'+(r.name||'Ohne Namen')+'“ gelöscht')})}
 });
 
-document.getElementById('b-add').addEventListener('click',()=>{S.rows.push({inc:false,name:'Neues Verfahren',form:'On-Premises',b:null,mb:50000,s:[3,3,3,3,3,3,3,3,3,3],ti:splitIst(100000,S.ts),tc:splitCloud(80000,S.ts)});S.sel=S.rows.length-1;render();renderEditor();const n=document.getElementById('e-name');n.focus();n.select();flash('Neues Verfahren als Entwurf angelegt – Häkchen „Σ“ setzen, wenn die Werte vollständig sind')});
+document.getElementById('b-add').addEventListener('click',()=>{S.rows.push({inc:false,n:S.n>0?S.n:5,name:'Neues Verfahren',form:'On-Premises',b:null,mb:50000,s:[3,3,3,3,3,3,3,3,3,3],ti:splitIst(100000,S.ts),tc:splitCloud(80000,S.ts)});S.sel=S.rows.length-1;render();renderEditor();const n=document.getElementById('e-name');n.focus();n.select();flash('Neues Verfahren als Entwurf angelegt – Häkchen „Σ“ setzen, wenn die Werte vollständig sind')});
 function arm(btn,label,fn){
   if(btn.classList.contains('armed')){clearTimeout(btn._t);btn.classList.remove('armed');btn.innerHTML=btn._l;fn();return}
   btn._l=btn.innerHTML;btn.textContent=label;btn.classList.add('armed');
@@ -1126,8 +1128,8 @@ function arm(btn,label,fn){
 }
 document.getElementById('b-reset').addEventListener('click',e=>arm(e.currentTarget,'Verfahren ersetzen? Nochmal klicken',()=>{const B=S.B,N=S.note;S=prepState(EXAMPLE());S.B=B;if(N)S.note=N;bindGlobals();render();renderEditor();flash('Beispieldaten geladen')}));
 document.getElementById('b-csv').addEventListener('click',()=>{
-  const h=['In Gesamtberechnung','Fachverfahren','Ausgangsform','Bürger','SF','Einstufung','Betriebskosten heute €/Jahr','Betriebskosten Cloud €/Jahr','Migrationsbetrag €','Kosten pro Bürger heute','Kosten pro Bürger Cloud','Netto-Ersparnis pro Bürger','Amortisation Jahre','Empfehlung',...CRIT.map(c=>c.t),'Notizen'];
-  const lines=[h.join(';')].concat(S.rows.map(r=>{const x=calc(r);return [isInc(r)?'ja':'nein',r.name,r.form,x.B,nf(x.sf,2),CLS[x.cls],r.ist,r.cloud,Math.round(x.M),nf(x.kI,2),nf(x.kC,2),nf(x.E,2),Number.isFinite(x.T)?nf(x.T,1):'nie',x.rec,...r.s,(r.note||'').trim()].map(v=>/[;"\n]/.test(String(v))?'"'+String(v).replace(/"/g,'""')+'"':v).join(';')}));
+  const h=['In Gesamtberechnung','Fachverfahren','Ausgangsform','Bürger','SF','Einstufung','Betriebskosten heute €/Jahr','Betriebskosten Cloud €/Jahr','Migrationsbetrag €','Verteilung Jahre','Kosten pro Bürger heute','Kosten pro Bürger Cloud','Netto-Ersparnis pro Bürger','Amortisation Jahre','Empfehlung',...CRIT.map(c=>c.t),'Notizen'];
+  const lines=[h.join(';')].concat(S.rows.map(r=>{const x=calc(r);return [isInc(r)?'ja':'nein',r.name,r.form,x.B,nf(x.sf,2),CLS[x.cls],r.ist,r.cloud,Math.round(x.M),x.n,nf(x.kI,2),nf(x.kC,2),nf(x.E,2),Number.isFinite(x.T)?nf(x.T,1):'nie',x.rec,...r.s,(r.note||'').trim()].map(v=>/[;"\n]/.test(String(v))?'"'+String(v).replace(/"/g,'""')+'"':v).join(';')}));
   const txt=lines.join('\n');
   const done=()=>flash('Tabelle kopiert – in Excel einfügen');
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done).catch(()=>fallback(txt))}else fallback(txt);
@@ -1142,7 +1144,7 @@ function summarize(st){
   const prev=S;S=st;const res=rows.map(calc);S=prev;
   const sum=f=>res.reduce((a,x)=>a+f(x),0);
   const I=rows.reduce((a,r)=>a+(r.ist||0),0),C=rows.reduce((a,r)=>a+(r.cloud||0),0);
-  return {B:st.B,n:rows.length,nAll:st.rows.length,yrs:st.n>0?st.n:5,kI:sum(x=>x.kI),kC:sum(x=>x.kC),E:sum(x=>x.E),d:sum(x=>x.d),M:sum(x=>x.M),I,C};
+  return {B:st.B,n:rows.length,nAll:st.rows.length,net:sum(x=>x.net),kI:sum(x=>x.kI),kC:sum(x=>x.kC),E:sum(x=>x.E),d:sum(x=>x.d),M:sum(x=>x.M),I,C};
 }
 function setTitle(){const m=meta(CUR);const n=(m&&m.name.trim())||'Kommune ohne Namen';document.getElementById('k-title').textContent=n;document.title=n+' · Migrationskalkulator'}
 function renderOverall(L){
@@ -1151,7 +1153,7 @@ function renderOverall(L){
   if(!L.length){el.hidden=true;el.innerHTML='';return}
   el.hidden=false;
   const D=L.reduce((a,x)=>a+x.d,0),I=L.reduce((a,x)=>a+x.I,0),C=L.reduce((a,x)=>a+x.C,0),M=L.reduce((a,x)=>a+x.M,0);
-  const NET=L.reduce((a,x)=>a+(x.d-x.M/x.yrs),0),B=L.reduce((a,x)=>a+x.B,0);
+  const NET=L.reduce((a,x)=>a+x.net,0),B=L.reduce((a,x)=>a+x.B,0);
   const pct=I>0?D/I*100:0,good=D>=0,T=D>0?M/D:Infinity;
   const cw=I>0?Math.min(100,C/I*100):0,sw=I>0?Math.max(0,100-cw):0,over=C>I&&I>0;
   el.innerHTML=`<div class="ovw-h"><span class="ovw-t" id="ovw-t">Gesamtübersicht aller Kommunen${oBtn('ovw')}</span><span class="ovw-u">${L.length} ${L.length===1?'Kommune':'Kommunen'} mit Fachverfahren · ${eur(B)} Einwohner</span></div>${oInfo('ovw')}
@@ -1219,8 +1221,8 @@ const OINFO={
  cloud:'Summe der laufenden Kosten in der Cloud (TCO Cloud) aller Fachverfahren aller Kommunen pro Jahr.',
  mig:'Summe der einmaligen Migrationskosten aller Fachverfahren: Migration Basis × Aufschlag nach Schwierigkeitsfaktor.',
  amort:'Migrationsbetrag ÷ Gesamtersparnis im Betrieb. Nach so vielen Jahren haben die geringeren Betriebskosten die Migration bezahlt. „nie“ bedeutet: Die Cloud ist im Betrieb nicht günstiger.',
- net:'Ersparnis im Betrieb minus Jahresrate der Migration (Migrationsbetrag ÷ Verteilungszeitraum der jeweiligen Kommune, Standard 5 Jahre). Die Migrationskosten werden gleichmäßig auf den Verteilungszeitraum verteilt; nach dessen Ende bleibt die volle Ersparnis im Betrieb.',
- after:'Ersparnis pro Jahr, sobald der Verteilungszeitraum der Migrationskosten vorbei ist (Standard 5 Jahre). Dann fällt die Jahresrate der Migration weg, und die volle Ersparnis im Betrieb bleibt: TCO heute minus TCO Cloud, summiert über alle Kommunen.',
+ net:'Ersparnis im Betrieb minus Jahresrate der Migration (Migrationsbetrag ÷ Verteilungszeitraum des jeweiligen Fachverfahrens). Die Migrationskosten werden gleichmäßig auf den Verteilungszeitraum verteilt; nach dessen Ende bleibt die volle Ersparnis im Betrieb.',
+ after:'Ersparnis pro Jahr, sobald die Verteilungszeiträume der Migrationskosten aller Fachverfahren vorbei sind. Dann fällt die Jahresrate der Migration weg, und die volle Ersparnis im Betrieb bleibt: TCO heute minus TCO Cloud, summiert über alle Kommunen.',
  pct:'Gesamtersparnis im Betrieb ÷ Betriebskosten heute. Die Balken zeigen die Betriebskosten heute als 100 % und die Cloud-Kosten als Anteil davon; der gestrichelte Teil ist die Ersparnis.'
 };
 const OPEN_O=new Set();

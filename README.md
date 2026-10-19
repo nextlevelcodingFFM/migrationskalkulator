@@ -8,7 +8,7 @@ Webbasierter Kalkulator zur Vorbereitung der Migration von Fachverfahren (On-Pre
 - **Schwierigkeitsfaktor (SF 1,0–5,0):** gewichteter Mittelwert aus zehn Kriterien, jeweils mit 1 bis 5 bewertet, mit Erläuterung zu jedem Kriterium. Gewichte: Architektur und Cloudfähigkeit 30 %, Schnittstellen 12 %, Technologiealter 12 %, Client- und Hardwarebindung 10 %, Datenmigration 8 %, Kritikalität 8 %, Lizenz 7 %, Schutzbedarf 6 %, Organisation 4 %, Ausgangsform 3 %. Am stärksten zählt, was Neuprogrammierung und umfangreiche Tests erfordert.
 - **Einstufung und Aufschlag:** gering (× 1,0), mittel (× 1,5), hoch (× 2,5), sehr hoch (× 4,0) auf den Basis-Migrationsaufwand.
 - **TCO heute und in der Cloud:** Aufbau aus einzelnen Kostenblöcken (Hardware, Rechenzentrum, Lizenzen, Personal, Client, Netz bzw. Rechenleistung, Speicher, Backup, Plattformumlage).
-- **Kosten pro Bürger:** heute und nach Migration, Netto-Ersparnis nach Abzug der verteilten Migrationskosten, Amortisationsdauer.
+- **Kosten pro Bürger:** heute und nach Migration, Netto-Ersparnis nach Abzug der verteilten Migrationskosten, Amortisationsdauer. Der Verteilungszeitraum der Migrationskosten wird je Fachverfahren festgelegt.
 - **Empfehlung:** Migrationsreihenfolge oder Prüfung von SaaS, Weiterbetrieb oder Ablösung.
 - **Entwürfe:** Häkchen „Σ“ je Fachverfahren. Nur angehakte Verfahren fließen in Summen, Kacheln und Startseite ein; neue Verfahren starten als Entwurf ohne Häkchen, damit halb erfasste Werte die Gesamtkosten nicht verfälschen.
 - **Export:** Tabelle als CSV in die Zwischenablage kopieren und in Excel einfügen.
@@ -47,7 +47,7 @@ SF       = Σ (Gewicht_i × Bewertung_i)
 M        = Migration Basis × Aufschlag(SF)
 K Ist    = TCO Ist / Bürger
 K Cloud  = TCO Cloud / Bürger
-E netto  = (TCO Ist − TCO Cloud − M / n) / Bürger
+E netto  = (TCO Ist − TCO Cloud − M / n) / Bürger      (n = Verteilungszeitraum des Fachverfahrens)
 T Amort  = M / (TCO Ist − TCO Cloud)
 ```
 
