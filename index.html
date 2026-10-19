@@ -455,6 +455,23 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 .cdlg-b button{min-width:140px;padding:8px 16px}
 .cdlg-ok{background:var(--crit);border-color:var(--crit);color:#fff;font-weight:600}
 .cdlg-ok:hover{background:#4a1229;border-color:#4a1229}
+
+.ei-h{display:inline-flex;align-items:center;gap:3px}
+.thi.thi-d{color:var(--muted)}
+.thi.thi-d:hover{background:var(--line);color:var(--fg)}
+.thi.thi-d[aria-expanded=true]{color:var(--teal-text);background:var(--teal-soft)}
+.ebi{width:16px;height:16px}
+.lbl{display:inline-flex;align-items:center;gap:3px}
+.lbl label{margin:0}
+.ei{padding:10px 14px;background:var(--teal-soft);border-left:3px solid var(--teal);border-radius:4px;font-size:.84rem;line-height:1.5;color:var(--fg)}
+.ei strong{display:block;margin-bottom:2px;font-weight:600;color:var(--ink)}
+.ei span{display:block;max-width:95ch}
+.tcol .ei{margin:10px 12px 0;border-radius:4px}
+.sfbox .ei{margin:10px 16px 0}
+.notes .ei{margin:0}
+.notes-h .thi svg{width:10px;height:10px;fill:currentColor;stroke:none}
+.rc>span.ei-h{display:block}
+.rc>span.ei-h .thi{display:inline-flex;vertical-align:-3px;margin-left:2px}
 </style>
 </head>
 <body>
@@ -810,9 +827,9 @@ const PEN_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 
 const OK_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 function noteBox(o){const ed=!!o.edit,v=o.value||'';
   return `<div class="notes ${ed?'is-edit':'is-ro'}" data-notebox="${o.key}">
-   <div class="notes-h">${NOTE_ICON}<label for="${o.tid}">${o.label}</label><span class="notes-c" id="${o.tid}-c"></span>
+   <div class="notes-h">${NOTE_ICON}<label for="${o.tid}">${o.label}</label>${o.info?iBtn(o.info,1):''}<span class="notes-c" id="${o.tid}-c"></span>
     <button type="button" class="notes-btn" data-noteedit="${o.key}" aria-pressed="${ed}" aria-controls="${o.tid}">${ed?OK_ICON+'Fertig':PEN_ICON+'Ändern'}</button></div>
-   <textarea id="${o.tid}" rows="1" ${ed?'':'readonly'} placeholder="${ed?o.ph:'Noch keine Notizen. Zum Erfassen auf „Ändern“ klicken.'}">${esc(v)}</textarea>
+   ${o.info?eiPanel(o.info):''}<textarea id="${o.tid}" rows="1" ${ed?'':'readonly'} placeholder="${ed?o.ph:'Noch keine Notizen. Zum Erfassen auf „Ändern“ klicken.'}">${esc(v)}</textarea>
   </div>`}
 function noteSize(t){if(!t)return;t.style.height='auto';t.style.height=(t.readOnly?t.scrollHeight+2:Math.max(t.scrollHeight+2,84))+'px'}
 function noteCount(t){const c=document.getElementById(t.id+'-c');if(!c)return;const n=t.value.trim().length;
@@ -821,6 +838,34 @@ function noteSet(box,ed){const t=box.querySelector('textarea'),b=box.querySelect
   t.readOnly=!ed;box.classList.toggle('is-edit',ed);box.classList.toggle('is-ro',!ed);b.setAttribute('aria-pressed',ed);b.innerHTML=ed?OK_ICON+'Fertig':PEN_ICON+'Ändern';
   t.placeholder=ed?(box.dataset.ph||''):'Noch keine Notizen. Zum Erfassen auf „Ändern“ klicken.';noteSize(t);noteCount(t);
   if(ed){t.focus();const n=t.value.length;t.setSelectionRange(n,n)}}
+/* Erklärungen (Dreiecke) im Bereich „Fachverfahren bearbeiten“ */
+const EI={
+ ed:['Fachverfahren bearbeiten','Hier werden Kosten, Bewertung und Notizen des Verfahrens erfasst, das in der Tabelle oben ausgewählt ist. Jede Änderung wird sofort neu berechnet, in Tabelle und Kacheln übernommen und automatisch gespeichert. Mit „Σ“ bzw. „In Gesamtberechnung“ legst du fest, ob das Verfahren in die Gesamtwerte der Kommune einfließt.'],
+ diff:['Ersparnis im laufenden Betrieb','Unterschied der jährlichen Betriebskosten dieses Verfahrens: TCO heute minus TCO Cloud. Der einmalige Migrationsbetrag ist hier nicht abgezogen. Die Prozentzahl setzt die Ersparnis ins Verhältnis zu TCO heute. Die Balken zeigen TCO heute als 100 % und TCO Cloud als Anteil davon; der gestrichelte Teil ist die Ersparnis.'],
+ r_ist:['TCO heute','Summe aller laufenden Kosten des Verfahrens pro Jahr im heutigen Betrieb, aus der Tabelle „TCO heute“ unten.'],
+ r_cl:['TCO Cloud','Summe aller erwarteten laufenden Kosten pro Jahr nach der Migration, aus der Tabelle „TCO in der Cloud“ unten.'],
+ r_sf:['Schwierigkeit','Schwierigkeitsfaktor SF von 1,0 bis 5,0: gewichteter Mittelwert der zehn Kriterien unten. Daraus folgt die Einstufung gering (unter 2), mittel (unter 3), hoch (unter 4) oder sehr hoch.'],
+ r_m:['Migrationsbetrag','Einmalige Kosten der Umstellung: Migrationsbetrag Basis × Aufschlag der Einstufung (gering × 1,0, mittel × 1,5, hoch × 2,5, sehr hoch × 4,0). Die Basis wird im Feld „Migrationsbetrag Basis“ eingetragen.'],
+ r_kb:['Kosten pro Bürger','Jährliche Kosten pro Bürger heute und in der Cloud: TCO heute bzw. TCO Cloud geteilt durch die Bürgerzahl des Verfahrens (leer = Einwohner der Kommune).'],
+ r_e:['Netto-Ersparnis','Ersparnis pro Bürger und Jahr nach Abzug der Migrationskosten: (TCO heute − TCO Cloud − Migrationsbetrag ÷ Verteilungszeitraum) ÷ Bürger. Nach Ablauf des Verteilungszeitraums bleibt die volle Ersparnis.'],
+ r_t:['Amortisation','Nach wie vielen Jahren die laufende Ersparnis den Migrationsbetrag wieder eingespielt hat: Migrationsbetrag ÷ (TCO heute − TCO Cloud). Rot, wenn das länger dauert als der Verteilungszeitraum oder nie eintritt.'],
+ note:['Notizen zum Fachverfahren','Freier Text zum Verfahren, z. B. Ansprechpartner, Hersteller, Vertragslaufzeit, Abhängigkeiten oder offene Fragen. Das Feld ist schreibgeschützt; mit „Ändern“ wird es beschreibbar, mit „Fertig“ wieder gesperrt. Gespeichert wird automatisch.'],
+ f_name:['Name des Verfahrens','Bezeichnung des Fachverfahrens. Sie erscheint in der Tabelle, im CSV-Export und als Überschrift dieses Bereichs.'],
+ f_form:['Ausgangsform','Heutige Betriebsform: On-Premises im eigenen Rechenzentrum, bereits in einer anderen Cloud oder als Client-Server-Anwendung. Sie dient der Einordnung in der Tabelle; wie schwierig der Wechsel dadurch wird, bewertest du im Kriterium „Ausgangsform“ unten.'],
+ f_b:['Bürger','Zahl der Bürger, für die das Verfahren zuständig ist, z. B. bei Verfahren, die nur einen Teil der Bevölkerung betreffen. Leer lassen, dann gilt die Einwohnerzahl der Kommune. Grundlage aller Werte pro Bürger.'],
+ f_mb:['Migrationsbetrag Basis €','Geschätzter einmaliger Aufwand der Migration ohne Schwierigkeitsaufschlag: Projektleitung, Dienstleister, Anpassungen, Tests, Datenübernahme und Schulung. Er wird mit dem Aufschlag der Einstufung multipliziert und ergibt den Migrationsbetrag.'],
+ tco_ti:['TCO heute','Total Cost of Ownership im heutigen Betrieb: alle laufenden Kosten des Verfahrens pro Jahr. Dazu zählen Hardware-Abschreibung, Rechenzentrum (Fläche, Strom, Klima), Lizenzen und Wartung, Betriebspersonal (Personentage × Tagessatz), Client-Kosten und Netz. Zu jeder Zeile erklärt „Wie ermittle ich den Wert?“, woher die Zahl kommt.'],
+ tco_tc:['TCO in der Cloud','Erwartete laufende Kosten pro Jahr nach der Migration: Rechenleistung und Speicher (monatliche Werte × 12), Backup, Plattformumlage des Cloud-Betreibers, Lizenzen, verbleibendes Betriebspersonal, Client-Kosten und Netz. Werte am besten aus Angebot oder Preisrechner des Cloud-Anbieters übernehmen.'],
+ sf:['Schwierigkeitsfaktor (SF)','Bewerte jedes der zehn Kriterien von 1 (einfach) bis 5 (sehr schwer). Der SF ist der gewichtete Mittelwert; am stärksten zählt Architektur und Cloudfähigkeit mit 30 %, weil Neuprogrammierung und umfangreiche Tests den größten Aufwand verursachen. Der SF bestimmt die Einstufung und damit den Aufschlag auf den Migrationsbetrag.']
+};
+const EI_GROUP={r_ist:'res',r_cl:'res',r_sf:'res',r_m:'res',r_kb:'res',r_e:'res',r_t:'res',f_name:'fld',f_form:'fld',f_b:'fld',f_mb:'fld'};
+const EI_OPEN={};
+const eiG=k=>EI_GROUP[k]||k;
+function iBtn(k,dark){const on=EI_OPEN[eiG(k)]===k;return `<button type="button" class="thi ebi${dark?' thi-d':''}" data-ei="${k}" aria-expanded="${on}" aria-label="Erklärung zu ${EI[k][0]}"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1.5 7.5 5 3 8.5z"/></svg></button>`}
+const eiPanel=k=>`<div class="ei" data-eipanel="${k}" hidden></div>`;
+function eiSync(){const ed=document.getElementById('editor');if(!ed)return;
+  ed.querySelectorAll('button[data-ei]').forEach(b=>b.setAttribute('aria-expanded',EI_OPEN[eiG(b.dataset.ei)]===b.dataset.ei));
+  ed.querySelectorAll('[data-eipanel]').forEach(p=>{const k=EI_OPEN[p.dataset.eipanel];if(k&&EI[k]){p.hidden=false;p.innerHTML=`<strong>${EI[k][0]}</strong><span>${EI[k][1]}</span>`}else{p.hidden=true;p.innerHTML=''}})}
 let NOTE_EDIT=-1,NOTE_OPEN=-1,KC_EDIT=null,KC_OPEN=false;
 const KN_PH='Freie Notizen zur Kommune, z. B. Ansprechpartner, Stand der Abstimmung, Termine, Besonderheiten der IT-Landschaft …';
 function kNoteBtn(){const b=document.getElementById('b-knote');if(!b||!S)return;const has=!!(S.note||'').trim();
@@ -841,22 +886,27 @@ function renderEditor(){
   if(!S.rows.length){ed.innerHTML='<h2>Kein Verfahren erfasst</h2><p class="note">Mit „Verfahren hinzufügen“ ein erstes Fachverfahren anlegen.</p>';return}
   if(S.sel>=S.rows.length)S.sel=S.rows.length-1;
   const r=S.rows[S.sel];
-  ed.innerHTML=`<div class="ed-head"><div class="ed-hl"><span class="eyebrow">Fachverfahren bearbeiten</span><h2 id="ed-title">${esc(r.name||'Ohne Namen')}</h2></div><div class="ed-act"><button type="button" class="ed-note${(r.note||'').trim()?' has-note':''}" id="b-vnote" aria-expanded="${NOTE_OPEN===S.sel}" aria-controls="v-note" title="Notizen zum Fachverfahren">${NOTE_ICON}<span>Notizen</span><i class="hd-dot" aria-hidden="true"></i></button><label class="incsw" id="e-inc-l"><input type="checkbox" id="e-inc" ${isInc(r)?'checked':''}><span id="e-inc-t"></span></label><button class="danger" id="b-del">Verfahren entfernen</button></div></div>
-   <div id="v-note"${NOTE_OPEN===S.sel?'':' hidden'}>${noteBox({key:'v',tid:'e-note',label:'Notizen zum Fachverfahren',value:r.note,edit:NOTE_EDIT===S.sel,ph:'Freie Notizen, z. B. Ansprechpartner, Hersteller und Vertragslaufzeit, Abhängigkeiten zu anderen Verfahren, offene Fragen, nächste Schritte …'})}</div>
+  ed.innerHTML=`<div class="ed-head"><div class="ed-hl"><span class="eyebrow ei-h">Fachverfahren bearbeiten${iBtn('ed',1)}</span><h2 id="ed-title">${esc(r.name||'Ohne Namen')}</h2></div><div class="ed-act"><button type="button" class="ed-note${(r.note||'').trim()?' has-note':''}" id="b-vnote" aria-expanded="${NOTE_OPEN===S.sel}" aria-controls="v-note" title="Notizen zum Fachverfahren">${NOTE_ICON}<span>Notizen</span><i class="hd-dot" aria-hidden="true"></i></button><label class="incsw" id="e-inc-l"><input type="checkbox" id="e-inc" ${isInc(r)?'checked':''}><span id="e-inc-t"></span></label><button class="danger" id="b-del">Verfahren entfernen</button></div></div>
+   ${eiPanel('ed')}
+   <div id="v-note"${NOTE_OPEN===S.sel?'':' hidden'}>${noteBox({key:'v',info:'note',tid:'e-note',label:'Notizen zum Fachverfahren',value:r.note,edit:NOTE_EDIT===S.sel,ph:'Freie Notizen, z. B. Ansprechpartner, Hersteller und Vertragslaufzeit, Abhängigkeiten zu anderen Verfahren, offene Fragen, nächste Schritte …'})}</div>
    <div class="tcodiff" id="tco-diff" role="status" aria-live="polite"></div>
+   ${eiPanel('diff')}
    <div class="result" id="ed-res" aria-label="Ergebnis für dieses Verfahren"></div>
+   ${eiPanel('res')}
    <div class="ed-grid">
-    <div class="field f-name"><label for="e-name">Name des Verfahrens</label><input id="e-name" type="text" value="${esc(r.name)}"></div>
-    <div class="field"><label for="e-form">Ausgangsform</label><select id="e-form">${FORMS.map(f=>`<option ${f===r.form?'selected':''}>${f}</option>`).join('')}</select></div>
-    <div class="field"><label for="e-b">Bürger</label><input id="e-b" type="number" min="0" step="1000" value="${r.b>0?r.b:''}" placeholder="${eur(S.B)}"><span class="fhelp">leer = Einwohner der Kommune</span></div>
-    <div class="field"><label for="e-mb">Migrationsbetrag Basis €</label><input id="e-mb" type="number" min="0" step="1000" value="${r.mb}"><span class="fhelp">ohne Aufschlag</span></div>
+    <div class="field f-name"><span class="lbl"><label for="e-name">Name des Verfahrens</label>${iBtn('f_name',1)}</span><input id="e-name" type="text" value="${esc(r.name)}"></div>
+    <div class="field"><span class="lbl"><label for="e-form">Ausgangsform</label>${iBtn('f_form',1)}</span><select id="e-form">${FORMS.map(f=>`<option ${f===r.form?'selected':''}>${f}</option>`).join('')}</select></div>
+    <div class="field"><span class="lbl"><label for="e-b">Bürger</label>${iBtn('f_b',1)}</span><input id="e-b" type="number" min="0" step="1000" value="${r.b>0?r.b:''}" placeholder="${eur(S.B)}"><span class="fhelp">leer = Einwohner der Kommune</span></div>
+    <div class="field"><span class="lbl"><label for="e-mb">Migrationsbetrag Basis €</label>${iBtn('f_mb',1)}</span><input id="e-mb" type="number" min="0" step="1000" value="${r.mb}"><span class="fhelp">ohne Aufschlag</span></div>
    </div>
+   ${eiPanel('fld')}
    <div class="tco">
     ${tcoCol('ti','TCO heute',IST_LINES,r.ti,'s-ist')}
     ${tcoCol('tc','TCO in der Cloud',CLOUD_LINES,r.tc,'s-cloud')}
    </div>
    <section class="sfbox" aria-labelledby="sfbox-t">
-    <div class="sfbox-h"><div class="sfbox-l"><span class="sfbox-t" id="sfbox-t">Schwierigkeitsfaktor (SF)</span><span class="sfbox-u">10 Kriterien · Bewertung 1 = einfach bis 5 = sehr schwer · gewichtet</span></div><div class="sfbox-r" id="sf-live"></div></div>
+    <div class="sfbox-h"><div class="sfbox-l"><span class="sfbox-t ei-h" id="sfbox-t">Schwierigkeitsfaktor (SF)${iBtn('sf')}</span><span class="sfbox-u">10 Kriterien · Bewertung 1 = einfach bis 5 = sehr schwer · gewichtet</span></div><div class="sfbox-r" id="sf-live"></div></div>
+    ${eiPanel('sf')}
     <div class="sfscale" aria-hidden="true">
      <div class="sfbar">${SFBANDS.map((b,i)=>`<span class="sfseg sfseg-${i}"></span>`).join('')}<span class="sfmark" id="sf-mark"><b id="sf-mark-v"></b></span></div>
      <div class="sfticks">${SFBANDS.map((b,i)=>`<span><b>${CLS[i]}</b><i> SF ${b} · × ${nf(AUFS[i],1)}</i></span>`).join('')}</div>
@@ -872,10 +922,10 @@ function renderEditor(){
      <div class="h" id="h-${k}">${hint(c,r.s[k])}</div>
      <details class="more"><summary>Was bedeutet das Kriterium?</summary><p>${c.d}</p></details></div>`).join('')}</div>
    </section>`;
-  renderResult();updateTco();syncInc();noteUi();
+  renderResult();updateTco();syncInc();noteUi();eiSync();
 }
 function tcoCol(g,title,L,o,sid){
-  return `<div class="tcol tcol-${g}"><div class="tcol-h"><span class="tcol-t">${title}</span><span class="tcol-u">€ pro Jahr</span></div><div class="tcol-b">
+  return `<div class="tcol tcol-${g}"><div class="tcol-h"><span class="tcol-t ei-h">${title}${iBtn('tco_'+g)}</span><span class="tcol-u">€ pro Jahr</span></div>${eiPanel('tco_'+g)}<div class="tcol-b">
    ${L.map(l=>`<div class="tl"><div class="tl-t"><span class="t">${l.t}</span><span class="d">${l.d}</span></div>
      <div class="tl-v num" id="v-${g}-${l.id}"></div>
      <div class="tl-in">${l.f.map(([k,lab])=>`<label class="mini"><span>${lab}</span><input id="i-${g}-${k}" type="number" min="0" step="any" data-g="${g}" data-k="${k}" value="${o[k]??0}"></label>`).join('')}</div>
@@ -894,7 +944,7 @@ function updateTco(){
   box.className='tcodiff '+(good?'is-pos':'is-neg');
   const cw=b/mx*100,iw=a/mx*100;
   box.innerHTML=`<div class="td-main">
-     <span class="td-l">${good?'Ersparnis':'Mehrkosten'} im laufenden Betrieb</span>
+     <span class="td-l ei-h">${good?'Ersparnis':'Mehrkosten'} im laufenden Betrieb${iBtn('diff',1)}</span>
      <div class="td-kpis">
       <div class="td-k"><strong class="num ${good?'pos':'neg'}">${eur(Math.abs(d))} €</strong><span>pro Jahr</span></div>
       <div class="td-k"><strong class="num ${good?'pos':'neg'}">${a>0?(good?'−':'+')+nf(pct,0)+' %':'–'}</strong><span>gegenüber heute</span></div>
@@ -903,7 +953,7 @@ function updateTco(){
    <div class="td-bars">
      <div class="td-row"><span class="td-n">TCO heute</span><div class="td-track"><i class="td-ist" style="width:${iw.toFixed(1)}%"></i></div><b class="num">${eur(a)} €</b><b class="num td-p">${a>0?'100 %':'–'}</b></div>
      <div class="td-row"><span class="td-n">TCO Cloud</span><div class="td-track"><i class="td-cl" style="width:${cw.toFixed(1)}%"></i>${good&&d>0?`<i class="td-sv" style="left:${cw.toFixed(1)}%;width:${(iw-cw).toFixed(1)}%"></i>`:''}</div><b class="num">${eur(b)} €</b><b class="num td-p">${a>0?nf(b/a*100,0)+' %':'–'}</b></div>
-     <p class="td-note">Laufende Betriebskosten pro Jahr, ohne Migrationsbetrag. ${good&&d>0?'Gestrichelt: Ersparnis.':''}</p>
+     ${''}<p class="td-note">Laufende Betriebskosten pro Jahr, ohne Migrationsbetrag. ${good&&d>0?'Gestrichelt: Ersparnis.':''}</p>
    </div>`;
 }
 function hint(c,v){return c.h[v-1]||('Zwischen „'+c.h[v-2]+'“ und „'+c.h[v]+'“')}
@@ -913,13 +963,13 @@ function renderResult(){
   const sl=document.getElementById('sf-live');if(sl)sl.innerHTML=`<span class="sfv num">SF ${nf(x.sf,2)}</span><span class="pill p${x.cls}">${CLS[x.cls]}</span>`;
   const mk=document.getElementById('sf-mark');if(mk){mk.style.left=Math.max(0,Math.min(100,(x.sf-1)/4*100))+'%';document.getElementById('sf-mark-v').textContent=nf(x.sf,2)}
   const r=S.rows[S.sel];
-  el.innerHTML=`<div class="rc"><span>TCO heute</span><strong>${eur(r.ist)} €</strong><small>pro Jahr</small></div>
-   <div class="rc"><span>TCO Cloud</span><strong>${eur(r.cloud)} €</strong><small>pro Jahr</small></div>
-   <div class="rc"><span>Schwierigkeit</span><strong>SF ${nf(x.sf,2)}</strong><small><span class="pill p${x.cls}">${CLS[x.cls]}</span></small></div>
-   <div class="rc"><span>Migrationsbetrag</span><strong>${eur(x.M)} €</strong><small class="rc-base"><span>Basis</span><output class="ro-mini num" aria-label="Migrationsbetrag Basis (schreibgeschützt)">${eur(r.mb)} €</output></small><small>× ${nf(S.aufs[x.cls],1)} Aufschlag</small></div>
-   <div class="rc"><span>Kosten pro Bürger</span><strong>${nf(x.kI,2)} → ${nf(x.kC,2)} €</strong><small>heute → Cloud</small></div>
-   <div class="rc rc-hl"><span>Netto-Ersparnis</span><strong class="${x.E<0?'neg':'pos'}">${nf(x.E,2)} €</strong><small>pro Bürger und Jahr</small></div>
-   <div class="rc"><span>Amortisation</span><strong class="${Number.isFinite(x.T)&&x.T<=S.n?'':'neg'}">${Number.isFinite(x.T)?nf(x.T,1)+' Jahre':'nie'}</strong><small>Ziel ≤ ${S.n} Jahre</small></div>`;
+  el.innerHTML=`<div class="rc"><span class="ei-h">TCO heute${iBtn('r_ist',1)}</span><strong>${eur(r.ist)} €</strong><small>pro Jahr</small></div>
+   <div class="rc"><span class="ei-h">TCO Cloud${iBtn('r_cl',1)}</span><strong>${eur(r.cloud)} €</strong><small>pro Jahr</small></div>
+   <div class="rc"><span class="ei-h">Schwierigkeit${iBtn('r_sf',1)}</span><strong>SF ${nf(x.sf,2)}</strong><small><span class="pill p${x.cls}">${CLS[x.cls]}</span></small></div>
+   <div class="rc"><span class="ei-h">Migrationsbetrag${iBtn('r_m',1)}</span><strong>${eur(x.M)} €</strong><small class="rc-base"><span>Basis</span><output class="ro-mini num" aria-label="Migrationsbetrag Basis (schreibgeschützt)">${eur(r.mb)} €</output></small><small>× ${nf(S.aufs[x.cls],1)} Aufschlag</small></div>
+   <div class="rc"><span class="ei-h">Kosten pro Bürger${iBtn('r_kb',1)}</span><strong>${nf(x.kI,2)} → ${nf(x.kC,2)} €</strong><small>heute → Cloud</small></div>
+   <div class="rc rc-hl"><span class="ei-h">Netto-Ersparnis${iBtn('r_e',1)}</span><strong class="${x.E<0?'neg':'pos'}">${nf(x.E,2)} €</strong><small>pro Bürger und Jahr</small></div>
+   <div class="rc"><span class="ei-h">Amortisation${iBtn('r_t',1)}</span><strong class="${Number.isFinite(x.T)&&x.T<=S.n?'':'neg'}">${Number.isFinite(x.T)?nf(x.T,1)+' Jahre':'nie'}</strong><small>Ziel ≤ ${S.n} Jahre</small></div>`;
 }
 
 function bindGlobals(){
@@ -988,6 +1038,8 @@ function noteUi(){const t=document.getElementById('e-note');if(!t)return;const b
 function syncInc(){const r=S.rows[S.sel],c=document.getElementById('e-inc');if(!r||!c)return;const on=isInc(r);c.checked=on;
   document.getElementById('e-inc-t').textContent=on?'In Gesamtberechnung':'Entwurf – nicht in Gesamtberechnung';document.getElementById('e-inc-l').classList.toggle('is-off',!on)}
 ed.addEventListener('click',e=>{
+  const eb=e.target.closest('button[data-ei]');
+  if(eb){e.preventDefault();const k=eb.dataset.ei,g=eiG(k);EI_OPEN[g]=EI_OPEN[g]===k?null:k;eiSync();const nb=document.querySelector(`#editor button[data-ei="${k}"]`);if(nb)nb.focus();return}
   const vb=e.target.closest('#b-vnote');
   if(vb){const on=NOTE_OPEN!==S.sel;NOTE_OPEN=on?S.sel:-1;if(!on)NOTE_EDIT=-1;vb.setAttribute('aria-expanded',on);const h=document.getElementById('v-note');h.hidden=!on;
     if(!on){const bx=h.querySelector('.notes');if(bx&&bx.classList.contains('is-edit'))noteSet(bx,false)}else noteUi();return}
