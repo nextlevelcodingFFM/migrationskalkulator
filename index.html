@@ -444,6 +444,17 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 .ed-note .hd-dot{box-shadow:0 0 0 2px #fff}
 .ed-note.has-note .hd-dot{display:inline-block}
 .ed-note[aria-expanded=true] .hd-dot{box-shadow:0 0 0 2px var(--teal)}
+
+.cdlg{border:none;border-radius:10px;padding:26px 26px 20px;max-width:440px;width:calc(100% - 32px);box-shadow:0 18px 50px rgba(0,40,55,.28);color:var(--fg);text-align:center;border-top:5px solid var(--crit)}
+.cdlg::backdrop{background:rgba(0,45,60,.45)}
+.cdlg-ic{width:48px;height:48px;border-radius:50%;background:var(--crit-soft);color:var(--crit);display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.cdlg-ic svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.cdlg h2{margin:0 0 8px;font-size:1.15rem;color:var(--ink)}
+.cdlg p{margin:0 0 20px;font-size:.9rem;line-height:1.5;color:var(--muted)}
+.cdlg-b{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.cdlg-b button{min-width:140px;padding:8px 16px}
+.cdlg-ok{background:var(--crit);border-color:var(--crit);color:#fff;font-weight:600}
+.cdlg-ok:hover{background:#4a1229;border-color:#4a1229}
 </style>
 </head>
 <body>
@@ -541,6 +552,12 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
  </div>
 </div>
 
+<dialog id="cdlg" class="cdlg" aria-labelledby="cdlg-t" aria-describedby="cdlg-x">
+  <div class="cdlg-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></div>
+  <h2 id="cdlg-t"></h2>
+  <p id="cdlg-x"></p>
+  <div class="cdlg-b"><button type="button" id="cdlg-no">Abbrechen</button><button type="button" class="cdlg-ok" id="cdlg-ok"></button></div>
+</dialog>
 <script>
 const CRIT=[
  {t:'Architektur und Cloudfähigkeit',w:.30,h:['Container, zustandslos','','Virtualisierter Mehrschicht-Monolith','','Monolith mit festen Servernamen, Fat Client'],
@@ -812,6 +829,13 @@ function kNoteBtn(){const b=document.getElementById('b-knote');if(!b||!S)return;
 function renderKNote(){const host=document.getElementById('k-note');if(!host||!S)return;kNoteBtn();if(!KC_OPEN){host.innerHTML='';return}const t=document.getElementById('g-note');if(t&&document.activeElement===t&&!t.readOnly)return;
   host.innerHTML=noteBox({key:'kc',tid:'g-note',label:'Notizen zur Kommune',value:S.note,edit:KC_EDIT===CUR,ph:KN_PH});
   const bx=host.querySelector('.notes');bx.dataset.ph=KN_PH;const nt=bx.querySelector('textarea');noteSize(nt);noteCount(nt)}
+function confirmDlg(o){const d=document.getElementById('cdlg');
+  document.getElementById('cdlg-t').textContent=o.title;document.getElementById('cdlg-x').textContent=o.text;document.getElementById('cdlg-ok').textContent=o.ok||'OK';
+  return new Promise(res=>{let done=false;const fin=v=>{if(done)return;done=true;try{d.close()}catch(e){}d.removeAttribute('open');res(v)};
+    document.getElementById('cdlg-ok').onclick=()=>fin(true);document.getElementById('cdlg-no').onclick=()=>fin(false);
+    d.oncancel=e=>{e.preventDefault();fin(false)};d.onclick=e=>{if(e.target===d)fin(false)};
+    if(typeof d.showModal==='function')d.showModal();else{if(!confirm(o.title+'\n\n'+o.text))return fin(false);return fin(true)}
+    document.getElementById('cdlg-no').focus()})}
 function renderEditor(){
   const ed=document.getElementById('editor');
   if(!S.rows.length){ed.innerHTML='<h2>Kein Verfahren erfasst</h2><p class="note">Mit „Verfahren hinzufügen“ ein erstes Fachverfahren anlegen.</p>';return}
@@ -973,7 +997,9 @@ ed.addEventListener('click',e=>{
   if(b){const k=+b.dataset.k,v=+b.dataset.v;S.rows[S.sel].s[k]=v;
     b.parentElement.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.v===v));
     document.getElementById('h-'+k).textContent=hint(CRIT[k],v);render();return}
-  if(e.target.id==='b-del'){S.rows.splice(S.sel,1);S.sel=Math.max(0,S.sel-1);render();renderEditor();flash('Verfahren entfernt')}
+  if(e.target.id==='b-del'){const i=S.sel,r=S.rows[i];if(!r)return;
+    confirmDlg({title:'Verfahren wirklich löschen?',text:`„${r.name||'Ohne Namen'}“ wird mit allen Kosten, Bewertungen und Notizen dauerhaft entfernt. Das lässt sich nicht rückgängig machen.`,ok:'Endgültig löschen'}).then(yes=>{
+      if(!yes||S.rows[i]!==r)return;S.rows.splice(i,1);S.sel=Math.max(0,i-1);NOTE_OPEN=-1;NOTE_EDIT=-1;render();renderEditor();flash('Verfahren „'+(r.name||'Ohne Namen')+'“ gelöscht')})}
 });
 
 document.getElementById('b-add').addEventListener('click',()=>{S.rows.push({inc:false,name:'Neues Verfahren',form:'On-Premises',b:null,mb:50000,s:[3,3,3,3,3,3,3,3,3,3],ti:splitIst(100000,S.ts),tc:splitCloud(80000,S.ts)});S.sel=S.rows.length-1;render();renderEditor();const n=document.getElementById('e-name');n.focus();n.select();flash('Neues Verfahren als Entwurf angelegt – Häkchen „Σ“ setzen, wenn die Werte vollständig sind')});
