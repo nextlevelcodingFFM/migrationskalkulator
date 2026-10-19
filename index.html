@@ -485,6 +485,12 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 @media (max-width:1199px) and (min-width:861px){.result{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (max-width:860px){.result{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:360px){.result{grid-template-columns:1fr}.tiles{grid-template-columns:1fr}.tiles .tile:nth-child(5){grid-column:auto}}
+
+.ovw-t{display:inline-flex;align-items:center;gap:4px}
+.ovw .ovw-h .thi{color:var(--on-ink-muted)}
+.ovw .ovw-h .thi:hover{background:rgba(255,255,255,.15);color:#fff}
+.ovw .ovw-h .thi[aria-expanded=true]{color:#fff;background:rgba(0,0,0,.15)}
+.ovw>.ovw-i{margin:12px 16px 0;max-width:none}
 </style>
 </head>
 <body>
@@ -1117,7 +1123,7 @@ function renderOverall(L){
   const NET=L.reduce((a,x)=>a+(x.d-x.M/x.yrs),0),B=L.reduce((a,x)=>a+x.B,0);
   const pct=I>0?D/I*100:0,good=D>=0,T=D>0?M/D:Infinity;
   const cw=I>0?Math.min(100,C/I*100):0,sw=I>0?Math.max(0,100-cw):0,over=C>I&&I>0;
-  el.innerHTML=`<div class="ovw-h"><span class="ovw-t" id="ovw-t">Gesamtübersicht aller Kommunen</span><span class="ovw-u">${L.length} ${L.length===1?'Kommune':'Kommunen'} mit Fachverfahren · ${eur(B)} Einwohner</span></div>
+  el.innerHTML=`<div class="ovw-h"><span class="ovw-t" id="ovw-t">Gesamtübersicht aller Kommunen${oBtn('ovw')}</span><span class="ovw-u">${L.length} ${L.length===1?'Kommune':'Kommunen'} mit Fachverfahren · ${eur(B)} Einwohner</span></div>${oInfo('ovw')}
    <div class="ovw-b">
     <div class="ovw-kpi">
      <span class="ovw-l">${good?'Gesamtersparnis':'Mehrkosten'} im laufenden Betrieb${oBtn('tot')}</span>${oInfo('tot')}
@@ -1176,6 +1182,7 @@ function renderKHead(){
 document.getElementById('khd').addEventListener('click',e=>{const b=e.target.closest('button.thi');if(!b)return;const i=+b.dataset.kc;openK=openK===i?-1:i;renderKHead();const nb=document.querySelector(`button.thi[data-kc="${i}"]`);if(nb)nb.focus()});
 renderKHead();
 const OINFO={
+ ovw:'Fasst alle Kommunen zusammen, die mindestens ein Fachverfahren mit Häkchen „Σ“ haben. Entwürfe ohne Häkchen zählen nicht. Links stehen die Gesamtersparnis im laufenden Betrieb und die Kennzahlen dazu, rechts die prozentuale Ersparnis gegenüber heute. Die Werte je Kommune stehen in der Tabelle darunter.',
  tot:'Summe aus TCO heute minus TCO Cloud über alle Kommunen mit Fachverfahren, pro Jahr. Der einmalige Migrationsbetrag ist hier nicht abgezogen.',
  ist:'Summe der laufenden Kosten heute (TCO heute) aller Fachverfahren aller Kommunen pro Jahr.',
  cloud:'Summe der laufenden Kosten in der Cloud (TCO Cloud) aller Fachverfahren aller Kommunen pro Jahr.',
