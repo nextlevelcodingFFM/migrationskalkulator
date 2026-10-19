@@ -398,12 +398,33 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 .notes-h svg{width:18px;height:18px;fill:none;stroke:var(--good);stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round;flex:none}
 .notes-h label{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--good)}
 .notes-c{margin-left:auto;font-size:.72rem;color:var(--muted)}
-.notes textarea{width:100%;box-sizing:border-box;min-height:84px;resize:vertical;padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:#fff;font:inherit;font-size:.92rem;line-height:1.55;color:var(--fg);overflow:hidden}
+.notes textarea{width:100%;box-sizing:border-box;min-height:0;resize:vertical;padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:#fff;font:inherit;font-size:.92rem;line-height:1.55;color:var(--fg);overflow:hidden}
 .notes textarea:focus{outline:2px solid var(--teal);outline-offset:0;border-color:var(--teal)}
 .notes textarea::placeholder{color:#9a9a9a;font-style:italic}
 .nicon{display:inline-flex;vertical-align:-2px;margin-left:6px;color:var(--good)}
 .nicon svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 @media (max-width:520px){.notes-c{display:none}}
+
+.notes-btn{margin-left:8px;display:inline-flex;align-items:center;gap:6px;padding:4px 12px;font-size:.8rem;font-weight:600;border:1px solid var(--good);background:#fff;color:var(--good);border-radius:999px;cursor:pointer}
+.notes-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.notes-btn:hover{background:var(--good-soft)}
+.notes.is-edit .notes-btn{background:var(--good);color:#fff}
+.notes.is-edit .notes-btn:hover{background:var(--pos)}
+.notes.is-ro textarea{background:transparent;border-color:transparent;resize:none;cursor:default;padding-left:0;padding-right:0}
+.notes.is-ro textarea:focus{outline:none}
+.notes.is-ro textarea::placeholder{font-style:normal;color:var(--muted)}
+.notes.is-edit{border-left-color:var(--good);box-shadow:0 0 0 3px var(--good-soft)}
+.notes-c{white-space:nowrap}
+.kn-btn svg{fill:none!important;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+.kn-btn{color:var(--muted)}
+.kn-btn.has-note{color:var(--good);border-color:var(--good)}
+.kn-btn[aria-expanded=true]{background:var(--good-soft);color:var(--pos);border-color:var(--good)}
+.ktable tr.kn-open td{border-bottom-color:transparent}
+.ktable tr.kn-row td{padding:4px 12px 14px;background:var(--surface);white-space:normal;text-align:left}
+.ktable tr.kn-row:hover td{background:var(--surface)}
+
+.ktable tbody tr:not(.kn-row) td:first-child{white-space:normal;min-width:150px}
+.ktable tr.kn-row td{padding-left:12px!important;padding-right:12px!important}
 </style>
 </head>
 <body>
@@ -744,6 +765,24 @@ function render(){
   save();
 }
 
+/* Notizfeld: schreibgeschützt, bis „Ändern“ geklickt wird */
+const NOTE_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8 12h8M8 16h6"/></svg>';
+const PEN_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>';
+const OK_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+function noteBox(o){const ed=!!o.edit,v=o.value||'';
+  return `<div class="notes ${ed?'is-edit':'is-ro'}" data-notebox="${o.key}">
+   <div class="notes-h">${NOTE_ICON}<label for="${o.tid}">${o.label}</label><span class="notes-c" id="${o.tid}-c"></span>
+    <button type="button" class="notes-btn" data-noteedit="${o.key}" aria-pressed="${ed}" aria-controls="${o.tid}">${ed?OK_ICON+'Fertig':PEN_ICON+'Ändern'}</button></div>
+   <textarea id="${o.tid}" rows="1" ${ed?'':'readonly'} placeholder="${ed?o.ph:'Noch keine Notizen. Zum Erfassen auf „Ändern“ klicken.'}">${esc(v)}</textarea>
+  </div>`}
+function noteSize(t){if(!t)return;t.style.height='auto';t.style.height=(t.readOnly?t.scrollHeight+2:Math.max(t.scrollHeight+2,84))+'px'}
+function noteCount(t){const c=document.getElementById(t.id+'-c');if(!c)return;const n=t.value.trim().length;
+  c.textContent=t.readOnly?(n?n.toLocaleString('de-DE')+' Zeichen · schreibgeschützt':'schreibgeschützt'):(n?n.toLocaleString('de-DE')+' Zeichen · ':'')+'wird automatisch gespeichert'}
+function noteSet(box,ed){const t=box.querySelector('textarea'),b=box.querySelector('.notes-btn');
+  t.readOnly=!ed;box.classList.toggle('is-edit',ed);box.classList.toggle('is-ro',!ed);b.setAttribute('aria-pressed',ed);b.innerHTML=ed?OK_ICON+'Fertig':PEN_ICON+'Ändern';
+  t.placeholder=ed?(box.dataset.ph||''):'Noch keine Notizen. Zum Erfassen auf „Ändern“ klicken.';noteSize(t);noteCount(t);
+  if(ed){t.focus();const n=t.value.length;t.setSelectionRange(n,n)}}
+let NOTE_EDIT=-1;
 function renderEditor(){
   const ed=document.getElementById('editor');
   if(!S.rows.length){ed.innerHTML='<h2>Kein Verfahren erfasst</h2><p class="note">Mit „Verfahren hinzufügen“ ein erstes Fachverfahren anlegen.</p>';return}
@@ -752,10 +791,7 @@ function renderEditor(){
   ed.innerHTML=`<div class="ed-head"><div class="ed-hl"><span class="eyebrow">Fachverfahren bearbeiten</span><h2 id="ed-title">${esc(r.name||'Ohne Namen')}</h2></div><div class="ed-act"><label class="incsw" id="e-inc-l"><input type="checkbox" id="e-inc" ${isInc(r)?'checked':''}><span id="e-inc-t"></span></label><button class="danger" id="b-del">Verfahren entfernen</button></div></div>
    <div class="tcodiff" id="tco-diff" role="status" aria-live="polite"></div>
    <div class="result" id="ed-res" aria-label="Ergebnis für dieses Verfahren"></div>
-   <div class="notes">
-    <div class="notes-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8 12h8M8 16h6"/></svg><label for="e-note">Notizen zum Fachverfahren</label><span class="notes-c" id="e-note-c"></span></div>
-    <textarea id="e-note" rows="3" placeholder="Freie Notizen, z. B. Ansprechpartner, Hersteller und Vertragslaufzeit, Abhängigkeiten zu anderen Verfahren, offene Fragen, nächste Schritte …">${esc(r.note||'')}</textarea>
-   </div>
+   ${noteBox({key:'v',tid:'e-note',label:'Notizen zum Fachverfahren',value:r.note,edit:NOTE_EDIT===S.sel,ph:'Freie Notizen, z. B. Ansprechpartner, Hersteller und Vertragslaufzeit, Abhängigkeiten zu anderen Verfahren, offene Fragen, nächste Schritte …'})}
    <div class="ed-grid">
     <div class="field f-name"><label for="e-name">Name des Verfahrens</label><input id="e-name" type="text" value="${esc(r.name)}"></div>
     <div class="field"><label for="e-form">Ausgangsform</label><select id="e-form">${FORMS.map(f=>`<option ${f===r.form?'selected':''}>${f}</option>`).join('')}</select></div>
@@ -877,12 +913,12 @@ document.getElementById('thd').addEventListener('click',e=>{const b=e.target.clo
 renderHead();
 
 document.getElementById('tb').addEventListener('change',e=>{const c=e.target.closest('input.incb');if(!c)return;const r=S.rows[+c.dataset.inc];if(!r)return;r.inc=c.checked;render();const ei=document.getElementById('e-inc');if(ei&&S.sel===+c.dataset.inc)syncInc();const nc=document.querySelector(`#tb input[data-inc="${c.dataset.inc}"]`);if(nc)nc.focus();flash(c.checked?'Verfahren fließt in die Gesamtberechnung ein':'Verfahren aus der Gesamtberechnung genommen')});
-document.getElementById('tb').addEventListener('click',e=>{if(e.target.closest('input.incb,td.c-inc'))return;const tr=e.target.closest('tr[data-i]');if(!tr)return;S.sel=+tr.dataset.i;render();renderEditor()});
+document.getElementById('tb').addEventListener('click',e=>{if(e.target.closest('input.incb,td.c-inc'))return;const tr=e.target.closest('tr[data-i]');if(!tr)return;if(+tr.dataset.i!==S.sel)NOTE_EDIT=-1;S.sel=+tr.dataset.i;render();renderEditor()});
 document.getElementById('tb').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;if(e.target.closest('input.incb'))return;const tr=e.target.closest('tr[data-i]');if(!tr)return;e.preventDefault();S.sel=+tr.dataset.i;render();renderEditor();document.getElementById('editor').scrollIntoView({behavior:'smooth',block:'start'})});
 
 const ed=document.getElementById('editor');
 ed.addEventListener('input',e=>{const r=S.rows[S.sel];if(!r)return;const t=e.target;
-  if(t.id==='e-note'){r.note=t.value;noteUi();render();return}
+  if(t.id==='e-note'){if(t.readOnly)return;r.note=t.value;noteUi();render();return}
   if(t.id==='e-name'){r.name=t.value;document.getElementById('ed-title').textContent=t.value||'Ohne Namen'}
   else if(t.id==='e-b')r.b=t.value===''?null:num(t.value);
   else if(t.dataset.g){r[t.dataset.g][t.dataset.k]=num(t.value);render();updateTco();return}
@@ -890,11 +926,12 @@ ed.addEventListener('input',e=>{const r=S.rows[S.sel];if(!r)return;const t=e.tar
   else return;render()});
 ed.addEventListener('change',e=>{if(e.target.id==='e-form'){S.rows[S.sel].form=e.target.value;render()}
   else if(e.target.id==='e-inc'){S.rows[S.sel].inc=e.target.checked;render();syncInc()}});
-function noteUi(){const t=document.getElementById('e-note');if(!t)return;t.style.height='auto';t.style.height=Math.max(t.scrollHeight+2,84)+'px';
-  const n=t.value.trim().length;document.getElementById('e-note-c').textContent=n?n.toLocaleString('de-DE')+' Zeichen · wird automatisch gespeichert':'wird automatisch gespeichert'}
+function noteUi(){const t=document.getElementById('e-note');if(!t)return;const bx=t.closest('.notes');if(bx)bx.dataset.ph='Freie Notizen, z. B. Ansprechpartner, Hersteller und Vertragslaufzeit, Abhängigkeiten zu anderen Verfahren, offene Fragen, nächste Schritte …';noteSize(t);noteCount(t)}
 function syncInc(){const r=S.rows[S.sel],c=document.getElementById('e-inc');if(!r||!c)return;const on=isInc(r);c.checked=on;
   document.getElementById('e-inc-t').textContent=on?'In Gesamtberechnung':'Entwurf – nicht in Gesamtberechnung';document.getElementById('e-inc-l').classList.toggle('is-off',!on)}
 ed.addEventListener('click',e=>{
+  const nb=e.target.closest('button[data-noteedit="v"]');
+  if(nb){const box=nb.closest('.notes'),on=!box.classList.contains('is-edit');NOTE_EDIT=on?S.sel:-1;noteSet(box,on);if(!on)flash('Notiz gespeichert');return}
   const b=e.target.closest('button[data-k]');
   if(b){const k=+b.dataset.k,v=+b.dataset.v;S.rows[S.sel].s[k]=v;
     b.parentElement.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.v===v));
@@ -1015,7 +1052,11 @@ document.getElementById('k-overall').addEventListener('click',e=>{const b=e.targ
   if(ST.includes(k)){renderOverall(LAST_OV);const nb=document.querySelector(`#k-overall button[data-o="${k}"]`);if(nb)nb.focus();return}
   const on=OPEN_O.has(k);b.setAttribute('aria-expanded',on);document.getElementById('oi-'+k).hidden=!on});
 let LAST_OV=[];
+const KN_OPEN=new Set();let KN_EDIT=null;
+const KN_PH='Freie Notizen zur Kommune, z. B. Ansprechpartner, Stand der Abstimmung, Termine, Besonderheiten der IT-Landschaft …';
+function knAfter(){document.querySelectorAll('#kb .kn-row .notes').forEach(bx=>{bx.dataset.ph=KN_PH;const t=bx.querySelector('textarea');noteSize(t);noteCount(t)})}
 function renderHome(){
+  const ae=document.activeElement,keep=ae&&ae.id&&ae.id.startsWith('kn-')&&ae.tagName==='TEXTAREA'?[ae.id,ae.selectionStart,ae.selectionEnd]:null;
   const L=IX.list.slice().sort((a,b)=>a.name.localeCompare(b.name,'de'));
   document.getElementById('k-cnt').textContent=L.length?`(${L.length})`:'';
   document.getElementById('k-wrap').hidden=!L.length;
@@ -1025,20 +1066,29 @@ function renderHome(){
   let tB=0,tn=0,td=0,tM=0,tI=0;const OV=[];
   document.getElementById('kb').innerHTML=L.map(k=>{const s=summarize(loadK(k.id));tB+=s.B;tn+=s.n;td+=s.d;tM+=s.M;tI+=s.I;
     const has=s.n>0;if(has)OV.push({name:k.name||'Kommune ohne Namen',...s});
-    const pct=s.I>0?s.d/s.I*100:0;
-    return `<tr data-id="${k.id}">
-     <td><a class="kn" href="#k-${k.id}">${esc(k.name||'Kommune ohne Namen')}</a><span class="sub">Geändert ${dfmt(k.updated)}</span></td>
+    const pct=s.I>0?s.d/s.I*100:0,kn=(loadK(k.id).note||'').trim(),op=KN_OPEN.has(k.id);
+    return `<tr data-id="${k.id}" class="${op?'kn-open':''}">
+     <td><a class="kn" href="#k-${k.id}">${esc(k.name||'Kommune ohne Namen')}</a>${kn?`<span class="nicon" title="${esc(kn.slice(0,300))}" aria-label="Hat Notizen">${NOTE_ICON}</span>`:''}<span class="sub">Geändert ${dfmt(k.updated)}</span></td>
      <td class="num">${eur(s.B)}</td><td class="num">${s.n}${s.nAll>s.n?`<span class="sub">+ ${s.nAll-s.n} Entwurf</span>`:''}</td>
      <td class="num">${has?nf(s.kI,2):'–'}</td><td class="num">${has?nf(s.kC,2):'–'}</td>
      <td class="num ${has?(s.E<0?'neg':'pos'):''}">${has?nf(s.E,2):'–'}</td>
      <td class="num ${has?(s.d<0?'neg':''):''}">${has?eur(s.d):'–'}</td>
      <td class="num">${has?`<span class="pctb ${pct<0?'is-neg':'is-pos'}">${nf(pct,0)} %</span>`:'–'}</td>
      <td class="num">${has?eur(s.M):'–'}</td>
-     <td class="act"><div class="btns"><a class="btn" href="#k-${k.id}">Öffnen</a><button type="button" class="danger icon-btn" data-del="${k.id}" aria-label="Kommune ${esc(k.name||'')} löschen" title="Kommune löschen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button></div></td></tr>`}).join('');
+     <td class="act"><div class="btns"><a class="btn" href="#k-${k.id}">Öffnen</a><button type="button" class="icon-btn kn-btn${kn?' has-note':''}" data-knote="${k.id}" aria-expanded="${op}" aria-controls="kn-${k.id}" aria-label="Notizen zu ${esc(k.name||'Kommune')}" title="${kn?'Notizen anzeigen':'Notiz erfassen'}">${NOTE_ICON}</button><button type="button" class="danger icon-btn" data-del="${k.id}" aria-label="Kommune ${esc(k.name||'')} löschen" title="Kommune löschen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button></div></td></tr>${op?`<tr class="kn-row" data-knrow="${k.id}"><td colspan="10">${noteBox({key:'k:'+k.id,tid:'kn-'+k.id,label:'Notizen zur Kommune',value:loadK(k.id).note,edit:KN_EDIT===k.id,ph:'Freie Notizen zur Kommune, z. B. Ansprechpartner, Stand der Abstimmung, Termine, Besonderheiten der IT-Landschaft …'})}</td></tr>`:''}`}).join('');
   document.getElementById('kf').innerHTML=L.length>1?`<tr><td>Alle Kommunen</td><td class="num">${eur(tB)}</td><td class="num">${tn}</td><td></td><td></td><td></td><td class="num ${td<0?'neg':''}">${eur(td)}</td><td class="num">${tI>0?nf(td/tI*100,0)+' %':'–'}</td><td class="num">${eur(tM)}</td><td></td></tr>`:'';
-  renderOverall(OV);
+  renderOverall(OV);knAfter();
+  if(keep){const t=document.getElementById(keep[0]);if(t&&!t.readOnly){t.focus();try{t.setSelectionRange(keep[1],keep[2])}catch(e){}}}
 }
+document.getElementById('kb').addEventListener('input',e=>{const t=e.target.closest('.kn-row textarea');if(!t||t.readOnly)return;
+  const id=t.closest('tr').dataset.knrow,st=loadK(id);st.note=t.value;const m=meta(id);if(m)m.updated=Date.now();storeK(id,st);if(MODE==='local')lsSet(IDX,IX);noteSize(t);noteCount(t);
+  const r=document.querySelector(`#kb tr[data-id="${id}"]`);if(r){const ic=r.querySelector('.kn-btn');if(ic)ic.classList.toggle('has-note',!!t.value.trim())}});
 document.getElementById('kb').addEventListener('click',e=>{
+  const kb=e.target.closest('button[data-knote]');
+  if(kb){const id=kb.dataset.knote;if(KN_OPEN.has(id)){KN_OPEN.delete(id);if(KN_EDIT===id)KN_EDIT=null}else KN_OPEN.add(id);renderHome();const nb=document.querySelector(`#kb button[data-knote="${id}"]`);if(nb)nb.focus();return}
+  const ne=e.target.closest('button[data-noteedit^="k:"]');
+  if(ne){const id=ne.dataset.noteedit.slice(2),box=ne.closest('.notes'),on=!box.classList.contains('is-edit');KN_EDIT=on?id:null;noteSet(box,on);if(!on)renderHome();return}
+  if(e.target.closest('.kn-row'))return;
   const del=e.target.closest('button[data-del]');
   if(del){const id=del.dataset.del;arm(del,'Löschen?',()=>{removeK(id);renderHome()});return}
   if(e.target.closest('a'))return;
