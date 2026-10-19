@@ -436,6 +436,14 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 .hd-note[aria-expanded=true] .hd-dot{box-shadow:0 0 0 2px #fff}
 #v-calc>header h1{padding-right:130px}
 @media (max-width:520px){.hd-note span{display:none}.hd-note{padding:7px 9px;top:14px;right:14px}#v-calc>header h1,#v-calc>header .eyebrow{padding-right:48px}}
+
+.ed-note{display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:999px;border:1px solid var(--line-strong);background:#fff;color:var(--teal-text);font-size:.84rem;font-weight:600;cursor:pointer}
+.ed-note svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+.ed-note:hover{background:var(--teal-soft)}
+.ed-note[aria-expanded=true]{background:var(--teal);border-color:var(--teal);color:#fff}
+.ed-note .hd-dot{box-shadow:0 0 0 2px #fff}
+.ed-note.has-note .hd-dot{display:inline-block}
+.ed-note[aria-expanded=true] .hd-dot{box-shadow:0 0 0 2px var(--teal)}
 </style>
 </head>
 <body>
@@ -796,7 +804,7 @@ function noteSet(box,ed){const t=box.querySelector('textarea'),b=box.querySelect
   t.readOnly=!ed;box.classList.toggle('is-edit',ed);box.classList.toggle('is-ro',!ed);b.setAttribute('aria-pressed',ed);b.innerHTML=ed?OK_ICON+'Fertig':PEN_ICON+'Ändern';
   t.placeholder=ed?(box.dataset.ph||''):'Noch keine Notizen. Zum Erfassen auf „Ändern“ klicken.';noteSize(t);noteCount(t);
   if(ed){t.focus();const n=t.value.length;t.setSelectionRange(n,n)}}
-let NOTE_EDIT=-1,KC_EDIT=null,KC_OPEN=false;
+let NOTE_EDIT=-1,NOTE_OPEN=-1,KC_EDIT=null,KC_OPEN=false;
 const KN_PH='Freie Notizen zur Kommune, z. B. Ansprechpartner, Stand der Abstimmung, Termine, Besonderheiten der IT-Landschaft …';
 function kNoteBtn(){const b=document.getElementById('b-knote');if(!b||!S)return;const has=!!(S.note||'').trim();
   b.classList.toggle('has-note',has);b.setAttribute('aria-expanded',KC_OPEN);b.title=has?'Notizen zur Kommune anzeigen':'Notiz zur Kommune erfassen';
@@ -809,10 +817,10 @@ function renderEditor(){
   if(!S.rows.length){ed.innerHTML='<h2>Kein Verfahren erfasst</h2><p class="note">Mit „Verfahren hinzufügen“ ein erstes Fachverfahren anlegen.</p>';return}
   if(S.sel>=S.rows.length)S.sel=S.rows.length-1;
   const r=S.rows[S.sel];
-  ed.innerHTML=`<div class="ed-head"><div class="ed-hl"><span class="eyebrow">Fachverfahren bearbeiten</span><h2 id="ed-title">${esc(r.name||'Ohne Namen')}</h2></div><div class="ed-act"><label class="incsw" id="e-inc-l"><input type="checkbox" id="e-inc" ${isInc(r)?'checked':''}><span id="e-inc-t"></span></label><button class="danger" id="b-del">Verfahren entfernen</button></div></div>
+  ed.innerHTML=`<div class="ed-head"><div class="ed-hl"><span class="eyebrow">Fachverfahren bearbeiten</span><h2 id="ed-title">${esc(r.name||'Ohne Namen')}</h2></div><div class="ed-act"><button type="button" class="ed-note${(r.note||'').trim()?' has-note':''}" id="b-vnote" aria-expanded="${NOTE_OPEN===S.sel}" aria-controls="v-note" title="Notizen zum Fachverfahren">${NOTE_ICON}<span>Notizen</span><i class="hd-dot" aria-hidden="true"></i></button><label class="incsw" id="e-inc-l"><input type="checkbox" id="e-inc" ${isInc(r)?'checked':''}><span id="e-inc-t"></span></label><button class="danger" id="b-del">Verfahren entfernen</button></div></div>
+   <div id="v-note"${NOTE_OPEN===S.sel?'':' hidden'}>${noteBox({key:'v',tid:'e-note',label:'Notizen zum Fachverfahren',value:r.note,edit:NOTE_EDIT===S.sel,ph:'Freie Notizen, z. B. Ansprechpartner, Hersteller und Vertragslaufzeit, Abhängigkeiten zu anderen Verfahren, offene Fragen, nächste Schritte …'})}</div>
    <div class="tcodiff" id="tco-diff" role="status" aria-live="polite"></div>
    <div class="result" id="ed-res" aria-label="Ergebnis für dieses Verfahren"></div>
-   ${noteBox({key:'v',tid:'e-note',label:'Notizen zum Fachverfahren',value:r.note,edit:NOTE_EDIT===S.sel,ph:'Freie Notizen, z. B. Ansprechpartner, Hersteller und Vertragslaufzeit, Abhängigkeiten zu anderen Verfahren, offene Fragen, nächste Schritte …'})}
    <div class="ed-grid">
     <div class="field f-name"><label for="e-name">Name des Verfahrens</label><input id="e-name" type="text" value="${esc(r.name)}"></div>
     <div class="field"><label for="e-form">Ausgangsform</label><select id="e-form">${FORMS.map(f=>`<option ${f===r.form?'selected':''}>${f}</option>`).join('')}</select></div>
@@ -939,12 +947,12 @@ document.getElementById('thd').addEventListener('click',e=>{const b=e.target.clo
 renderHead();
 
 document.getElementById('tb').addEventListener('change',e=>{const c=e.target.closest('input.incb');if(!c)return;const r=S.rows[+c.dataset.inc];if(!r)return;r.inc=c.checked;render();const ei=document.getElementById('e-inc');if(ei&&S.sel===+c.dataset.inc)syncInc();const nc=document.querySelector(`#tb input[data-inc="${c.dataset.inc}"]`);if(nc)nc.focus();flash(c.checked?'Verfahren fließt in die Gesamtberechnung ein':'Verfahren aus der Gesamtberechnung genommen')});
-document.getElementById('tb').addEventListener('click',e=>{if(e.target.closest('input.incb,td.c-inc'))return;const tr=e.target.closest('tr[data-i]');if(!tr)return;if(+tr.dataset.i!==S.sel)NOTE_EDIT=-1;S.sel=+tr.dataset.i;render();renderEditor()});
+document.getElementById('tb').addEventListener('click',e=>{if(e.target.closest('input.incb,td.c-inc'))return;const tr=e.target.closest('tr[data-i]');if(!tr)return;if(+tr.dataset.i!==S.sel){NOTE_EDIT=-1;NOTE_OPEN=-1}S.sel=+tr.dataset.i;render();renderEditor()});
 document.getElementById('tb').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;if(e.target.closest('input.incb'))return;const tr=e.target.closest('tr[data-i]');if(!tr)return;e.preventDefault();S.sel=+tr.dataset.i;render();renderEditor();document.getElementById('editor').scrollIntoView({behavior:'smooth',block:'start'})});
 
 const ed=document.getElementById('editor');
 ed.addEventListener('input',e=>{const r=S.rows[S.sel];if(!r)return;const t=e.target;
-  if(t.id==='e-note'){if(t.readOnly)return;r.note=t.value;noteUi();render();return}
+  if(t.id==='e-note'){if(t.readOnly)return;r.note=t.value;noteUi();render();const vb=document.getElementById('b-vnote');if(vb)vb.classList.toggle('has-note',!!t.value.trim());return}
   if(t.id==='e-name'){r.name=t.value;document.getElementById('ed-title').textContent=t.value||'Ohne Namen'}
   else if(t.id==='e-b')r.b=t.value===''?null:num(t.value);
   else if(t.dataset.g){r[t.dataset.g][t.dataset.k]=num(t.value);render();updateTco();return}
@@ -956,6 +964,9 @@ function noteUi(){const t=document.getElementById('e-note');if(!t)return;const b
 function syncInc(){const r=S.rows[S.sel],c=document.getElementById('e-inc');if(!r||!c)return;const on=isInc(r);c.checked=on;
   document.getElementById('e-inc-t').textContent=on?'In Gesamtberechnung':'Entwurf – nicht in Gesamtberechnung';document.getElementById('e-inc-l').classList.toggle('is-off',!on)}
 ed.addEventListener('click',e=>{
+  const vb=e.target.closest('#b-vnote');
+  if(vb){const on=NOTE_OPEN!==S.sel;NOTE_OPEN=on?S.sel:-1;if(!on)NOTE_EDIT=-1;vb.setAttribute('aria-expanded',on);const h=document.getElementById('v-note');h.hidden=!on;
+    if(!on){const bx=h.querySelector('.notes');if(bx&&bx.classList.contains('is-edit'))noteSet(bx,false)}else noteUi();return}
   const nb=e.target.closest('button[data-noteedit="v"]');
   if(nb){const box=nb.closest('.notes'),on=!box.classList.contains('is-edit');NOTE_EDIT=on?S.sel:-1;noteSet(box,on);if(!on)flash('Notiz gespeichert');return}
   const b=e.target.closest('button[data-k]');
