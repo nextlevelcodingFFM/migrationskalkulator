@@ -514,6 +514,15 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 @media (max-width:420px){.panel.params{grid-template-columns:1fr}.fv-actions button{flex:1 1 100%}}
 .fv .toast:empty{display:none}
 .fv .toast{margin:-4px 0}
+
+.hd-params{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:14px 22px;margin-top:18px;padding:16px 0 0;border-top:1px solid rgba(255,255,255,.28)}
+.hd-params .field label{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--on-ink-muted)}
+.hd-params .field input{width:100%;height:38px;box-sizing:border-box;font-size:.95rem;background:#fff;border-color:#fff;color:var(--fg)}
+.hd-params .field input:focus{outline:3px solid var(--olive);outline-offset:0}
+.hd-params .fhelp{color:var(--on-ink-muted);margin-top:1px}
+.hd-params .inunit span{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.6);color:#fff}
+@media (max-width:760px){.hd-params{grid-template-columns:1fr 1fr}.hd-params .pf-name{grid-column:1/-1}}
+@media (max-width:420px){.hd-params{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -569,6 +578,11 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
     <button type="button" class="hd-note" id="b-knote" aria-expanded="false" aria-controls="k-note" title="Notizen zur Kommune"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8 12h8M8 16h6"/></svg><span>Notizen</span><i class="hd-dot" aria-hidden="true"></i></button>
     <h1 id="k-title">Kommune</h1>
     <p class="lead">Schwierigkeitsfaktor aus zehn gewichteten Kriterien, Kosten pro Bürger heute und in der Cloud, Netto-Ersparnis nach Abzug der verteilten Migrationskosten.</p>
+  <div class="params hd-params" role="group" aria-label="Grunddaten der Kommune">
+    <div class="field pf-name"><label for="g-name">Name der Kommune</label><input id="g-name" type="text" autocomplete="off"><span class="fhelp">erscheint auf der Startseite und im Seitentitel</span></div>
+    <div class="field"><label for="g-b">Einwohner der Kommune</label><input id="g-b" type="number" min="1" step="100"><span class="fhelp">Grundlage für alle Werte pro Bürger</span></div>
+    <div class="field"><label for="g-n">Verteilung Migrationskosten</label><div class="inunit"><input id="g-n" type="number" min="1" max="20" step="1"><span>Jahre</span></div><span class="fhelp">Zeitraum für die Jahresrate der Migration</span></div>
+  </div>
   </header>
 
   <section id="k-note" aria-label="Notizen zur Kommune" hidden></section>
@@ -584,17 +598,12 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 
   <section class="fv" aria-labelledby="fv-t">
     <div class="fv-head">
-      <div class="fv-title"><h2 id="fv-t">Fachverfahren</h2><span class="fv-sub">Grunddaten der Kommune und alle Verfahren im Überblick</span></div>
+      <div class="fv-title"><h2 id="fv-t">Fachverfahren</h2><span class="fv-sub">Alle erfassten Verfahren der Kommune im Überblick</span></div>
       <div class="fv-actions">
         <button class="primary" id="b-add"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Verfahren hinzufügen</span></button>
         <button class="ghost" id="b-csv"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg><span>Tabelle kopieren (CSV)</span></button>
         <button class="ghost" id="b-reset"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v5h5"/></svg><span>Beispieldaten laden</span></button>
       </div>
-    </div>
-    <div class="panel params" aria-label="Grunddaten der Kommune">
-      <div class="field pf-name"><label for="g-name">Name der Kommune</label><input id="g-name" type="text" autocomplete="off"><span class="fhelp">erscheint auf der Startseite und im Seitentitel</span></div>
-      <div class="field"><label for="g-b">Einwohner der Kommune</label><input id="g-b" type="number" min="1" step="100"><span class="fhelp">Grundlage für alle Werte pro Bürger</span></div>
-      <div class="field"><label for="g-n">Verteilung Migrationskosten</label><div class="inunit"><input id="g-n" type="number" min="1" max="20" step="1"><span>Jahre</span></div><span class="fhelp">Zeitraum für die Jahresrate der Migration</span></div>
     </div>
     <div class="toast" id="toast" role="status"></div>
     <div class="panel tblwrap">
