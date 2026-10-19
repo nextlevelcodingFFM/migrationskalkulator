@@ -491,6 +491,29 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 .ovw .ovw-h .thi:hover{background:rgba(255,255,255,.15);color:#fff}
 .ovw .ovw-h .thi[aria-expanded=true]{color:#fff;background:rgba(0,0,0,.15)}
 .ovw>.ovw-i{margin:12px 16px 0;max-width:none}
+
+.fv{display:flex;flex-direction:column;gap:12px}
+.fv-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px 20px;flex-wrap:wrap;padding-bottom:10px;border-bottom:2px solid var(--teal)}
+.fv-title{display:flex;flex-direction:column;gap:2px}
+.fv-title h2{margin:0;font-size:1.3rem;color:var(--ink)}
+.fv-sub{font-size:.8rem;color:var(--muted)}
+.fv-actions{display:flex;gap:8px;flex-wrap:wrap}
+.fv-actions button{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px;font-size:.88rem;font-weight:600;border-radius:5px}
+.fv-actions button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.fv-actions button.ghost{background:#fff;border:1px solid var(--line-strong);color:var(--teal-text)}
+.fv-actions button.ghost:hover{background:var(--teal-soft);border-color:var(--teal)}
+.fv-actions button.armed{background:var(--crit);border-color:var(--crit);color:#fff}
+.panel.params{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:16px 24px;padding:16px 18px;align-items:start;border-left:4px solid var(--teal);background:linear-gradient(90deg,var(--teal-soft),var(--surface) 40%)}
+.params .field label{font-size:.74rem;font-weight:600;color:var(--teal-text);text-transform:uppercase;letter-spacing:.05em}
+.params .field input{width:100%;height:38px;box-sizing:border-box;font-size:.95rem;background:#fff}
+.params .fhelp{margin-top:1px}
+.inunit{display:flex;align-items:stretch}
+.inunit input{border-top-right-radius:0;border-bottom-right-radius:0}
+.inunit span{display:flex;align-items:center;padding:0 12px;border:1px solid var(--line-strong);border-left:none;border-radius:0 4px 4px 0;background:var(--sunk);font-size:.84rem;color:var(--muted)}
+@media (max-width:760px){.panel.params{grid-template-columns:1fr 1fr}.pf-name{grid-column:1/-1}.fv-head{align-items:stretch}.fv-actions{width:100%}.fv-actions button{flex:1 1 auto;justify-content:center}}
+@media (max-width:420px){.panel.params{grid-template-columns:1fr}.fv-actions button{flex:1 1 100%}}
+.fv .toast:empty{display:none}
+.fv .toast{margin:-4px 0}
 </style>
 </head>
 <body>
@@ -559,20 +582,19 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
   </section>
   <div class="ei" id="ti-panel" hidden></div>
 
-  <section class="panel params" aria-label="Annahmen">
-    <div class="field"><label for="g-name">Name der Kommune</label><input id="g-name" type="text" class="w-xl" autocomplete="off"></div>
-    <div class="field"><label for="g-b">Einwohner der Kommune</label><input id="g-b" class="w-lg" type="number" min="1" step="100"></div>
-    <div class="field"><label for="g-n">Verteilung Migrationskosten (Jahre)</label><input id="g-n" class="w-sm" type="number" min="1" max="20" step="1"></div>
-  </section>
-
-  <section style="display:flex;flex-direction:column;gap:10px">
-    <div class="bar">
-      <h2>Fachverfahren</h2>
-      <div class="btns">
-        <button class="primary" id="b-add">Verfahren hinzufügen</button>
-        <button id="b-csv">Tabelle kopieren (CSV)</button>
-        <button id="b-reset">Beispieldaten laden</button>
+  <section class="fv" aria-labelledby="fv-t">
+    <div class="fv-head">
+      <div class="fv-title"><h2 id="fv-t">Fachverfahren</h2><span class="fv-sub">Grunddaten der Kommune und alle Verfahren im Überblick</span></div>
+      <div class="fv-actions">
+        <button class="primary" id="b-add"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Verfahren hinzufügen</span></button>
+        <button class="ghost" id="b-csv"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg><span>Tabelle kopieren (CSV)</span></button>
+        <button class="ghost" id="b-reset"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v5h5"/></svg><span>Beispieldaten laden</span></button>
       </div>
+    </div>
+    <div class="panel params" aria-label="Grunddaten der Kommune">
+      <div class="field pf-name"><label for="g-name">Name der Kommune</label><input id="g-name" type="text" autocomplete="off"><span class="fhelp">erscheint auf der Startseite und im Seitentitel</span></div>
+      <div class="field"><label for="g-b">Einwohner der Kommune</label><input id="g-b" type="number" min="1" step="100"><span class="fhelp">Grundlage für alle Werte pro Bürger</span></div>
+      <div class="field"><label for="g-n">Verteilung Migrationskosten</label><div class="inunit"><input id="g-n" type="number" min="1" max="20" step="1"><span>Jahre</span></div><span class="fhelp">Zeitraum für die Jahresrate der Migration</span></div>
     </div>
     <div class="toast" id="toast" role="status"></div>
     <div class="panel tblwrap">
