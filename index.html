@@ -937,7 +937,7 @@ function render(){
       <td class="num ${x.T>x.n?'neg':''}">${Number.isFinite(x.T)?nf(x.T,1):'nie'}</td>
       <td style="text-align:left">${x.rec}</td></tr>`}).join('');
   const IR=S.rows.filter(isInc), IX=res.filter((x,i)=>isInc(S.rows[i]));
-  {const v=document.getElementById('k-vf');if(v){v.textContent=S.rows.length;document.getElementById('k-vf-s').textContent=' Fachverfahren'+(IR.length<S.rows.length?` · ${IR.length} einbezogen`:'');document.querySelector('.hd-vf').title=IR.length<S.rows.length?`${IR.length} von ${S.rows.length} Fachverfahren fließen in die Gesamtberechnung ein`:'Alle Fachverfahren fließen in die Gesamtberechnung ein'}}
+  {const v=document.getElementById('k-vf');if(v){v.textContent=S.rows.length;document.getElementById('k-vf-s').textContent=' Fachverfahren'+(IR.length<S.rows.length?` · ${S.rows.length-IR.length} ${S.rows.length-IR.length===1?'Entwurf':'Entwürfe'}`:'');document.querySelector('.hd-vf').title=IR.length<S.rows.length?`${IR.length} von ${S.rows.length} Fachverfahren fließen in die Gesamtberechnung ein`:'Alle Fachverfahren fließen in die Gesamtberechnung ein'}}
   const sIst=IR.reduce((a,r)=>a+r.ist,0), sCl=IR.reduce((a,r)=>a+r.cloud,0), sM=IX.reduce((a,x)=>a+x.M,0);
   const kI=IX.reduce((a,x)=>a+x.kI,0), kC=IX.reduce((a,x)=>a+x.kC,0), E=IX.reduce((a,x)=>a+x.E,0), G=IX.reduce((a,x)=>a+x.gross,0);
   const dT=sIst-sCl, T=dT>0?sM/dT:Infinity;
