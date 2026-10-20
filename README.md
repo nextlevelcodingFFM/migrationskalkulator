@@ -54,3 +54,13 @@ T Amort  = M / (TCO Ist − TCO Cloud)
 ## Hinweis
 
 Die vorbelegten Verfahren, Kosten, Gewichte und Aufschläge sind fiktive Richtwerte. Sie sind durch eigene Daten zu ersetzen und nach den ersten Pilotmigrationen zu kalibrieren.
+
+## KI-Agent im Repository (Claude)
+
+In einem Issue, Pull Request oder Kommentar `@claude <Auftrag>` schreiben; der Agent erstellt einen Branch und einen Pull Request.
+Nur Personen mit Schreibrechten können ihn auslösen. Regeln für den Agenten stehen in `CLAUDE.md`.
+
+Einmalige Einrichtung:
+1. Claude-GitHub-App für dieses Repository installieren: https://github.com/apps/claude
+2. Lokal `claude setup-token` ausführen (Claude Code, Anmeldung mit dem Pro/Max-Konto).
+3. Das Token unter *Settings → Secrets and variables → Actions* als `CLAUDE_CODE_OAUTH_TOKEN` speichern.
