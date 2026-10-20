@@ -586,6 +586,15 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 .kh .hd-meta{gap:8px 28px}
 @media (max-width:760px){.kh-steps{max-width:none}.kh-deco{width:200px}.kh h1{font-size:1.5rem}}
 @media (max-width:520px){.view>header.kh{padding:20px 18px 18px}.kh-steps li{font-size:.76rem}.kh-eyebrow{margin-right:44px;padding-right:11px!important}}
+
+.hd-title{flex-wrap:wrap;row-gap:8px}
+.kh .hd-title .hd-meta{margin:0 0 0 4px;padding:0;border:none;display:inline-flex;gap:8px;flex-wrap:wrap}
+.hd-title .hd-ew,.hd-title .hd-vf{padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);font-size:.85rem}
+.hd-title .hd-ew b,.hd-title .hd-vf b{font-size:.95rem}
+.hd-title .hd-ew svg,.hd-title .hd-vf svg{width:17px;height:17px}
+@media (max-width:520px){.kh .hd-title .hd-meta{margin-left:0;width:100%}}
+.kh .hd-title{padding-right:0}
+.kh .hd-edit{padding-right:0}
 </style>
 </head>
 <body>
@@ -640,7 +649,7 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
     <svg class="kh-deco" viewBox="0 0 200 140" aria-hidden="true"><path d="M52 118h104a34 34 0 0 0 4-67.8A46 46 0 0 0 72 40a32 32 0 0 0-20 78z"/><path d="M104 104V62M86 80l18-18 18 18"/></svg>
     <div class="eyebrow kh-eyebrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .6-7.96A5.5 5.5 0 0 0 7.1 9.5 4.3 4.3 0 0 0 7 18z"/><path d="M12 16v-5M9.8 13.2 12 11l2.2 2.2"/></svg>Migrationskalkulator · Kalkulation der Kommune</div>
     <button type="button" class="hd-note" id="b-knote" aria-expanded="false" aria-controls="k-note" title="Notizen zur Kommune"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8 12h8M8 16h6"/></svg><span>Notizen</span><i class="hd-dot" aria-hidden="true"></i></button>
-    <div class="hd-title" id="k-titlebox"><h1 id="k-title">Kommune</h1><button type="button" class="hd-pen" id="b-kedit" title="Name und Einwohner ändern" aria-label="Name und Einwohner ändern"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button></div>
+    <div class="hd-title" id="k-titlebox"><h1 id="k-title">Kommune</h1><button type="button" class="hd-pen" id="b-kedit" title="Name und Einwohner ändern" aria-label="Name und Einwohner ändern"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button><div class="hd-meta"><span class="hd-ew"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M15.8 14.2c2.4.2 4.1 1.8 4.7 4.8"/></svg><b id="k-ew"></b> Einwohner</span><span class="hd-vf"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 10v10"/></svg><b id="k-vf"></b><span id="k-vf-s"></span></span></div></div>
     <form class="hd-edit" id="k-editform" hidden novalidate>
       <label class="hd-f hd-f-name"><span>Name der Kommune</span><input id="ke2-name" type="text" autocomplete="off"></label>
       <label class="hd-f"><span>Einwohner</span><input id="ke2-b" type="number" min="1" step="1"></label>
@@ -653,7 +662,6 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
       <li><b>3</b><span>Schwierigkeit bewerten</span></li>
       <li class="kh-res"><b>✓</b><span>Ersparnis und Amortisation ablesen</span></li>
     </ol>
-  <div class="hd-meta"><span class="hd-ew"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M15.8 14.2c2.4.2 4.1 1.8 4.7 4.8"/></svg><b id="k-ew"></b> Einwohner</span><span class="hd-vf"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 10v10"/></svg><b id="k-vf"></b><span id="k-vf-s"></span></span></div>
   </header>
 
   <section id="k-note" aria-label="Notizen zur Kommune" hidden></section>
@@ -921,7 +929,7 @@ function render(){
       <td class="num ${x.T>x.n?'neg':''}">${Number.isFinite(x.T)?nf(x.T,1):'nie'}</td>
       <td style="text-align:left">${x.rec}</td></tr>`}).join('');
   const IR=S.rows.filter(isInc), IX=res.filter((x,i)=>isInc(S.rows[i]));
-  {const v=document.getElementById('k-vf');if(v){v.textContent=S.rows.length;document.getElementById('k-vf-s').textContent=(S.rows.length===1?' Fachverfahren':' Fachverfahren')+(IR.length<S.rows.length?`, davon ${IR.length} in der Gesamtberechnung`:'')}}
+  {const v=document.getElementById('k-vf');if(v){v.textContent=S.rows.length;document.getElementById('k-vf-s').textContent=' Fachverfahren'+(IR.length<S.rows.length?` · ${IR.length} einbezogen`:'');document.querySelector('.hd-vf').title=IR.length<S.rows.length?`${IR.length} von ${S.rows.length} Fachverfahren fließen in die Gesamtberechnung ein`:'Alle Fachverfahren fließen in die Gesamtberechnung ein'}}
   const sIst=IR.reduce((a,r)=>a+r.ist,0), sCl=IR.reduce((a,r)=>a+r.cloud,0), sM=IX.reduce((a,x)=>a+x.M,0);
   const kI=IX.reduce((a,x)=>a+x.kI,0), kC=IX.reduce((a,x)=>a+x.kC,0), E=IX.reduce((a,x)=>a+x.E,0), G=IX.reduce((a,x)=>a+x.gross,0);
   const dT=sIst-sCl, T=dT>0?sM/dT:Infinity;
