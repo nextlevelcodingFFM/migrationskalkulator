@@ -543,6 +543,27 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 .ke-fields label:first-child{flex:1 1 auto;min-width:220px}
 .ke-fields label:last-child{flex:0 0 130px}
 .ktable tr.ke-row input.ke-b{max-width:none}
+
+.hd-title{display:flex;align-items:center;gap:10px;padding-right:130px}
+.hd-title h1{padding-right:0!important;margin:0}
+.hd-title[hidden],.hd-meta[hidden]{display:none}
+.hd-pen{flex:none;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.08);color:#fff;cursor:pointer}
+.hd-pen:hover{background:#fff;color:var(--teal-text)}
+.hd-pen svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.hd-edit{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 16px;margin:6px 0 4px;padding-right:130px}
+.hd-f{display:flex;flex-direction:column;gap:4px;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--on-ink-muted)}
+.hd-f-name{flex:1 1 280px}
+.hd-f input{height:40px;box-sizing:border-box;width:100%;min-width:140px;font-size:1rem;background:#fff;border:1px solid #fff;border-radius:4px;color:var(--fg)}
+.hd-f-name input{font-size:1.15rem;font-weight:600}
+.hd-f input:focus{outline:3px solid var(--olive);outline-offset:0}
+.hd-f input.bad{outline:3px solid #ffb3b3}
+.hd-edit-btns{display:flex;gap:8px}
+.hd-save,.hd-cancel{height:40px;padding:0 16px;font-weight:600;border-radius:5px;cursor:pointer}
+.hd-save{background:#fff;color:var(--teal-text);border:1px solid #fff}
+.hd-save:hover{background:var(--teal-soft)}
+.hd-cancel{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.6)}
+.hd-cancel:hover{background:rgba(255,255,255,.12)}
+@media (max-width:520px){.hd-title{padding-right:44px}.hd-edit{padding-right:0}.hd-edit-btns{width:100%}.hd-edit-btns button{flex:1}}
 </style>
 </head>
 <body>
@@ -596,9 +617,14 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
   <header>
     <div class="eyebrow">Migrationskalkulator · Fachverfahren</div>
     <button type="button" class="hd-note" id="b-knote" aria-expanded="false" aria-controls="k-note" title="Notizen zur Kommune"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8 12h8M8 16h6"/></svg><span>Notizen</span><i class="hd-dot" aria-hidden="true"></i></button>
-    <h1 id="k-title">Kommune</h1>
+    <div class="hd-title" id="k-titlebox"><h1 id="k-title">Kommune</h1><button type="button" class="hd-pen" id="b-kedit" title="Name und Einwohner ändern" aria-label="Name und Einwohner ändern"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button></div>
+    <form class="hd-edit" id="k-editform" hidden novalidate>
+      <label class="hd-f hd-f-name"><span>Name der Kommune</span><input id="ke2-name" type="text" autocomplete="off"></label>
+      <label class="hd-f"><span>Einwohner</span><input id="ke2-b" type="number" min="1" step="1"></label>
+      <div class="hd-edit-btns"><button type="submit" class="hd-save">Speichern</button><button type="button" class="hd-cancel" id="ke2-cancel">Abbrechen</button></div>
+    </form>
     <p class="lead">Schwierigkeitsfaktor aus zehn gewichteten Kriterien, Kosten pro Bürger heute und in der Cloud, Netto-Ersparnis nach Abzug der verteilten Migrationskosten.</p>
-  <div class="hd-meta"><span class="hd-ew"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M15.8 14.2c2.4.2 4.1 1.8 4.7 4.8"/></svg><b id="k-ew"></b> Einwohner</span><a href="#start" class="hd-editlink" id="k-editlink">Name und Einwohner auf der Startseite ändern</a></div>
+  <div class="hd-meta"><span class="hd-ew"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M15.8 14.2c2.4.2 4.1 1.8 4.7 4.8"/></svg><b id="k-ew"></b> Einwohner</span></div>
   </header>
 
   <section id="k-note" aria-label="Notizen zur Kommune" hidden></section>
@@ -1046,7 +1072,16 @@ function bindGlobals(){
   document.getElementById('k-ew').textContent=eur(S.B);
   renderKNote();
 }
-document.getElementById('k-editlink').addEventListener('click',()=>{KE_EDIT=CUR});
+function kEdit(on){const f=document.getElementById('k-editform');f.hidden=!on;document.getElementById('k-titlebox').hidden=on;document.querySelector('#v-calc .hd-meta').hidden=on;
+  if(on){const m=meta(CUR);const n=document.getElementById('ke2-name'),b=document.getElementById('ke2-b');n.value=m?m.name:'';b.value=S.B;n.classList.remove('bad');b.classList.remove('bad');n.focus();n.select()}else document.getElementById('b-kedit').focus()}
+document.getElementById('b-kedit').addEventListener('click',()=>kEdit(true));
+document.getElementById('ke2-cancel').addEventListener('click',()=>kEdit(false));
+document.getElementById('k-editform').addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();kEdit(false)}});
+document.getElementById('k-editform').addEventListener('submit',e=>{e.preventDefault();
+  const n=document.getElementById('ke2-name'),b=document.getElementById('ke2-b'),nm=n.value.trim(),B=num(b.value);
+  n.classList.toggle('bad',!nm);b.classList.toggle('bad',!(B>0));if(!nm){n.focus();return}if(!(B>0)){b.focus();return}
+  const m=meta(CUR);if(m){m.name=nm;m.updated=Date.now()}S.B=Math.round(B);save();saveIdx();
+  setTitle();bindGlobals();render();renderEditor();kEdit(false);flash('Name und Einwohnerzahl gespeichert')});
 document.getElementById('k-note').addEventListener('input',e=>{const t=e.target;if(t.id!=='g-note'||t.readOnly)return;S.note=t.value;save();noteSize(t);noteCount(t);kNoteBtn()});
 document.getElementById('b-knote').addEventListener('click',()=>{KC_OPEN=!KC_OPEN;if(!KC_OPEN)KC_EDIT=null;renderKNote()});
 document.getElementById('k-note').addEventListener('click',e=>{const b=e.target.closest('button[data-noteedit="kc"]');if(!b)return;
@@ -1356,7 +1391,7 @@ function show(v){document.getElementById('v-home').hidden=v!=='home';document.ge
 function route(fromSnap){
   const m=/^#k-([a-z0-9]+)$/.exec(location.hash);
   if(m&&meta(m[1])){
-    if(CUR!==m[1]){CUR=m[1];KC_EDIT=null;KC_OPEN=false;S=loadK(CUR);if(LAST[CUR]===undefined)LAST[CUR]=stateJS(S);openCol=-1;renderHead();bindGlobals();setTitle();render();renderEditor();setSave('ok');window.scrollTo(0,0)}
+    if(CUR!==m[1]){CUR=m[1];KC_EDIT=null;KC_OPEN=false;document.getElementById('k-editform').hidden=true;document.getElementById('k-titlebox').hidden=false;document.querySelector('#v-calc .hd-meta').hidden=false;S=loadK(CUR);if(LAST[CUR]===undefined)LAST[CUR]=stateJS(S);openCol=-1;renderHead();bindGlobals();setTitle();render();renderEditor();setSave('ok');window.scrollTo(0,0)}
     show('calc');
   }else if(m&&MODE==='load'){
     show('home');renderHome();
