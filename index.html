@@ -564,6 +564,28 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 .hd-cancel{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.6)}
 .hd-cancel:hover{background:rgba(255,255,255,.12)}
 @media (max-width:520px){.hd-title{padding-right:44px}.hd-edit{padding-right:0}.hd-edit-btns{width:100%}.hd-edit-btns button{flex:1}}
+
+.view>header.kh{background:linear-gradient(120deg,var(--teal) 0%,#037a7d 55%,var(--teal-text) 100%);padding:24px 28px 20px;overflow:hidden;border-radius:8px}
+.kh-deco{position:absolute;right:-18px;bottom:-26px;width:300px;height:auto;fill:none;stroke:#fff;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;opacity:.09;pointer-events:none}
+.kh>*:not(.kh-deco){position:relative}
+.kh>.hd-note{position:absolute}
+.kh-eyebrow{display:inline-flex;align-items:center;gap:7px;padding:4px 11px 4px 8px;border-radius:999px;background:rgba(255,255,255,.12);color:#fff!important;font-size:.7rem;letter-spacing:.08em;margin-bottom:10px}
+.kh-eyebrow svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.kh h1{font-size:1.85rem;letter-spacing:-.01em}
+.kh-lead{max-width:76ch;margin-top:8px;font-size:.95rem;line-height:1.55;color:rgba(255,255,255,.92)!important}
+.kh-steps{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:14px 0 0;padding:0;max-width:calc(100% - 150px)}
+.kh-steps li{display:inline-flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);font-size:.8rem;color:#fff}
+.kh-steps b{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#fff;color:var(--teal-text);font-size:.75rem}
+.kh-steps li.kh-res{background:rgba(170,180,20,.22);border-color:rgba(170,180,20,.6)}
+.kh-steps li.kh-res b{background:var(--olive);color:#fff}
+.kh .hd-meta{margin-top:16px}
+.hd-vf{display:inline-flex;align-items:center;gap:8px;font-size:.95rem;color:#fff}
+.hd-vf svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linejoin:round;opacity:.9}
+.hd-vf b{font-family:var(--f-num);font-size:1.05rem}
+.hd-vf #k-vf-s{color:rgba(255,255,255,.88)}
+.kh .hd-meta{gap:8px 28px}
+@media (max-width:760px){.kh-steps{max-width:none}.kh-deco{width:200px}.kh h1{font-size:1.5rem}}
+@media (max-width:520px){.view>header.kh{padding:20px 18px 18px}.kh-steps li{font-size:.76rem}.kh-eyebrow{margin-right:44px;padding-right:11px!important}}
 </style>
 </head>
 <body>
@@ -614,8 +636,9 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 
  <div id="v-calc" class="view" hidden>
   <nav class="crumb"><a href="#start" id="back">← Alle Kommunen</a><span class="savestate" id="savestate" role="status"></span></nav>
-  <header>
-    <div class="eyebrow">Migrationskalkulator · Fachverfahren</div>
+  <header class="kh">
+    <svg class="kh-deco" viewBox="0 0 200 140" aria-hidden="true"><path d="M52 118h104a34 34 0 0 0 4-67.8A46 46 0 0 0 72 40a32 32 0 0 0-20 78z"/><path d="M104 104V62M86 80l18-18 18 18"/></svg>
+    <div class="eyebrow kh-eyebrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .6-7.96A5.5 5.5 0 0 0 7.1 9.5 4.3 4.3 0 0 0 7 18z"/><path d="M12 16v-5M9.8 13.2 12 11l2.2 2.2"/></svg>Migrationskalkulator · Kalkulation der Kommune</div>
     <button type="button" class="hd-note" id="b-knote" aria-expanded="false" aria-controls="k-note" title="Notizen zur Kommune"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8 12h8M8 16h6"/></svg><span>Notizen</span><i class="hd-dot" aria-hidden="true"></i></button>
     <div class="hd-title" id="k-titlebox"><h1 id="k-title">Kommune</h1><button type="button" class="hd-pen" id="b-kedit" title="Name und Einwohner ändern" aria-label="Name und Einwohner ändern"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button></div>
     <form class="hd-edit" id="k-editform" hidden novalidate>
@@ -623,8 +646,14 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
       <label class="hd-f"><span>Einwohner</span><input id="ke2-b" type="number" min="1" step="1"></label>
       <div class="hd-edit-btns"><button type="submit" class="hd-save">Speichern</button><button type="button" class="hd-cancel" id="ke2-cancel">Abbrechen</button></div>
     </form>
-    <p class="lead">Schwierigkeitsfaktor aus zehn gewichteten Kriterien, Kosten pro Bürger heute und in der Cloud, Netto-Ersparnis nach Abzug der verteilten Migrationskosten.</p>
-  <div class="hd-meta"><span class="hd-ew"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M15.8 14.2c2.4.2 4.1 1.8 4.7 4.8"/></svg><b id="k-ew"></b> Einwohner</span></div>
+    <p class="lead kh-lead">Für jedes Fachverfahren werden die laufenden Kosten heute und in der Cloud gegenübergestellt, der Aufwand der Migration bewertet und daraus berechnet, was die Umstellung kostet, was sie pro Jahr und pro Bürger spart und wann sie sich bezahlt macht.</p>
+    <ol class="kh-steps" aria-label="So gehst du vor">
+      <li><b>1</b><span>Fachverfahren anlegen</span></li>
+      <li><b>2</b><span>TCO heute und Cloud eintragen</span></li>
+      <li><b>3</b><span>Schwierigkeit bewerten</span></li>
+      <li class="kh-res"><b>✓</b><span>Ersparnis und Amortisation ablesen</span></li>
+    </ol>
+  <div class="hd-meta"><span class="hd-ew"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M15.8 14.2c2.4.2 4.1 1.8 4.7 4.8"/></svg><b id="k-ew"></b> Einwohner</span><span class="hd-vf"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 10v10"/></svg><b id="k-vf"></b><span id="k-vf-s"></span></span></div>
   </header>
 
   <section id="k-note" aria-label="Notizen zur Kommune" hidden></section>
@@ -892,6 +921,7 @@ function render(){
       <td class="num ${x.T>x.n?'neg':''}">${Number.isFinite(x.T)?nf(x.T,1):'nie'}</td>
       <td style="text-align:left">${x.rec}</td></tr>`}).join('');
   const IR=S.rows.filter(isInc), IX=res.filter((x,i)=>isInc(S.rows[i]));
+  {const v=document.getElementById('k-vf');if(v){v.textContent=S.rows.length;document.getElementById('k-vf-s').textContent=(S.rows.length===1?' Fachverfahren':' Fachverfahren')+(IR.length<S.rows.length?`, davon ${IR.length} in der Gesamtberechnung`:'')}}
   const sIst=IR.reduce((a,r)=>a+r.ist,0), sCl=IR.reduce((a,r)=>a+r.cloud,0), sM=IX.reduce((a,x)=>a+x.M,0);
   const kI=IX.reduce((a,x)=>a+x.kI,0), kC=IX.reduce((a,x)=>a+x.kC,0), E=IX.reduce((a,x)=>a+x.E,0), G=IX.reduce((a,x)=>a+x.gross,0);
   const dT=sIst-sCl, T=dT>0?sM/dT:Infinity;
