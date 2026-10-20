@@ -1350,7 +1350,7 @@ function renderHome(){
      <td class="act"><div class="btns"><button type="button" class="primary ke-save" data-ksave="${k.id}">Speichern</button><button type="button" class="ke-cancel" data-kcancel="${k.id}">Abbrechen</button></div></td></tr>`;
     return `<tr data-id="${k.id}" class="${op?'kn-open':''}">
      <td><a class="kn" href="#k-${k.id}">${esc(k.name||'Kommune ohne Namen')}</a>${kn?`<span class="nicon" title="${esc(kn.slice(0,300))}" aria-label="Hat Notizen">${NOTE_ICON}</span>`:''}<span class="sub">Geändert ${dfmt(k.updated)}</span></td>
-     <td class="num">${eur(s.B)}</td><td class="num">${s.n}${s.nAll>s.n?`<span class="sub">+ ${s.nAll-s.n} Entwurf</span>`:''}</td>
+     <td class="num">${eur(s.B)}</td><td class="num">${s.n}${s.nAll>s.n?`<span class="sub">+ ${s.nAll-s.n} ${s.nAll-s.n===1?'Entwurf':'Entwürfe'}</span>`:''}</td>
      <td class="num">${has?nf(s.kI,2):'–'}</td><td class="num">${has?nf(s.kC,2):'–'}</td>
      <td class="num ${has?(s.E<0?'neg':'pos'):''}">${has?nf(s.E,2):'–'}</td>
      <td class="num ${has?(s.d<0?'neg':''):''}">${has?eur(s.d):'–'}</td>
