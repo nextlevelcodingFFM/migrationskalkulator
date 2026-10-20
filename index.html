@@ -603,6 +603,21 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 @media (max-width:1000px){.kh>.kh-logo{display:none}}
 .kh-lead{max-width:min(76ch,calc(100% - 140px))}
 @media (max-width:1000px){.kh-lead{max-width:76ch}}
+
+.newk{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:10px 12px;border-left:4px solid var(--teal)}
+.newk-t{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--teal-text);margin-right:4px;white-space:nowrap}
+.newk-t svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
+.nk-f{display:flex;align-items:stretch;height:34px;border:1px solid var(--line-strong);border-radius:5px;overflow:hidden;background:#fff}
+.nk-f:focus-within{border-color:var(--teal);box-shadow:0 0 0 2px var(--teal-soft)}
+.nk-f>span{display:flex;align-items:center;padding:0 9px;background:var(--sunk);border-right:1px solid var(--line);font-size:.74rem;font-weight:600;color:var(--muted);white-space:nowrap}
+.nk-f input,.nk-f select{border:none!important;border-radius:0!important;height:100%;padding:0 9px;font-size:.88rem;background:#fff;min-width:0;outline:none;box-shadow:none}
+.nk-name{flex:1 1 220px}.nk-name input{width:100%}
+.nk-ew input{width:96px;text-align:right}
+.nk-start select{padding-right:4px}
+.nk-btn{height:34px;padding:0 16px;font-weight:600}
+.newk .err{flex-basis:100%;margin:0}
+.newk .err:empty{display:none}
+@media (max-width:640px){.newk-t{flex-basis:100%}.nk-ew,.nk-start{flex:1 1 100%}.nk-f>span{min-width:78px}.nk-ew input{width:100%}.nk-start select{width:100%}.nk-btn{flex:1 1 100%}}
 </style>
 </head>
 <body>
@@ -627,11 +642,12 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
     <div><button type="button" id="b-logout2" hidden>Abmelden</button></div>
   </section>
 
-  <form class="panel params" id="f-new" aria-label="Kommune anlegen" novalidate>
-    <div class="field grow"><label for="n-name">Name der Kommune</label><input id="n-name" type="text" placeholder="z. B. Stadt Rimbach" autocomplete="off"></div>
-    <div class="field"><label for="n-ew">Einwohner</label><input id="n-ew" class="w-lg" type="number" min="1" step="100" placeholder="z. B. 8500"></div>
-    <div class="field"><label for="n-start">Startdaten</label><select id="n-start"><option value="leer">Ohne Verfahren</option><option value="bsp">Mit fünf Beispielverfahren</option></select></div>
-    <button class="primary" type="submit">Kommune anlegen</button>
+  <form class="panel newk" id="f-new" aria-label="Neue Kommune anlegen" novalidate>
+    <span class="newk-t"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Neue Kommune</span>
+    <label class="nk-f nk-name"><span>Name</span><input id="n-name" type="text" placeholder="z. B. Stadt Rimbach" autocomplete="off"></label>
+    <label class="nk-f nk-ew"><span>Einwohner</span><input id="n-ew" type="number" min="1" step="1" placeholder="8.500"></label>
+    <label class="nk-f nk-start"><span>Start</span><select id="n-start"><option value="leer">ohne Verfahren</option><option value="bsp">mit 5 Beispielverfahren</option></select></label>
+    <button class="primary nk-btn" type="submit">Anlegen</button>
     <p class="err" id="n-err" role="alert"></p>
   </form>
 
