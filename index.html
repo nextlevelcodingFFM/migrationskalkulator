@@ -523,6 +523,26 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 .hd-params .inunit span{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.6);color:#fff}
 @media (max-width:760px){.hd-params{grid-template-columns:1fr 1fr}.hd-params .pf-name{grid-column:1/-1}}
 @media (max-width:420px){.hd-params{grid-template-columns:1fr}}
+
+.hd-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.28)}
+.hd-ew{display:inline-flex;align-items:center;gap:8px;font-size:.95rem;color:#fff}
+.hd-ew b{font-family:var(--f-num);font-size:1.05rem}
+.hd-ew svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+.hd-editlink{font-size:.8rem;color:var(--on-ink-muted);text-decoration:underline;text-underline-offset:2px}
+.hd-editlink:hover{color:#fff}
+.ke-btn{color:var(--teal-text)}
+.ke-btn:hover{background:var(--teal-soft);border-color:var(--teal)}
+.ktable tr.ke-row td{background:var(--teal-soft);vertical-align:middle}
+.ktable tr.ke-row input{height:34px;box-sizing:border-box;width:100%;border:1px solid var(--teal);background:#fff}
+.ktable tr.ke-row input.ke-b{max-width:120px;text-align:right}
+.ktable tr.ke-row input.bad{border-color:var(--neg);box-shadow:0 0 0 2px rgba(163,22,27,.15)}
+.ktable td.ke-hint{text-align:left;font-size:.78rem;color:var(--teal-text);white-space:normal}
+
+.ke-fields{display:flex;gap:12px;align-items:flex-end}
+.ke-fields label{display:flex;flex-direction:column;gap:3px;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--teal-text)}
+.ke-fields label:first-child{flex:1 1 auto;min-width:220px}
+.ke-fields label:last-child{flex:0 0 130px}
+.ktable tr.ke-row input.ke-b{max-width:none}
 </style>
 </head>
 <body>
@@ -578,10 +598,7 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
     <button type="button" class="hd-note" id="b-knote" aria-expanded="false" aria-controls="k-note" title="Notizen zur Kommune"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8 12h8M8 16h6"/></svg><span>Notizen</span><i class="hd-dot" aria-hidden="true"></i></button>
     <h1 id="k-title">Kommune</h1>
     <p class="lead">Schwierigkeitsfaktor aus zehn gewichteten Kriterien, Kosten pro Bürger heute und in der Cloud, Netto-Ersparnis nach Abzug der verteilten Migrationskosten.</p>
-  <div class="params hd-params" role="group" aria-label="Grunddaten der Kommune">
-    <div class="field pf-name"><label for="g-name">Name der Kommune</label><input id="g-name" type="text" autocomplete="off"><span class="fhelp">erscheint auf der Startseite und im Seitentitel</span></div>
-    <div class="field"><label for="g-b">Einwohner der Kommune</label><input id="g-b" type="number" min="1" step="100"><span class="fhelp">Grundlage für alle Werte pro Bürger</span></div>
-  </div>
+  <div class="hd-meta"><span class="hd-ew"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M15.8 14.2c2.4.2 4.1 1.8 4.7 4.8"/></svg><b id="k-ew"></b> Einwohner</span><a href="#start" class="hd-editlink" id="k-editlink">Name und Einwohner auf der Startseite ändern</a></div>
   </header>
 
   <section id="k-note" aria-label="Notizen zur Kommune" hidden></section>
@@ -799,7 +816,7 @@ function applySnapshot(snap){
     const sel=MEM[id]?MEM[id].sel:0;
     MEM[id]=prepState(clone(incoming));MEM[id].sel=Math.min(sel,Math.max(0,MEM[id].rows.length-1));
     LAST[id]=stateJS(MEM[id]);
-    if(id===CUR){S=MEM[id];render();renderKNote();const ae=document.activeElement;if(!ae||!document.getElementById('editor').contains(ae))renderEditor();else renderResult()}
+    if(id===CUR){S=MEM[id];render();bindGlobals();setTitle();const ae=document.activeElement;if(!ae||!document.getElementById('editor').contains(ae))renderEditor();else renderResult()}
   });
   // Lokale Namensänderung, die gerade gespeichert wird, nicht überschreiben
   list.forEach(k=>{const old=meta(k.id);if(old&&(TIMERS[k.id]||INFLIGHT[k.id]))k.name=old.name});
@@ -807,7 +824,7 @@ function applySnapshot(snap){
   IX.list.forEach(k=>{if(!list.some(x=>x.id===k.id)&&(TIMERS[k.id]||INFLIGHT[k.id]||DIRTY[k.id]))list.push(k)});
   IX={list:list.filter(k=>!GONE[k.id])};
   if(CUR&&!meta(CUR)){CUR=null;S=null;location.hash='start';flashHome('Diese Kommune wurde gelöscht.')}
-  if(CUR){const gn=document.getElementById('g-name'),m=meta(CUR);if(m&&document.activeElement!==gn){gn.value=m.name;setTitle()}}
+  if(CUR&&meta(CUR))setTitle();
   route(true);
 }
 
@@ -1026,14 +1043,10 @@ function renderResult(){
 }
 
 function bindGlobals(){
-  const map={'g-b':'B'};
-  for(const id in map){const el=document.getElementById(id);el.value=S[map[id]];el.oninput=()=>{S[map[id]]=Math.max(1,num(el.value));render();if(id==='g-b')renderEditor();else updateTco()}}
-  const gn=document.getElementById('g-name'), m=meta(CUR);
-  gn.value=m?m.name:'';
-  gn.oninput=()=>{const mm=meta(CUR);if(!mm)return;mm.name=gn.value;mm.updated=Date.now();saveIdx();setTitle()};
-  gn.disabled=READONLY;
+  document.getElementById('k-ew').textContent=eur(S.B);
   renderKNote();
 }
+document.getElementById('k-editlink').addEventListener('click',()=>{KE_EDIT=CUR});
 document.getElementById('k-note').addEventListener('input',e=>{const t=e.target;if(t.id!=='g-note'||t.readOnly)return;S.note=t.value;save();noteSize(t);noteCount(t);kNoteBtn()});
 document.getElementById('b-knote').addEventListener('click',()=>{KC_OPEN=!KC_OPEN;if(!KC_OPEN)KC_EDIT=null;renderKNote()});
 document.getElementById('k-note').addEventListener('click',e=>{const b=e.target.closest('button[data-noteedit="kc"]');if(!b)return;
@@ -1234,7 +1247,8 @@ document.getElementById('k-overall').addEventListener('click',e=>{const b=e.targ
   if(ST.includes(k)){renderOverall(LAST_OV);const nb=document.querySelector(`#k-overall button[data-o="${k}"]`);if(nb)nb.focus();return}
   const on=OPEN_O.has(k);b.setAttribute('aria-expanded',on);document.getElementById('oi-'+k).hidden=!on});
 let LAST_OV=[];
-const KN_OPEN=new Set();let KN_EDIT=null;
+const KN_OPEN=new Set();let KN_EDIT=null,KE_EDIT=null;
+const PEN_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>';
 function knAfter(){document.querySelectorAll('#kb .kn-row .notes').forEach(bx=>{bx.dataset.ph=KN_PH;const t=bx.querySelector('textarea');noteSize(t);noteCount(t)})}
 function renderHome(){
   const ae=document.activeElement,keep=ae&&ae.id&&ae.id.startsWith('kn-')&&ae.tagName==='TEXTAREA'?[ae.id,ae.selectionStart,ae.selectionEnd]:null;
@@ -1248,6 +1262,11 @@ function renderHome(){
   document.getElementById('kb').innerHTML=L.map(k=>{const s=summarize(loadK(k.id));tB+=s.B;tn+=s.n;td+=s.d;tM+=s.M;tI+=s.I;
     const has=s.n>0;if(has)OV.push({name:k.name||'Kommune ohne Namen',...s});
     const pct=s.I>0?s.d/s.I*100:0,kn=(loadK(k.id).note||'').trim(),op=KN_OPEN.has(k.id);
+    const ed=KE_EDIT===k.id;
+    if(ed)return `<tr data-id="${k.id}" class="ke-row">
+     <td colspan="5"><div class="ke-fields"><label><span>Name der Kommune</span><input class="ke-name" type="text" value="${esc(k.name||'')}" placeholder="Name der Kommune"></label><label><span>Einwohner</span><input class="ke-b num" type="number" min="1" step="100" value="${s.B}"></label></div></td>
+     <td colspan="4" class="ke-hint">Enter speichert, Esc bricht ab</td>
+     <td class="act"><div class="btns"><button type="button" class="primary ke-save" data-ksave="${k.id}">Speichern</button><button type="button" class="ke-cancel" data-kcancel="${k.id}">Abbrechen</button></div></td></tr>`;
     return `<tr data-id="${k.id}" class="${op?'kn-open':''}">
      <td><a class="kn" href="#k-${k.id}">${esc(k.name||'Kommune ohne Namen')}</a>${kn?`<span class="nicon" title="${esc(kn.slice(0,300))}" aria-label="Hat Notizen">${NOTE_ICON}</span>`:''}<span class="sub">Geändert ${dfmt(k.updated)}</span></td>
      <td class="num">${eur(s.B)}</td><td class="num">${s.n}${s.nAll>s.n?`<span class="sub">+ ${s.nAll-s.n} Entwurf</span>`:''}</td>
@@ -1256,15 +1275,28 @@ function renderHome(){
      <td class="num ${has?(s.d<0?'neg':''):''}">${has?eur(s.d):'–'}</td>
      <td class="num">${has?`<span class="pctb ${pct<0?'is-neg':'is-pos'}">${nf(pct,0)} %</span>`:'–'}</td>
      <td class="num">${has?eur(s.M):'–'}</td>
-     <td class="act"><div class="btns"><a class="btn" href="#k-${k.id}">Öffnen</a><button type="button" class="icon-btn kn-btn${kn?' has-note':''}" data-knote="${k.id}" aria-expanded="${op}" aria-controls="kn-${k.id}" aria-label="Notizen zu ${esc(k.name||'Kommune')}" title="${kn?'Notizen anzeigen':'Notiz erfassen'}">${NOTE_ICON}</button><button type="button" class="danger icon-btn" data-del="${k.id}" aria-label="Kommune ${esc(k.name||'')} löschen" title="Kommune löschen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button></div></td></tr>${op?`<tr class="kn-row" data-knrow="${k.id}"><td colspan="10">${noteBox({key:'k:'+k.id,tid:'kn-'+k.id,label:'Notizen zur Kommune',value:loadK(k.id).note,edit:KN_EDIT===k.id,ph:'Freie Notizen zur Kommune, z. B. Ansprechpartner, Stand der Abstimmung, Termine, Besonderheiten der IT-Landschaft …'})}</td></tr>`:''}`}).join('');
+     <td class="act"><div class="btns"><a class="btn" href="#k-${k.id}">Öffnen</a><button type="button" class="icon-btn ke-btn" data-kedit="${k.id}" aria-label="${esc(k.name||'Kommune')}: Name und Einwohner ändern" title="Name und Einwohner ändern">${PEN_SVG}</button><button type="button" class="icon-btn kn-btn${kn?' has-note':''}" data-knote="${k.id}" aria-expanded="${op}" aria-controls="kn-${k.id}" aria-label="Notizen zu ${esc(k.name||'Kommune')}" title="${kn?'Notizen anzeigen':'Notiz erfassen'}">${NOTE_ICON}</button><button type="button" class="danger icon-btn" data-del="${k.id}" aria-label="Kommune ${esc(k.name||'')} löschen" title="Kommune löschen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button></div></td></tr>${op?`<tr class="kn-row" data-knrow="${k.id}"><td colspan="10">${noteBox({key:'k:'+k.id,tid:'kn-'+k.id,label:'Notizen zur Kommune',value:loadK(k.id).note,edit:KN_EDIT===k.id,ph:'Freie Notizen zur Kommune, z. B. Ansprechpartner, Stand der Abstimmung, Termine, Besonderheiten der IT-Landschaft …'})}</td></tr>`:''}`}).join('');
   document.getElementById('kf').innerHTML=L.length>1?`<tr><td>Alle Kommunen</td><td class="num">${eur(tB)}</td><td class="num">${tn}</td><td></td><td></td><td></td><td class="num ${td<0?'neg':''}">${eur(td)}</td><td class="num">${tI>0?nf(td/tI*100,0)+' %':'–'}</td><td class="num">${eur(tM)}</td><td></td></tr>`:'';
   renderOverall(OV);knAfter();
+  if(KE_EDIT&&!document.activeElement?.closest?.('tr.ke-row')){const i=document.querySelector('#kb tr.ke-row .ke-name');if(i){i.focus();i.select();i.scrollIntoView({block:'center'})}}
   if(keep){const t=document.getElementById(keep[0]);if(t&&!t.readOnly){t.focus();try{t.setSelectionRange(keep[1],keep[2])}catch(e){}}}
 }
 document.getElementById('kb').addEventListener('input',e=>{const t=e.target.closest('.kn-row textarea');if(!t||t.readOnly)return;
   const id=t.closest('tr').dataset.knrow,st=loadK(id);st.note=t.value;const m=meta(id);if(m)m.updated=Date.now();storeK(id,st);if(MODE==='local')lsSet(IDX,IX);noteSize(t);noteCount(t);
   const r=document.querySelector(`#kb tr[data-id="${id}"]`);if(r){const ic=r.querySelector('.kn-btn');if(ic)ic.classList.toggle('has-note',!!t.value.trim())}});
+function keSave(id){const tr=document.querySelector(`#kb tr.ke-row[data-id="${id}"]`);if(!tr)return;
+  const ni=tr.querySelector('.ke-name'),bi=tr.querySelector('.ke-b'),nm=ni.value.trim(),B=num(bi.value);
+  ni.classList.toggle('bad',!nm);bi.classList.toggle('bad',!(B>0));if(!nm){ni.focus();return}if(!(B>0)){bi.focus();return}
+  const m=meta(id),st=loadK(id);if(m){m.name=nm;m.updated=Date.now()}st.B=Math.round(B);storeK(id,st);if(MODE==='local')lsSet(IDX,IX);
+  KE_EDIT=null;renderHome();const r=document.querySelector(`#kb button[data-kedit="${id}"]`);if(r)r.focus()}
+document.getElementById('kb').addEventListener('keydown',e=>{const tr=e.target.closest('tr.ke-row');if(!tr)return;
+  if(e.key==='Enter'){e.preventDefault();keSave(tr.dataset.id)}else if(e.key==='Escape'){KE_EDIT=null;renderHome()}});
 document.getElementById('kb').addEventListener('click',e=>{
+  const ke=e.target.closest('button[data-kedit]');
+  if(ke){KE_EDIT=ke.dataset.kedit;renderHome();const i=document.querySelector('#kb tr.ke-row .ke-name');if(i){i.focus();i.select()}return}
+  const ks=e.target.closest('button[data-ksave]');if(ks){keSave(ks.dataset.ksave);return}
+  if(e.target.closest('button[data-kcancel]')){KE_EDIT=null;renderHome();return}
+  if(e.target.closest('tr.ke-row'))return;
   const kb=e.target.closest('button[data-knote]');
   if(kb){const id=kb.dataset.knote;if(KN_OPEN.has(id)){KN_OPEN.delete(id);if(KN_EDIT===id)KN_EDIT=null}else KN_OPEN.add(id);renderHome();const nb=document.querySelector(`#kb button[data-knote="${id}"]`);if(nb)nb.focus();return}
   const ne=e.target.closest('button[data-noteedit^="k:"]');
