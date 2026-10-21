@@ -55,6 +55,21 @@ T Amort  = M / (TCO Ist − TCO Cloud)
 
 Die vorbelegten Verfahren, Kosten, Gewichte und Aufschläge sind fiktive Richtwerte. Sie sind durch eigene Daten zu ersetzen und nach den ersten Pilotmigrationen zu kalibrieren.
 
+## KI-Schätzhilfe (Claude)
+
+Im Editor eines Fachverfahrens öffnet „Schätzung starten“ einen Dialog mit Claude. Claude fragt nach Eckdaten und schlägt Werte für TCO heute, TCO in der Cloud und den Migrationsbetrag Basis vor. Übernommen werden nur die angehakten Felder; auf Wunsch werden die Annahmen an die Notiz des Verfahrens angehängt.
+
+- **Claude-Version:** läuft über das Claude-Konto der Person, die schätzt.
+- **GitHub-Version:** läuft über die Supabase Edge Function `ki-schaetzung` (`supabase/functions/ki-schaetzung`). Sie prüft denselben Zugang wie die Datenbank (freigeschaltete Anmeldung oder gültiger Zugangslink) und ruft die Claude-API auf. Der Knopf erscheint erst, wenn die Funktion eingerichtet ist.
+
+Einrichtung der GitHub-Version:
+1. In der Anthropic Console (console.anthropic.com) einen API-Schlüssel erzeugen und ein Ausgabenlimit setzen.
+2. Funktion bereitstellen: `supabase functions deploy ki-schaetzung`
+3. Schlüssel als Secret hinterlegen: `supabase secrets set ANTHROPIC_API_KEY=…` oder im Supabase-Dashboard unter *Edge Functions → Secrets*. Der Schlüssel gehört nie ins Repository.
+4. Optional: `ANTHROPIC_MODEL` (Standard `claude-sonnet-5-5`) und `KI_ORIGINS` (erlaubte Herkunft, Standard `https://nextlevelcodingffm.github.io`).
+
+Eingaben im Dialog werden zur Verarbeitung an Anthropic übermittelt. Bitte keine personenbezogenen Daten eingeben.
+
 ## KI-Agent im Repository (Claude)
 
 In einem Issue, Pull Request oder Kommentar `@claude <Auftrag>` schreiben; der Agent erstellt einen Branch und einen Pull Request.
