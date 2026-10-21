@@ -618,6 +618,74 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
 .newk .err{flex-basis:100%;margin:0}
 .newk .err:empty{display:none}
 @media (max-width:640px){.newk-t{flex-basis:100%}.nk-ew,.nk-start{flex:1 1 100%}.nk-f>span{min-width:78px}.nk-ew input{width:100%}.nk-start select{width:100%}.nk-btn{flex:1 1 100%}}
+
+/* KI-Schätzhilfe (nur in der Claude-Version sichtbar) */
+.kibar{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap;padding:12px 16px;border:1px solid var(--teal);border-left:6px solid var(--teal);border-radius:6px;background:linear-gradient(90deg,var(--teal-soft),var(--surface) 70%)}
+.kibar-t{display:flex;align-items:flex-start;gap:12px;min-width:0;flex:1 1 380px}
+.kibar-t>svg{flex:none;width:30px;height:30px;padding:5px;border-radius:50%;background:var(--teal);fill:#fff}
+.kibar-t div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.kibar-t b{color:var(--ink);font-size:.98rem}
+.kibar-t span{font-size:.82rem;color:var(--muted);line-height:1.45;max-width:80ch}
+.kibar button{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 16px;font-weight:600}
+.kibar button svg{width:15px;height:15px;fill:currentColor}
+.kidlg{border:none;border-radius:10px;padding:0;width:min(860px,calc(100% - 24px));max-height:calc(100dvh - 24px);box-shadow:0 18px 50px rgba(0,40,55,.3);color:var(--fg);overflow:hidden}
+.kidlg[open]{display:flex;flex-direction:column}
+.kidlg::backdrop{background:rgba(0,45,60,.45)}
+.ki-h{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 20px 14px;background:var(--teal);color:#fff}
+.ki-ey{display:inline-flex;align-items:center;gap:6px;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--on-ink-muted)}
+.ki-ey svg{width:13px;height:13px;fill:currentColor}
+.ki-h h2{color:#fff;font-size:1.2rem;margin:2px 0 0}
+.ki-x{flex:none;width:34px;height:34px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;font-size:1.2rem;line-height:1}
+.ki-x:hover{background:rgba(255,255,255,.15)}
+.ki-scope{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap;padding:10px 20px;border-bottom:1px solid var(--line);background:var(--sunk);font-size:.84rem}
+.ki-scope>span{font-weight:600;color:var(--teal-text)}
+.ki-scope label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.ki-scope input{width:16px;height:16px;margin:0;accent-color:var(--teal)}
+.ki-scope .ki-reset{margin-left:auto;font-size:.82rem;color:var(--teal-text)}
+.ki-body{flex:1 1 auto;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px;min-height:180px}
+.ki-m{max-width:88%;padding:10px 14px;border-radius:10px;font-size:.9rem;line-height:1.55;white-space:normal;overflow-wrap:anywhere}
+.ki-m p{margin:0 0 6px}.ki-m p:last-child{margin:0}
+.ki-m ul{margin:4px 0 6px;padding-left:20px}
+.ki-m.u{align-self:flex-end;background:var(--teal);color:#fff;border-bottom-right-radius:3px}
+.ki-m.a{align-self:flex-start;background:var(--sunk);border:1px solid var(--line);border-bottom-left-radius:3px}
+.ki-m.a.wait{color:var(--muted);font-style:italic}
+.ki-m.err{align-self:stretch;max-width:none;background:var(--crit-soft);color:var(--crit);border:1px solid var(--crit-soft)}
+.ki-m.info{align-self:stretch;max-width:none;background:var(--teal-soft);border-left:4px solid var(--teal);border-radius:4px}
+.ki-quick{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.ki-quick button{font-size:.82rem;padding:5px 12px;border-radius:999px;border-color:var(--teal);color:var(--teal-text);background:#fff}
+.ki-prop{border:1px solid var(--line-strong);border-top:4px solid var(--olive);border-radius:6px;overflow:hidden}
+.ki-prop-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;padding:10px 14px;background:#fbfcf3}
+.ki-prop-h b{color:var(--ink)}
+.ki-prop-h span{font-size:.78rem;color:var(--muted)}
+.ki-tw{overflow-x:auto}
+.ki-prop table{min-width:620px;width:100%}
+.ki-prop th{background:var(--sunk);color:var(--muted);border-bottom:1px solid var(--line);font-size:.68rem;padding:6px 8px}
+.ki-prop td{padding:6px 8px;font-size:.84rem;vertical-align:top}
+.ki-prop td.k{text-align:left;white-space:normal;min-width:150px}
+.ki-prop td.k small{display:block;color:var(--muted);font-size:.72rem}
+.ki-prop td.g{text-align:left;white-space:normal;color:var(--muted);font-size:.78rem;min-width:180px}
+.ki-prop td.n{color:var(--teal-text);font-weight:700}
+.ki-prop td.o{color:var(--muted)}
+.ki-prop td.kc{text-align:center}
+.ki-prop td.kc input{width:16px;height:16px;accent-color:var(--teal)}
+.ki-prop tr.grp td{background:var(--teal-soft);font-weight:700;color:var(--teal-text);text-align:left;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}
+.ki-prop tr.same td{opacity:.6}
+.ki-prop tbody tr{cursor:default}.ki-prop tbody tr:hover{background:none}
+.ki-sum{display:flex;flex-wrap:wrap;gap:6px 24px;padding:10px 14px;background:var(--sunk);border-top:1px solid var(--line);font-size:.84rem}
+.ki-sum b{font-family:var(--f-num)}
+.ki-act{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:10px 14px;border-top:1px solid var(--line)}
+.ki-act label{display:inline-flex;align-items:center;gap:6px;font-size:.84rem;cursor:pointer;margin-right:auto}
+.ki-act input{width:16px;height:16px;accent-color:var(--teal)}
+.ki-in{display:flex;gap:10px;align-items:flex-end;padding:12px 20px;border-top:1px solid var(--line);background:#fff}
+.ki-in textarea{flex:1;min-height:44px;max-height:160px;resize:vertical;font:inherit;font-size:.9rem;padding:9px 11px;border:1px solid var(--line-strong);border-radius:6px}
+.ki-in textarea:focus{outline:2px solid var(--teal);outline-offset:0;border-color:var(--teal)}
+.ki-btns{display:flex;gap:8px}
+.ki-btns button{height:44px;padding:0 16px;font-weight:600}
+.ki-foot{margin:0;padding:0 20px 12px;font-size:.72rem;color:var(--muted);background:#fff}
+.ki-body>*{flex-shrink:0}
+.ki-prop td.k small.gm{display:none}
+@media (max-width:560px){.ki-prop table{min-width:0}.ki-prop .g{display:none}.ki-prop td.k small.gm{display:block;font-style:italic;margin-top:2px}.ki-prop td.k{min-width:0}.ki-prop th,.ki-prop td{padding:6px 5px}.ki-prop th{font-size:.62rem}}
+@media (max-width:560px){.kidlg{width:calc(100% - 12px);max-height:calc(100dvh - 12px)}.ki-m{max-width:100%}.ki-h{padding:12px 14px}.ki-h h2{font-size:1.05rem}.ki-body,.ki-scope{padding-left:12px;padding-right:12px}.ki-scope{padding-top:8px;padding-bottom:8px}.ki-in{padding:10px 12px;gap:8px}.ki-in textarea{min-height:40px;font-size:.88rem}.ki-btns button{height:40px;padding:0 12px}.ki-foot{padding:0 12px 8px;font-size:.68rem}}
 </style>
 </head>
 <body>
@@ -729,6 +797,13 @@ tbody tr.off td:not(.c-inc) .neg,tbody tr.off td:not(.c-inc) .pos{color:var(--mu
   <p id="cdlg-x"></p>
   <div class="cdlg-b"><button type="button" id="cdlg-no">Abbrechen</button><button type="button" class="cdlg-ok" id="cdlg-ok"></button></div>
 </dialog>
+<dialog id="kidlg" class="kidlg" aria-labelledby="ki-t">
+  <div class="ki-h"><div><span class="ki-ey"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z"/></svg>KI-Schätzhilfe · Claude</span><h2 id="ki-t">Kosten schätzen</h2></div><button type="button" class="ki-x" id="ki-close" aria-label="Schließen">×</button></div>
+  <div class="ki-scope"><span>Schätzen für</span><label><input type="checkbox" id="ki-s-ti" checked> TCO heute</label><label><input type="checkbox" id="ki-s-tc" checked> TCO in der Cloud</label><label><input type="checkbox" id="ki-s-mb" checked> Migrationsbetrag Basis</label><button type="button" class="linkbtn ki-reset" id="ki-reset">Neu beginnen</button></div>
+  <div class="ki-body" id="ki-body" aria-live="polite"></div>
+  <form class="ki-in" id="ki-form"><textarea id="ki-msg" rows="2" aria-label="Nachricht an Claude" placeholder="Eckdaten, z. B. 2 virtuelle Server, 300 GB Daten, 40 Arbeitsplätze, Wartungsvertrag ca. 18.000 € pro Jahr …"></textarea><div class="ki-btns"><button type="button" id="ki-stop" hidden>Stopp</button><button type="submit" class="primary" id="ki-send">Senden</button></div></form>
+  <p class="ki-foot" id="ki-foot">Schätzwerte, keine Angebote. Der Dialog läuft über dein Claude-Konto. Bitte keine personenbezogenen Daten eingeben.</p>
+</dialog>
 <script>
 const CRIT=[
  {t:'Architektur und Cloudfähigkeit',w:.30,h:['Container, zustandslos','','Virtualisierter Mehrschicht-Monolith','','Monolith mit festen Servernamen, Fat Client'],
@@ -816,6 +891,9 @@ function prepState(st){ensureTco(st);st.aufs=AUFS.slice();if(!(st.sel>=0))st.sel
 function loadK(id){let st=MEM[id]||(MODE==='local'?lsGet(KP+id):null);if(!st||!Array.isArray(st.rows))st=blankState();MEM[id]=prepState(st);return MEM[id]}
 /* Speicher: MODE 'db' = gemeinsame Datenbank (Claude-Seite), 'local' = nur dieser Browser (z. B. GitHub Pages) */
 let MODE='load', DB=null, READONLY=false, DBERR='';
+let SAMPLE=null, KI_SUPA=false; /* KI-Schätzhilfe: Claude-Version über sample, GitHub-Version über die Supabase-Funktion ki-schaetzung */
+const kiOn=()=>!!SAMPLE||KI_SUPA;
+const KI_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg>';
 /* Eigene Datenbank (Supabase) für die öffentliche Webseite. Beide Werte dürfen öffentlich sein;
    der Schutz erfolgt über Anmeldung und Zugriffsregeln in der Datenbank. Niemals den service_role-Key eintragen. */
 const SUPABASE_URL='https://riemevecgamybqoglydm.supabase.co';
@@ -1058,6 +1136,7 @@ function renderEditor(){
     <div class="field"><span class="lbl"><label for="e-n">Verteilungszeitraum</label>${iBtn('f_n',1)}</span><div class="inunit"><input id="e-n" type="number" min="1" max="30" step="1" value="${r.n||5}"><span>Jahre</span></div><span class="fhelp">für den Migrationsbetrag</span></div>
    </div>
    ${eiPanel('fld')}
+   <div class="kibar" id="kibar"${kiOn()&&!READONLY?'':' hidden'}><div class="kibar-t">${KI_ICON}<div><b>Kosten mit Claude schätzen</b><span>Claude fragt im Dialog nach Eckdaten wie Servern, Datenmenge und Verträgen und schlägt Werte für TCO heute, TCO in der Cloud und den Migrationsbetrag Basis vor. Du prüfst den Vorschlag und übernimmst nur, was passt.</span></div></div><button type="button" class="primary" id="b-ki">${KI_ICON}Schätzung starten</button></div>
    <div class="tco">
     ${tcoCol('ti','TCO heute',IST_LINES,r.ti,'s-ist')}
     ${tcoCol('tc','TCO in der Cloud',CLOUD_LINES,r.tc,'s-cloud')}
@@ -1114,6 +1193,167 @@ function updateTco(){
      ${''}<p class="td-note">Laufende Betriebskosten pro Jahr, ohne Migrationsbetrag. ${good&&d>0?'Gestrichelt: Ersparnis.':''}</p>
    </div>`;
 }
+/* ---------- KI-Schätzhilfe: Dialog mit Claude, Vorschlag für TCO heute und TCO in der Cloud ---------- */
+const KI={row:null,log:[],prop:null,busy:false,ctl:null,scope:{ti:true,tc:true,mb:true}};
+const KI_G={ti:{t:'TCO heute',L:IST_LINES},tc:{t:'TCO in der Cloud',L:CLOUD_LINES},mb:{t:'Migrationsbetrag Basis',L:[{t:'Migrationsbetrag Basis',f:[['mb','€ einmalig, ohne Aufschlag']]}]}};
+const KI_ALL=['ti','tc','mb'];
+const kiGet=(r,g,k)=>g==='mb'?(r.mb||0):(r[g][k]??0);
+const kiSet=(r,g,k,v)=>{if(g==='mb')r.mb=v;else r[g][k]=v};
+const kv=v=>Number.isFinite(v)?v.toLocaleString('de-DE',{maximumFractionDigits:2}):'–';
+function kiFields(g){const o=[];KI_G[g].L.forEach(l=>l.f.forEach(([k,lab])=>o.push({k,lab,line:l.t})));return o}
+function kiScopes(){return KI_ALL.filter(g=>KI.scope[g])}
+function kiRules(){
+  const r=S.rows[S.sel],m=meta(CUR),gs=kiScopes();
+  const fl=g=>kiFields(g).map(f=>`- ${f.k}: ${f.line}, Einheit „${f.lab}“ (aktuell eingetragen: ${kv(kiGet(r,g,f.k))})`).join('\n');
+  const ex={};gs.forEach(g=>{ex[g]={};kiFields(g).slice(0,2).forEach(f=>ex[g][f.k]={wert:0,grund:'kurzer Satz'})});ex.zusammenfassung='2 bis 4 Sätze mit den wichtigsten Annahmen';
+  const note=(r.note||'').trim().slice(0,1500);
+  return `Du bist die KI-Schätzhilfe im „Migrationskalkulator Fachverfahren“, einem Werkzeug, mit dem deutsche Kommunen die Migration ihrer Fachverfahren in eine Cloud bewerten. Du hilfst im Dialog, die Kosten eines Fachverfahrens zu schätzen, und zwar für: ${gs.map(g=>KI_G[g].t).join(', ')}. TCO heute und TCO in der Cloud sind jährliche Betriebskosten, der Migrationsbetrag Basis ist ein einmaliger Betrag.
+
+So arbeitest du:
+- Antworte auf Deutsch, duze den Nutzer, schreibe knapp und sachlich.
+- Stelle pro Antwort höchstens drei gezielte Fragen zu den Eckdaten, die die Kosten am stärksten bestimmen, z. B. Zahl und Größe der Server, Datenmenge, Zahl der Arbeitsplätze, Lizenz- und Wartungsverträge, Betriebsaufwand in Stunden, Zielplattform, SaaS-Angebot des Herstellers${KI.scope.mb?'; für den Migrationsbetrag außerdem Migrationsweg (Rehost, Replatform, Refactoring, Wechsel auf SaaS), Umfang von Datenübernahme und Tests, Zahl der Schnittstellen, Dauer des Parallelbetriebs, Schulungsbedarf und Tagessätze externer Dienstleister':''}.
+- Weiß der Nutzer etwas nicht, setze übliche Werte für kommunale IT in Deutschland an und kennzeichne sie als Annahme. Gib Preise nie als Tatsache eines bestimmten Herstellers aus.
+- Werte, die der Nutzer nennt, haben Vorrang vor deinen Annahmen. Bereits eingetragene Werte größer 0 sind vermutlich bekannt; ändere sie nur mit Begründung.
+- Sobald genug bekannt ist oder der Nutzer es wünscht, mache einen vollständigen Vorschlag: zuerst wenige Sätze zu Vorgehen und Annahmen, dann ganz am Ende genau einen Block in diesem Format:
+\`\`\`vorschlag
+${JSON.stringify(ex)}
+\`\`\`
+- Im Block stehen alle Felder der gewählten Bereiche (${gs.map(g=>g).join(', ')}) mit ihren Schlüsseln, „wert“ als reine Zahl ohne Tausenderpunkt in genau der angegebenen Einheit, „grund“ als ein kurzer Satz. Keine Felder anderer Bereiche.
+- Wünscht der Nutzer danach Änderungen, liefere einen neuen vollständigen Block.
+
+${gs.map(g=>`Felder ${KI_G[g].t} (Schlüssel „${g}“):\n${fl(g)}`).join('\n\n')}
+
+Hinweise zur Berechnung im Werkzeug: Hardware-Abschreibung = Anschaffung ÷ Nutzungsdauer; Betriebspersonal = Personentage × Tagessatz; in der Cloud werden Beträge „pro Monat“ mit 12 multipliziert; Speicher = Terabyte × Preis pro TB und Monat × 12.${KI.scope.mb?`
+
+Zum Migrationsbetrag Basis (Schlüssel „mb“, Feld „mb“): Gemeint ist der einmalige Aufwand für einen glatten Verlauf der Migration, also Planung, technischer Umbau, Einrichtung der Zielumgebung, Datenübernahme, Tests (auch Schnittstellen und Abnahme), Parallelbetrieb, Schulung und Projektsteuerung, intern und extern, in Euro. Rechne KEINEN Risiko- oder Schwierigkeitsaufschlag ein: Das Werkzeug multipliziert den Basisbetrag selbst mit einem Faktor aus der Einstufung (gering × 1,0, mittel × 1,5, hoch × 2,5, sehr hoch × 4,0). Für dieses Verfahren gilt derzeit: Einstufung ${CLS[calc(r).cls].toLowerCase()}, Faktor × ${nf(S.aufs[calc(r).cls],1)}, das ergäbe aus dem aktuellen Basisbetrag ${eur(calc(r).M)} €. Nenne im Grund kurz die Bausteine, z. B. Personentage × Tagessatz.`:''}
+
+Kontext:
+- Kommune: ${m?m.name:'unbekannt'}, ${eur(S.B)} Einwohner
+- Fachverfahren: ${r.name||'ohne Namen'}, heutige Betriebsform: ${r.form}, zuständig für ${eur(r.b>0?r.b:S.B)} Bürger
+- Bewertung der Migrationsschwierigkeit (1 = einfach bis 5 = sehr schwer):
+${CRIT.map((c,i)=>`  - ${c.t}: ${r.s[i]}`).join('\n')}
+- Aktuelle Summen: TCO heute ${eur(tco(IST_LINES,r.ti))} € pro Jahr, TCO in der Cloud ${eur(tco(CLOUD_LINES,r.tc))} € pro Jahr, Migrationsbetrag Basis ${eur(r.mb||0)} € einmalig
+${note?'- Notizen zum Verfahren:\n'+note:''}`}
+function kiVisible(t){const i=t.indexOf('```vorschlag');return (i>=0?t.slice(0,i):t).trim()}
+function kiParse(t){
+  const m=/```vorschlag\s*([\s\S]*?)(?:```|$)/.exec(t);if(!m)return null;
+  let o=null,s=m[1].trim();try{o=JSON.parse(s)}catch(e){const a=s.indexOf('{'),b=s.lastIndexOf('}');if(a>=0&&b>a){try{o=JSON.parse(s.slice(a,b+1))}catch(e2){}}}
+  if(!o||typeof o!=='object')return null;
+  const items=[];kiScopes().forEach(g=>{const src=o[g];if(!src||typeof src!=='object')return;
+    kiFields(g).forEach(f=>{const x=src[f.k];if(x==null)return;const w=typeof x==='object'?x.wert:x;const v=typeof w==='string'?parseFloat(w.replace(/\./g,'').replace(',','.')):Number(w);
+      if(Number.isFinite(v)&&v>=0)items.push({g,k:f.k,v:Math.round(v*100)/100,grund:typeof x==='object'&&x.grund?String(x.grund).slice(0,300):'',f})})});
+  return items.length?{items,sum:typeof o.zusammenfassung==='string'?o.zusammenfassung.slice(0,1200):''}:null}
+function kiMd(s){if(!s)return '';const out=[];let ul=false;const f=x=>esc(x).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+  s.split('\n').forEach(l=>{const t=l.trim().replace(/^#{1,6}\s*/,'');const m=/^(?:[-*•]|\d+[.)])\s+(.*)/.exec(t);
+    if(m){if(!ul){out.push('<ul>');ul=true}out.push('<li>'+f(m[1])+'</li>')}else{if(ul){out.push('</ul>');ul=false}if(t)out.push('<p>'+f(t)+'</p>')}});
+  if(ul)out.push('</ul>');return out.join('')}
+function kiScroll(){const b=document.getElementById('ki-body');b.scrollTop=b.scrollHeight}
+function kiRender(){
+  const b=document.getElementById('ki-body');let h='';
+  if(!KI.log.length)h+=`<div class="ki-m info"><p><b>So funktioniert es:</b> Beschreibe kurz, was du über das Verfahren weißt, oder lass dich von Claude durch die wichtigsten Fragen führen. Die bereits erfassten Werte, die Bewertung der Kriterien und die Notizen zum Verfahren gibt die Seite automatisch mit.</p><p>Am Ende schlägt Claude Werte vor. Du entscheidest pro Feld, was übernommen wird.</p>
+    <div class="ki-quick"><button type="button" data-kq="Bitte stelle mir die wichtigsten Fragen für die Schätzung.">Claude soll mir Fragen stellen</button><button type="button" data-kq="Mach bitte direkt einen ersten Vorschlag mit üblichen Annahmen für ein Verfahren dieser Art. Ich korrigiere danach.">Direkt einen ersten Vorschlag machen</button></div></div>`;
+  KI.log.forEach((x,i)=>{
+    if(x.t==='u')h+=`<div class="ki-m u">${kiMd(x.c)}</div>`;
+    else if(x.t==='a')h+=`<div class="ki-m a">${kiMd(kiVisible(x.c))||'<p>Vorschlag siehe unten.</p>'}</div>`;
+    else h+=`<div class="ki-m ${x.t}">${esc(x.c)}</div>`;
+    if(KI.prop&&KI.prop.at===i)h+=kiPropHtml();
+  });
+  if(KI.busy)h+=`<div class="ki-m a wait" id="ki-live">Claude denkt nach … das kann bis zu einer Minute dauern.</div>`;
+  b.innerHTML=h;kiSums();
+  document.getElementById('ki-send').disabled=KI.busy||!kiOn()||!kiScopes().length;
+  document.getElementById('ki-stop').hidden=!KI.busy;
+  KI_ALL.forEach(g=>document.getElementById('ki-s-'+g).disabled=KI.busy);
+  kiScroll()}
+function kiPropHtml(){
+  const r=S.rows[S.sel],P=KI.prop;let rows='',g0='';
+  P.items.forEach((it,i)=>{if(it.g!==g0){g0=it.g;rows+=`<tr class="grp"><td colspan="5">${KI_G[it.g].t}</td></tr>`}
+    const cur=kiGet(r,it.g,it.k),same=Math.abs(cur-it.v)<1e-9;
+    rows+=`<tr class="${same?'same':''}"><td class="k">${esc(it.f.line)}<small>${esc(it.f.lab)}</small>${it.grund?`<small class="gm">${esc(it.grund)}</small>`:''}</td><td class="num o">${kv(cur)}</td><td class="num n">${kv(it.v)}</td><td class="kc"><input type="checkbox" data-kp="${i}" ${same||P.applied?'':'checked'} ${P.applied?'disabled':''} aria-label="${esc(it.f.line+' '+it.f.lab)} übernehmen"></td><td class="g">${esc(it.grund)}</td></tr>`});
+  return `<div class="ki-prop"><div class="ki-prop-h"><b>Vorschlag von Claude</b><span>${P.applied?'Übernommen':'Häkchen = Wert wird übernommen. Grau = unverändert.'}</span></div>
+    <div class="ki-tw"><table><thead><tr><th style="text-align:left">Feld</th><th>Aktuell</th><th>Vorschlag</th><th>Übernehmen</th><th class="g" style="text-align:left">Begründung</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="ki-sum" id="ki-sum"></div>
+    ${P.applied?'':`<div class="ki-act"><label><input type="checkbox" id="ki-note" checked> Annahmen an die Notiz des Verfahrens anhängen</label><button type="button" id="ki-apply" class="primary">Ausgewählte Werte übernehmen</button></div>`}</div>`}
+function kiSums(){const el=document.getElementById('ki-sum');if(!el||!KI.prop)return;const r=S.rows[S.sel],c={ti:{...r.ti},tc:{...r.tc},mb:r.mb||0};
+  document.querySelectorAll('#ki-body input[data-kp]').forEach(x=>{if(x.checked){const it=KI.prop.items[+x.dataset.kp];if(it.g==='mb')c.mb=it.v;else c[it.g][it.k]=it.v}});
+  const f=S.aufs[calc(r).cls];
+  el.innerHTML=kiScopes().filter(g=>KI.prop.items.some(it=>it.g===g)).map(g=>{if(g==='mb')return `<span>Migrationsbetrag: <b>${eur((r.mb||0)*f)} €</b> → <b>${eur(c.mb*f)} €</b> einmalig (Basis × ${nf(f,1)} Aufschlag)</span>`;
+    const L=KI_G[g].L,a=tco(L,r[g]),n=tco(L,c[g]);return `<span>${KI_G[g].t}: <b>${eur(a)} €</b> → <b>${eur(n)} €</b> pro Jahr</span>`}).join('')}
+const KI_ERR={not_granted:'Der Zugriff auf Claude wurde für diese Seite nicht erlaubt. Die KI-Schätzhilfe ist deshalb ausgeblendet.',
+  sampling_disabled:'Claude ist für dieses Konto hier nicht verfügbar. Die KI-Schätzhilfe ist deshalb ausgeblendet.',
+  rate_limited:'Gerade zu viele Anfragen oder das Nutzungslimit ist erreicht. Bitte später erneut senden.',
+  kein_zugang:'Für die KI-Schätzhilfe fehlt die Berechtigung. Bitte neu anmelden oder den Zugangslink erneut öffnen.',
+  nicht_eingerichtet:'Die KI-Schätzhilfe ist noch nicht eingerichtet: Der API-Schlüssel fehlt in Supabase.',
+  schluessel_ungueltig:'Der API-Schlüssel der KI-Schätzhilfe ist ungültig. Bitte in Supabase einen gültigen Schlüssel hinterlegen.',
+  kein_guthaben:'Das Guthaben des KI-Zugangs ist aufgebraucht. Bitte in der Anthropic Console aufladen.',
+  ueberlastet:'Claude ist gerade überlastet. Bitte gleich noch einmal senden.',
+  session_expired:'Deine Anmeldung bei Claude ist abgelaufen. Bitte neu anmelden und erneut senden.',
+  refused:'Claude hat diese Anfrage nicht beantwortet. Bitte anders formulieren.',
+  prompt_too_large:'Der Dialog ist zu lang geworden. Bitte mit „Neu beginnen“ einen neuen Dialog starten.',
+  empty_completion:'Claude hat keine Antwort geliefert. Bitte die Frage kürzer oder anders stellen.'};
+const KI_OFF=['not_granted','sampling_disabled','not_declared','capability_disabled','capability_removed','nicht_eingerichtet'];
+const KI_FN='/functions/v1/ki-schaetzung';
+async function kiHeaders(){const h={'Content-Type':'application/json',apikey:SUPABASE_ANON_KEY};let tok=SUPABASE_ANON_KEY;
+  try{if(SB&&SB.auth&&!LINKMODE){const r=await SB.auth.getSession();if(r&&r.data&&r.data.session)tok=r.data.session.access_token}}catch(e){}
+  h.Authorization='Bearer '+tok;if(LINKMODE&&LINKTOKEN)h['x-zugang']=LINKTOKEN;return h}
+async function kiAsk(rules,turns,o){
+  if(SAMPLE)return SAMPLE([{role:'user',content:rules},...turns],{cache:false,signal:o.signal,onText:o.onText});
+  let res,d={};
+  try{res=await fetch(SUPABASE_URL+KI_FN,{method:'POST',headers:await kiHeaders(),body:JSON.stringify({system:rules,messages:turns}),signal:o.signal});d=await res.json().catch(()=>({}))}
+  catch(e){throw {code:o.signal&&o.signal.aborted?'cancelled':'upstream_error'}}
+  if(!res.ok||typeof d.text!=='string'||!d.text.trim())throw {code:d.error||(res.ok?'empty_completion':'upstream_error')};
+  if(o.onText)o.onText({text:d.text,delta:d.text});
+  return {text:d.text,truncated:!!d.truncated}}
+async function kiInitSupa(){if(SAMPLE||!SB||MODE!=='db')return;
+  try{const res=await fetch(SUPABASE_URL+KI_FN,{method:'POST',headers:await kiHeaders(),body:JSON.stringify({ping:true})});const d=await res.json().catch(()=>({}));KI_SUPA=res.ok&&d.bereit===true}catch(e){KI_SUPA=false}
+  const kb=document.getElementById('kibar');if(kb)kb.hidden=!KI_SUPA||READONLY}
+async function kiSend(text){
+  text=String(text||'').trim();if(!text||KI.busy||!kiOn()||!kiScopes().length)return;
+  KI.log.push({t:'u',c:text});KI.busy=true;kiRender();
+  const ctl=KI.ctl=new AbortController(),L=KI.log;
+  const turns=KI.log.filter(x=>x.t==='u'||x.t==='a').slice(-30).map(x=>({role:x.t==='u'?'user':'assistant',content:x.c}));
+  while(turns.length&&turns[0].role!=='user')turns.shift();
+  try{
+    const res=await kiAsk(kiRules(),turns,{signal:ctl.signal,onText:({text})=>{const el=document.getElementById('ki-live');if(!el)return;el.className='ki-m a';const v=kiVisible(text);el.innerHTML=kiMd(v)+(text.includes('```vorschlag')?'<p><em>Vorschlag wird erstellt …</em></p>':'');kiScroll()}});
+    L.push({t:'a',c:res.text});
+    const p=kiParse(res.text);if(p){if(L===KI.log){p.at=L.length-1;KI.prop=p}}
+    else if(res.text.includes('```vorschlag'))L.push({t:'err',c:'Der Vorschlag konnte nicht gelesen werden. Bitte Claude bitten, ihn noch einmal vollständig auszugeben.'});
+    if(res.truncated)L.push({t:'info',c:'Die Antwort wurde gekürzt. Bitte um eine kürzere Antwort oder den Vorschlag allein.'});
+  }catch(e){
+    const code=e&&e.code||'upstream_error';
+    if(e&&e.text&&code!=='refused')L.push({t:'a',c:e.text});
+    if(code!=='cancelled')L.push({t:'err',c:KI_ERR[code]||(KI_OFF.includes(code)?KI_ERR.sampling_disabled:'Die Verbindung zu Claude wurde unterbrochen. Bitte erneut senden.')});
+    if(KI_OFF.includes(code)){SAMPLE=null;KI_SUPA=false;const kb=document.getElementById('kibar');if(kb)kb.hidden=true}
+  }finally{if(KI.ctl===ctl){KI.busy=false;KI.ctl=null}kiRender();if(kiOn())document.getElementById('ki-msg').focus()}}
+function kiApply(){
+  const r=S.rows[S.sel],P=KI.prop;if(!r||!P||P.applied)return;let n=0;
+  document.querySelectorAll('#ki-body input[data-kp]').forEach(x=>{if(!x.checked)return;const it=P.items[+x.dataset.kp];kiSet(r,it.g,it.k,it.v);n++});
+  if(!n){KI.log.push({t:'info',c:'Kein Wert ausgewählt. Setze bei den Feldern, die übernommen werden sollen, ein Häkchen.'});kiRender();return}
+  const nt=document.getElementById('ki-note');
+  if(nt&&nt.checked&&P.sum){const d=new Date().toLocaleDateString('de-DE');const gs=[...new Set(P.items.map(it=>KI_G[it.g].t))].join(', ');
+    r.note=((r.note||'').trim()?r.note.replace(/\s+$/,'')+'\n\n':'')+`KI-Schätzung vom ${d} (${gs}): ${P.sum}`}
+  P.applied=true;render();renderEditor();kiClose();
+  flash(`${n} ${n===1?'Wert':'Werte'} aus der KI-Schätzung übernommen`)}
+function kiOpen(){
+  const r=S.rows[S.sel];if(!r||!kiOn())return;
+  document.getElementById('ki-foot').textContent=SAMPLE?'Schätzwerte, keine Angebote. Der Dialog läuft über dein Claude-Konto. Bitte keine personenbezogenen Daten eingeben.':'Schätzwerte, keine Angebote. Die Eingaben gehen über den KI-Zugang dieses Rechners zur Verarbeitung an Claude (Anthropic). Bitte keine personenbezogenen Daten eingeben.';
+  if(KI.row!==r){if(KI.ctl)KI.ctl.abort();KI.row=r;KI.log=[];KI.prop=null;KI.busy=false;KI.ctl=null}
+  document.getElementById('ki-t').textContent='Kosten schätzen: '+(r.name||'Ohne Namen');
+  KI_ALL.forEach(g=>document.getElementById('ki-s-'+g).checked=KI.scope[g]);
+  kiRender();const d=document.getElementById('kidlg');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');
+  document.getElementById('ki-msg').focus()}
+function kiClose(){const d=document.getElementById('kidlg');if(KI.ctl)KI.ctl.abort();try{d.close()}catch(e){}d.removeAttribute('open')}
+document.getElementById('editor').addEventListener('click',e=>{if(e.target.closest('#b-ki'))kiOpen()});
+document.getElementById('ki-close').addEventListener('click',kiClose);
+document.getElementById('kidlg').addEventListener('cancel',e=>{e.preventDefault();kiClose()});
+document.getElementById('ki-stop').addEventListener('click',()=>{if(KI.ctl)KI.ctl.abort()});
+document.getElementById('ki-reset').addEventListener('click',()=>{if(KI.ctl)KI.ctl.abort();KI.log=[];KI.prop=null;KI.busy=false;KI.ctl=null;kiRender();document.getElementById('ki-msg').focus()});
+document.getElementById('ki-form').addEventListener('submit',e=>{e.preventDefault();const t=document.getElementById('ki-msg');if(KI.busy||!t.value.trim())return;const v=t.value;t.value='';kiSend(v)});
+document.getElementById('ki-msg').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();document.getElementById('ki-form').requestSubmit()}});
+KI_ALL.forEach(g=>document.getElementById('ki-s-'+g).addEventListener('change',e=>{KI.scope[g]=e.target.checked;kiRender()}));
+document.getElementById('ki-body').addEventListener('click',e=>{const q=e.target.closest('button[data-kq]');if(q){kiSend(q.dataset.kq);return}if(e.target.closest('#ki-apply'))kiApply()});
+document.getElementById('ki-body').addEventListener('change',e=>{if(e.target.matches('input[data-kp]'))kiSums()});
+async function kiInit(){try{if(window.claude&&typeof window.claude.use==='function'){const s=await window.claude.use('sample');if(typeof s==='function'){SAMPLE=s;const kb=document.getElementById('kibar');if(kb)kb.hidden=READONLY}}}catch(e){SAMPLE=null}}
+
 function hint(c,v){return c.h[v-1]||('Zwischen „'+c.h[v-2]+'“ und „'+c.h[v]+'“')}
 function renderResult(){
   const el=document.getElementById('ed-res');if(!el||!S.rows[S.sel])return;
@@ -1505,7 +1745,7 @@ async function startLink(){
   try{const {data,error}=await SB.rpc('link_gueltig');ok=!error&&data===true}catch(e){ok=false}
   if(!ok){MODE='auth';showLogin('badlink');renderStoreInfo();route();return}
   LINKMODE=true;MODE='db';renderStoreInfo();
-  await sbFetch();
+  await sbFetch();kiInitSupa();
   window.addEventListener('focus',sbRefetchSoon);
   setInterval(()=>{if(!document.hidden)sbFetch()},20000);
 }
@@ -1516,7 +1756,7 @@ async function startSupa(user){
   const {data,error}=await SB.from('zugelassene_nutzer').select('email').limit(1);
   if(error||!data||!data.length){MODE='auth';showLogin('denied');renderStoreInfo();route();return}
   MODE='db';renderStoreInfo();
-  await sbFetch();
+  await sbFetch();kiInitSupa();
   try{SB.channel('kommunen-live').on('postgres_changes',{event:'*',schema:'public',table:'kommunen'},()=>sbRefetchSoon()).subscribe()}catch(e){}
   window.addEventListener('focus',sbRefetchSoon);
   setInterval(()=>{if(!document.hidden)sbFetch()},60000);
@@ -1559,7 +1799,7 @@ document.getElementById('f-login').addEventListener('submit',async e=>{
 });
 document.getElementById('b-logout2').addEventListener('click',sbLogout);
 async function sbLogout(){try{await SB.auth.signOut()}catch(e){}location.hash='';location.reload()}
-renderStoreInfo();route();startStore();
+renderStoreInfo();route();startStore();kiInit();
 window.addEventListener('beforeunload',()=>{Object.keys(TIMERS).forEach(id=>{clearTimeout(TIMERS[id]);delete TIMERS[id];if(MODE==='db')flushWrite(id)})});
 </script>
 
