@@ -718,6 +718,27 @@ td.c-inc input[type=checkbox]{width:18px;height:18px}
 .vfstamm .inunit span{height:40px;box-sizing:border-box}
 .vfstamm .ei{margin:0}
 @media (max-width:520px){.vfstamm{padding:12px 12px 14px}.vfstamm .ed-grid{grid-template-columns:1fr}}
+
+/* Grunddaten: schlanke Leseansicht, Bearbeiten über „Ändern“ */
+.vfstamm:not(.is-edit){padding:10px 12px 10px 16px}
+.vs-ro{display:flex;align-items:center;gap:10px 20px;flex-wrap:wrap}
+.vs-ro .vs-t{flex:none}
+.vs-list{display:flex;flex-wrap:wrap;align-items:stretch;flex:1 1 480px;min-width:0}
+.vs-i{display:flex;flex-direction:column;gap:1px;padding:2px 16px;border-left:1px solid var(--line-strong);min-width:0}
+.vs-i span{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);white-space:nowrap}
+.vs-i b{font-size:.92rem;font-weight:600;color:var(--ink);white-space:nowrap}
+.vs-i b small{font-weight:400;color:var(--muted);font-size:.74rem}
+.vs-i.vs-name b{white-space:normal;font-size:1rem}
+.vs-btn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;font-size:.84rem;font-weight:600;background:#fff;border:1px solid var(--teal);color:var(--teal-text);margin-left:auto}
+.vs-btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.vs-btn:hover{background:var(--teal-soft)}
+.vs-done{background:var(--teal);color:#fff}
+.vs-done:hover{background:var(--teal-text)}
+.vfstamm.is-edit{box-shadow:0 0 0 3px var(--teal-soft)}
+.vfstamm.is-edit .vs-h .vs-hint{margin-left:auto}
+.vfstamm.is-edit .vs-btn{margin-left:0}
+@media (max-width:760px){.vs-list{flex-basis:100%;order:2}.vs-ro .vs-btn{order:1}.vs-i{padding:4px 12px 4px 10px;flex:1 1 40%}.vs-i.vs-name{flex-basis:100%}.vs-i span{white-space:normal}}
+@media (max-width:420px){.vfstamm.is-edit .vs-hint{display:none}}
 </style>
 </head>
 <body>
@@ -1187,10 +1208,19 @@ function renderEditor(){
    </section>`;
   renderResult();updateTco();syncInc();noteUi();renderStamm();eiSync();
 }
+let STAMM_EDIT=null; /* Zeile, deren Grunddaten gerade bearbeitet werden */
 function renderStamm(){const h=document.getElementById('vf-stamm');if(!h)return;const r=S&&S.rows[S.sel];
   if(!r){h.hidden=true;h.innerHTML='';return}
-  h.hidden=false;
-  h.innerHTML=`<div class="vs-h"><span class="vs-t"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Grunddaten des ausgewählten Verfahrens<b class="vs-nr num">${S.sel+1} / ${S.rows.length}</b>${isInc(r)?'':'<span class="draft">Entwurf</span>'}</span><span class="vs-hint">Anderes Verfahren: Zeile in der Tabelle anklicken</span></div>
+  h.hidden=false;const edit=STAMM_EDIT===r&&!READONLY;
+  h.classList.toggle('is-edit',edit);
+  const head=`<span class="vs-t"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Grunddaten<b class="vs-nr num" title="Verfahren ${S.sel+1} von ${S.rows.length}">${S.sel+1} / ${S.rows.length}</b>${isInc(r)?'':'<span class="draft">Entwurf</span>'}</span>`;
+  if(!edit){
+    const it=(l,v,c)=>`<div class="vs-i${c?' '+c:''}"><span>${l}</span><b>${v}</b></div>`;
+    h.innerHTML=`<div class="vs-ro">${head}
+     <div class="vs-list">${it('Verfahren',esc(r.name||'Ohne Namen'),'vs-name')}${it('Ausgangsform',esc(r.form))}${it('Bürger',r.b>0?eur(r.b):eur(S.B)+'<small> Einwohner</small>')}${it('Migrationsbetrag Basis',eur(r.mb)+' €')}${it('Verteilung',(r.n||5)+' '+((r.n||5)===1?'Jahr':'Jahre'))}</div>
+     ${READONLY?'':`<button type="button" class="vs-btn" id="b-stamm" aria-label="Grunddaten ändern">${PEN_ICON}<span>Ändern</span></button>`}</div>`;
+    return}
+  h.innerHTML=`<div class="vs-h">${head}<span class="vs-hint">Änderungen werden sofort gespeichert</span><button type="button" class="vs-btn vs-done" id="b-stamm-ok">${OK_ICON}<span>Fertig</span></button></div>
    <div class="ed-grid">
     <div class="field f-name"><span class="lbl"><label for="e-name">Name des Verfahrens</label>${iBtn('f_name',1)}</span><input id="e-name" type="text" value="${esc(r.name)}"></div>
     <div class="field"><span class="lbl"><label for="e-form">Ausgangsform</label>${iBtn('f_form',1)}</span><select id="e-form">${FORMS.map(f=>`<option ${f===r.form?'selected':''}>${f}</option>`).join('')}</select></div>
@@ -1494,8 +1524,13 @@ function noteUi(){const t=document.getElementById('e-note');if(!t)return;const b
 function syncInc(){const r=S.rows[S.sel],c=document.getElementById('e-inc');if(!r||!c)return;const on=isInc(r);c.checked=on;
   document.getElementById('e-inc-t').textContent=on?'In Gesamtberechnung':'Entwurf – nicht in Gesamtberechnung';document.getElementById('e-inc-l').classList.toggle('is-off',!on);const vt=document.querySelector('#vf-stamm .vs-t');if(vt){const d=vt.querySelector('.draft');if(on&&d)d.remove();else if(!on&&!d)vt.insertAdjacentHTML('beforeend','<span class="draft">Entwurf</span>')}}
 const stamm=document.getElementById('vf-stamm');
+function stammDone(){STAMM_EDIT=null;renderStamm();const b=document.getElementById('b-stamm');if(b)b.focus();flash('Grunddaten gespeichert')}
+stamm.addEventListener('keydown',e=>{if(!STAMM_EDIT)return;if(e.key==='Escape'||(e.key==='Enter'&&e.target.tagName==='INPUT')){e.preventDefault();stammDone()}});
 stamm.addEventListener('input',edIn);stamm.addEventListener('change',edCh);
-stamm.addEventListener('click',e=>{const eb=e.target.closest('button[data-ei]');if(!eb)return;e.preventDefault();const k=eb.dataset.ei,g=eiG(k);EI_OPEN[g]=EI_OPEN[g]===k?null:k;eiSync();const nb=stamm.querySelector(`button[data-ei="${k}"]`);if(nb)nb.focus()});
+stamm.addEventListener('click',e=>{
+  if(e.target.closest('#b-stamm')){STAMM_EDIT=S.rows[S.sel];renderStamm();eiSync();const n=document.getElementById('e-name');if(n){n.focus();n.select()}return}
+  if(e.target.closest('#b-stamm-ok')){stammDone();return}
+  const eb=e.target.closest('button[data-ei]');if(!eb)return;e.preventDefault();const k=eb.dataset.ei,g=eiG(k);EI_OPEN[g]=EI_OPEN[g]===k?null:k;eiSync();const nb=stamm.querySelector(`button[data-ei="${k}"]`);if(nb)nb.focus()});
 ed.addEventListener('click',e=>{
   const eb=e.target.closest('button[data-ei]');
   if(eb){e.preventDefault();const k=eb.dataset.ei,g=eiG(k);EI_OPEN[g]=EI_OPEN[g]===k?null:k;eiSync();const nb=document.querySelector(`#editor button[data-ei="${k}"]`);if(nb)nb.focus();return}
@@ -1513,7 +1548,7 @@ ed.addEventListener('click',e=>{
       if(!yes||S.rows[i]!==r)return;S.rows.splice(i,1);S.sel=Math.max(0,i-1);NOTE_OPEN=-1;NOTE_EDIT=-1;render();renderEditor();flash('Verfahren „'+(r.name||'Ohne Namen')+'“ gelöscht')})}
 });
 
-document.getElementById('b-add').addEventListener('click',()=>{S.rows.push({inc:false,n:S.n>0?S.n:5,name:'Neues Verfahren',form:'On-Premises',b:null,mb:50000,s:[3,3,3,3,3,3,3,3,3,3],ti:splitIst(100000,S.ts),tc:splitCloud(80000,S.ts)});S.sel=S.rows.length-1;render();renderEditor();const n=document.getElementById('e-name');n.focus();n.select();flash('Neues Verfahren als Entwurf angelegt – Häkchen „Σ“ setzen, wenn die Werte vollständig sind')});
+document.getElementById('b-add').addEventListener('click',()=>{S.rows.push({inc:false,n:S.n>0?S.n:5,name:'Neues Verfahren',form:'On-Premises',b:null,mb:50000,s:[3,3,3,3,3,3,3,3,3,3],ti:splitIst(100000,S.ts),tc:splitCloud(80000,S.ts)});S.sel=S.rows.length-1;STAMM_EDIT=S.rows[S.sel];render();renderEditor();const n=document.getElementById('e-name');n.focus();n.select();flash('Neues Verfahren als Entwurf angelegt – Häkchen „Σ“ setzen, wenn die Werte vollständig sind')});
 function arm(btn,label,fn){
   if(btn.classList.contains('armed')){clearTimeout(btn._t);btn.classList.remove('armed');btn.innerHTML=btn._l;fn();return}
   btn._l=btn.innerHTML;btn.textContent=label;btn.classList.add('armed');
