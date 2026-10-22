@@ -699,6 +699,25 @@ input[type=checkbox]:focus-visible{outline:2px solid var(--accent);outline-offse
 .incsw input[type=checkbox]{border-color:var(--good)}
 .incsw.is-off input[type=checkbox]{border-color:var(--muted)}
 td.c-inc input[type=checkbox]{width:18px;height:18px}
+
+/* Grunddaten des ausgewählten Verfahrens unter der Überschrift „Fachverfahren“ */
+.vfstamm{display:flex;flex-direction:column;gap:12px;padding:14px 18px 16px;border:1px solid var(--line-strong);border-left:6px solid var(--teal);background:linear-gradient(90deg,var(--teal-soft),var(--surface) 65%)}
+.vs-h{display:flex;justify-content:space-between;align-items:center;gap:6px 16px;flex-wrap:wrap}
+.vs-t{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--teal-text)}
+.vs-t svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:square}
+.vs-nr{padding:2px 8px;background:var(--teal);color:#fff;font-size:.74rem;font-weight:600;letter-spacing:0}
+.vs-t .draft{margin:0}
+.vs-hint{font-size:.76rem;color:var(--muted)}
+.vfstamm .ed-grid{gap:14px 18px}
+.vfstamm .field .lbl label{font-size:.8rem;font-weight:600;color:var(--teal-text);white-space:nowrap}
+.vfstamm .ed-grid{grid-template-columns:1.6fr 1.1fr 1fr 1.1fr 1fr}
+@media (max-width:860px){.vfstamm .ed-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.vfstamm .field input,.vfstamm .field select{height:40px;background:#fff;border-color:var(--line-strong)}
+.vfstamm .field input:focus,.vfstamm .field select:focus{border-color:var(--teal);outline:2px solid var(--teal-soft);outline-offset:0}
+.vfstamm .f-name input{font-size:1rem;font-weight:600;color:var(--ink)}
+.vfstamm .inunit span{height:40px;box-sizing:border-box}
+.vfstamm .ei{margin:0}
+@media (max-width:520px){.vfstamm{padding:12px 12px 14px}.vfstamm .ed-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -790,6 +809,7 @@ td.c-inc input[type=checkbox]{width:18px;height:18px}
         <button class="ghost" id="b-reset"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v5h5"/></svg><span>Beispieldaten laden</span></button>
       </div>
     </div>
+    <div class="vfstamm" id="vf-stamm" hidden aria-label="Grunddaten des ausgewählten Verfahrens"></div>
     <div class="toast" id="toast" role="status"></div>
     <div class="panel tblwrap">
       <table>
@@ -1112,9 +1132,9 @@ const eiG=k=>EI_GROUP[k]||k;
 function iBtn(k,dark){const on=EI_OPEN[eiG(k)]===k;return `<button type="button" class="thi ebi${dark?' thi-d':''}" data-ei="${k}" aria-expanded="${on}" aria-label="Erklärung zu ${EI[k][0]}"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1.5 7.5 5 3 8.5z"/></svg></button>`}
 const eiLbl=(t,k)=>{const i=t.lastIndexOf(' ');return (i>0?t.slice(0,i+1):'')+`<span class="nw">${i>0?t.slice(i+1):t}${iBtn(k,1)}</span>`};
 const eiPanel=k=>`<div class="ei" data-eipanel="${k}" hidden></div>`;
-function eiSync(){const ed=document.getElementById('editor');if(!ed)return;
+function eiSync(){['editor','vf-stamm'].forEach(id=>{const ed=document.getElementById(id);if(!ed)return;
   ed.querySelectorAll('button[data-ei]').forEach(b=>b.setAttribute('aria-expanded',EI_OPEN[eiG(b.dataset.ei)]===b.dataset.ei));
-  ed.querySelectorAll('[data-eipanel]').forEach(p=>{const k=EI_OPEN[p.dataset.eipanel];if(k&&EI[k]){p.hidden=false;p.innerHTML=`<strong>${EI[k][0]}</strong><span>${EI[k][1]}</span>`}else{p.hidden=true;p.innerHTML=''}})}
+  ed.querySelectorAll('[data-eipanel]').forEach(p=>{const k=EI_OPEN[p.dataset.eipanel];if(k&&EI[k]){p.hidden=false;p.innerHTML=`<strong>${EI[k][0]}</strong><span>${EI[k][1]}</span>`}else{p.hidden=true;p.innerHTML=''}})})}
 let NOTE_EDIT=-1,NOTE_OPEN=-1,KC_EDIT=null,KC_OPEN=false;
 const KN_PH='Freie Notizen zur Kommune, z. B. Ansprechpartner, Stand der Abstimmung, Termine, Besonderheiten der IT-Landschaft …';
 function kNoteBtn(){const b=document.getElementById('b-knote');if(!b||!S)return;const has=!!(S.note||'').trim();
@@ -1132,7 +1152,7 @@ function confirmDlg(o){const d=document.getElementById('cdlg');
     document.getElementById('cdlg-no').focus()})}
 function renderEditor(){
   const ed=document.getElementById('editor');
-  if(!S.rows.length){ed.innerHTML='<h2>Kein Verfahren erfasst</h2><p class="note">Mit „Verfahren hinzufügen“ ein erstes Fachverfahren anlegen.</p>';return}
+  if(!S.rows.length){ed.innerHTML='<h2>Kein Verfahren erfasst</h2><p class="note">Mit „Verfahren hinzufügen“ ein erstes Fachverfahren anlegen.</p>';renderStamm();return}
   if(S.sel>=S.rows.length)S.sel=S.rows.length-1;
   const r=S.rows[S.sel];
   ed.innerHTML=`<div class="ed-head"><div class="ed-hl"><span class="eyebrow ei-h">Fachverfahren bearbeiten${iBtn('ed',1)}</span><h2 id="ed-title">${esc(r.name||'Ohne Namen')}</h2></div><div class="ed-act"><button type="button" class="ed-note${(r.note||'').trim()?' has-note':''}" id="b-vnote" aria-expanded="${NOTE_OPEN===S.sel}" aria-controls="v-note" title="Notizen zum Fachverfahren">${NOTE_ICON}<span>Notizen</span><i class="hd-dot" aria-hidden="true"></i></button><label class="incsw" id="e-inc-l"><input type="checkbox" id="e-inc" ${isInc(r)?'checked':''}><span id="e-inc-t"></span></label><button class="danger" id="b-del">Verfahren entfernen</button></div></div>
@@ -1142,14 +1162,6 @@ function renderEditor(){
    ${eiPanel('diff')}
    <div class="result" id="ed-res" aria-label="Ergebnis für dieses Verfahren"></div>
    ${eiPanel('res')}
-   <div class="ed-grid">
-    <div class="field f-name"><span class="lbl"><label for="e-name">Name des Verfahrens</label>${iBtn('f_name',1)}</span><input id="e-name" type="text" value="${esc(r.name)}"></div>
-    <div class="field"><span class="lbl"><label for="e-form">Ausgangsform</label>${iBtn('f_form',1)}</span><select id="e-form">${FORMS.map(f=>`<option ${f===r.form?'selected':''}>${f}</option>`).join('')}</select></div>
-    <div class="field"><span class="lbl"><label for="e-b">Bürger</label>${iBtn('f_b',1)}</span><input id="e-b" type="number" min="0" step="1000" value="${r.b>0?r.b:''}" placeholder="${eur(S.B)}"><span class="fhelp">leer = Einwohner der Kommune</span></div>
-    <div class="field"><span class="lbl"><label for="e-mb">Migrationsbetrag Basis €</label>${iBtn('f_mb',1)}</span><input id="e-mb" type="number" min="0" step="1000" value="${r.mb}"><span class="fhelp">ohne Aufschlag</span></div>
-    <div class="field"><span class="lbl"><label for="e-n">Verteilungszeitraum</label>${iBtn('f_n',1)}</span><div class="inunit"><input id="e-n" type="number" min="1" max="30" step="1" value="${r.n||5}"><span>Jahre</span></div><span class="fhelp">für den Migrationsbetrag</span></div>
-   </div>
-   ${eiPanel('fld')}
    <div class="kibar" id="kibar"${kiOn()&&!READONLY?'':' hidden'}><div class="kibar-t">${KI_ICON}<div><b>Kosten mit Claude schätzen</b><span>Claude fragt im Dialog nach Eckdaten wie Servern, Datenmenge und Verträgen und schlägt Werte für TCO heute, TCO in der Cloud und den Migrationsbetrag Basis vor. Du prüfst den Vorschlag und übernimmst nur, was passt.</span></div></div><button type="button" class="primary" id="b-ki">${KI_ICON}Schätzung starten</button></div>
    <div class="tco">
     ${tcoCol('ti','TCO heute',IST_LINES,r.ti,'s-ist')}
@@ -1173,8 +1185,20 @@ function renderEditor(){
      <div class="h" id="h-${k}">${hint(c,r.s[k])}</div>
      <details class="more"><summary>Was bedeutet das Kriterium?</summary><p>${c.d}</p></details></div>`).join('')}</div>
    </section>`;
-  renderResult();updateTco();syncInc();noteUi();eiSync();
+  renderResult();updateTco();syncInc();noteUi();renderStamm();eiSync();
 }
+function renderStamm(){const h=document.getElementById('vf-stamm');if(!h)return;const r=S&&S.rows[S.sel];
+  if(!r){h.hidden=true;h.innerHTML='';return}
+  h.hidden=false;
+  h.innerHTML=`<div class="vs-h"><span class="vs-t"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Grunddaten des ausgewählten Verfahrens<b class="vs-nr num">${S.sel+1} / ${S.rows.length}</b>${isInc(r)?'':'<span class="draft">Entwurf</span>'}</span><span class="vs-hint">Anderes Verfahren: Zeile in der Tabelle anklicken</span></div>
+   <div class="ed-grid">
+    <div class="field f-name"><span class="lbl"><label for="e-name">Name des Verfahrens</label>${iBtn('f_name',1)}</span><input id="e-name" type="text" value="${esc(r.name)}"></div>
+    <div class="field"><span class="lbl"><label for="e-form">Ausgangsform</label>${iBtn('f_form',1)}</span><select id="e-form">${FORMS.map(f=>`<option ${f===r.form?'selected':''}>${f}</option>`).join('')}</select></div>
+    <div class="field"><span class="lbl"><label for="e-b">Bürger</label>${iBtn('f_b',1)}</span><input id="e-b" type="number" min="0" step="1000" value="${r.b>0?r.b:''}" placeholder="${eur(S.B)}"><span class="fhelp">leer = Einwohner der Kommune</span></div>
+    <div class="field"><span class="lbl"><label for="e-mb">Migrationsbetrag Basis €</label>${iBtn('f_mb',1)}</span><input id="e-mb" type="number" min="0" step="1000" value="${r.mb}"><span class="fhelp">ohne Aufschlag</span></div>
+    <div class="field"><span class="lbl"><label for="e-n">Verteilungszeitraum</label>${iBtn('f_n',1)}</span><div class="inunit"><input id="e-n" type="number" min="1" max="30" step="1" value="${r.n||5}"><span>Jahre</span></div><span class="fhelp">für den Migrationsbetrag</span></div>
+   </div>
+   ${eiPanel('fld')}`}
 function tcoCol(g,title,L,o,sid){
   return `<div class="tcol tcol-${g}"><div class="tcol-h"><span class="tcol-t ei-h">${title}${iBtn('tco_'+g)}</span><span class="tcol-u">€ pro Jahr</span></div>${eiPanel('tco_'+g)}<div class="tcol-b">
    ${L.map(l=>`<div class="tl"><div class="tl-t"><span class="t">${l.t}</span><span class="d">${l.d}</span></div>
@@ -1454,19 +1478,24 @@ document.getElementById('tb').addEventListener('click',e=>{if(e.target.closest('
 document.getElementById('tb').addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;if(e.target.closest('input.incb'))return;const tr=e.target.closest('tr[data-i]');if(!tr)return;e.preventDefault();S.sel=+tr.dataset.i;render();renderEditor();document.getElementById('editor').scrollIntoView({behavior:'smooth',block:'start'})});
 
 const ed=document.getElementById('editor');
-ed.addEventListener('input',e=>{const r=S.rows[S.sel];if(!r)return;const t=e.target;
+const edIn=e=>{const r=S.rows[S.sel];if(!r)return;const t=e.target;
   if(t.id==='e-note'){if(t.readOnly)return;r.note=t.value;noteUi();render();const vb=document.getElementById('b-vnote');if(vb)vb.classList.toggle('has-note',!!t.value.trim());return}
   if(t.id==='e-name'){r.name=t.value;document.getElementById('ed-title').textContent=t.value||'Ohne Namen'}
   else if(t.id==='e-b')r.b=t.value===''?null:num(t.value);
   else if(t.dataset.g){r[t.dataset.g][t.dataset.k]=num(t.value);render();updateTco();return}
   else if(t.id==='e-mb')r.mb=num(t.value);
   else if(t.id==='e-n'){const v=num(t.value);if(!(v>=1))return;r.n=Math.min(30,Math.round(v))}
-  else return;render()});
-ed.addEventListener('change',e=>{if(e.target.id==='e-form'){S.rows[S.sel].form=e.target.value;render()}
-  else if(e.target.id==='e-inc'){S.rows[S.sel].inc=e.target.checked;render();syncInc()}});
+  else return;render()};
+ed.addEventListener('input',edIn);
+const edCh=e=>{if(e.target.id==='e-form'){S.rows[S.sel].form=e.target.value;render()}
+  else if(e.target.id==='e-inc'){S.rows[S.sel].inc=e.target.checked;render();syncInc()}};
+ed.addEventListener('change',edCh);
 function noteUi(){const t=document.getElementById('e-note');if(!t)return;const bx=t.closest('.notes');if(bx)bx.dataset.ph='Freie Notizen, z. B. Ansprechpartner, Hersteller und Vertragslaufzeit, Abhängigkeiten zu anderen Verfahren, offene Fragen, nächste Schritte …';noteSize(t);noteCount(t)}
 function syncInc(){const r=S.rows[S.sel],c=document.getElementById('e-inc');if(!r||!c)return;const on=isInc(r);c.checked=on;
-  document.getElementById('e-inc-t').textContent=on?'In Gesamtberechnung':'Entwurf – nicht in Gesamtberechnung';document.getElementById('e-inc-l').classList.toggle('is-off',!on)}
+  document.getElementById('e-inc-t').textContent=on?'In Gesamtberechnung':'Entwurf – nicht in Gesamtberechnung';document.getElementById('e-inc-l').classList.toggle('is-off',!on);const vt=document.querySelector('#vf-stamm .vs-t');if(vt){const d=vt.querySelector('.draft');if(on&&d)d.remove();else if(!on&&!d)vt.insertAdjacentHTML('beforeend','<span class="draft">Entwurf</span>')}}
+const stamm=document.getElementById('vf-stamm');
+stamm.addEventListener('input',edIn);stamm.addEventListener('change',edCh);
+stamm.addEventListener('click',e=>{const eb=e.target.closest('button[data-ei]');if(!eb)return;e.preventDefault();const k=eb.dataset.ei,g=eiG(k);EI_OPEN[g]=EI_OPEN[g]===k?null:k;eiSync();const nb=stamm.querySelector(`button[data-ei="${k}"]`);if(nb)nb.focus()});
 ed.addEventListener('click',e=>{
   const eb=e.target.closest('button[data-ei]');
   if(eb){e.preventDefault();const k=eb.dataset.ei,g=eiG(k);EI_OPEN[g]=EI_OPEN[g]===k?null:k;eiSync();const nb=document.querySelector(`#editor button[data-ei="${k}"]`);if(nb)nb.focus();return}
