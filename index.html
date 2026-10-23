@@ -740,9 +740,12 @@ td.c-inc input[type=checkbox]{width:18px;height:18px}
 @media (max-width:760px){.vs-list{flex-basis:100%;order:2}.vs-ro .vs-btn{order:1}.vs-i{padding:4px 12px 4px 10px;flex:1 1 40%}.vs-i.vs-name{flex-basis:100%}.vs-i span{white-space:normal}}
 @media (max-width:420px){.vfstamm.is-edit .vs-hint{display:none}}
 
-/* Kopfbereiche: einheitliches mittleres Petrol (#5FA9AB) mit weißer Schrift */
-.view>header,.view>header.kh{background:#5fa9ab;border:none;border-bottom:4px solid #3d8c8f}
-.ovw-h{background:#5fa9ab}
+/* Kästen einheitlich: Kopf- und Titelleisten in Petrol #3F8F92 mit weißer Schrift (TCO heute bleibt grau) */
+:root{--head:#3f8f92;--head-line:#2c6e71}
+.view>header,.view>header.kh{background:var(--head);border:none;border-bottom:4px solid var(--head-line)}
+.ovw-h,.sfbox-h,.tcol-tc .tcol-h,.ki-h{background:var(--head)}
+th{background:var(--head);border-bottom-color:var(--head-line)}
+.ki-prop th{background:var(--sunk)}
 .view>header .eyebrow,.kh-eyebrow{color:#fff!important}
 .view>header .lead,.view>header .kh-lead{color:#fff!important}
 .ovw-u{color:#fff}
