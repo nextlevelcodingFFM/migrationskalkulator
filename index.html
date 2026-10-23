@@ -741,7 +741,7 @@ td.c-inc input[type=checkbox]{width:18px;height:18px}
 @media (max-width:420px){.vfstamm.is-edit .vs-hint{display:none}}
 
 /* Leichtere Kopfbereiche: helle Flächen, dunkle Schrift, Teal nur als Akzent */
-.view>header,.view>header.kh{background:linear-gradient(115deg,#b6dcdd 0%,#cbe6e7 50%,#dff0f0 100%);color:var(--fg);border:1px solid #b2d6d7;border-top:4px solid var(--teal-text)}
+.view>header,.view>header.kh{background:linear-gradient(115deg,#5fa9ab 0%,#7dbbbd 40%,#a9d4d5 100%);color:#0f2a33;border:1px solid #5a9fa1;border-top:5px solid #024f52}
 .view>header h1{color:var(--ink)}
 .view>header .lead,.view>header .kh-lead{color:var(--fg)!important}
 .view>header .eyebrow{color:var(--teal-text)}
@@ -772,13 +772,32 @@ td.c-inc input[type=checkbox]{width:18px;height:18px}
 .hd-cancel{background:#fff;color:var(--teal-text);border-color:var(--line-strong)}
 .hd-cancel:hover{background:var(--teal-soft)}
 .hd-meta{border-top-color:var(--line)}
-.ovw{border-top:4px solid var(--teal-text)}
-.ovw-h{background:linear-gradient(90deg,#b6dcdd,#dff0f0);color:var(--ink);border-bottom:1px solid #b2d6d7}
+.ovw{border-top:5px solid #024f52}
+.ovw-h{background:linear-gradient(90deg,#5fa9ab,#7dbbbd 45%,#a9d4d5);color:#0f2a33;border-bottom:1px solid #5a9fa1}
 .ovw-t{color:var(--ink)}
 .ovw-u{color:var(--muted)}
 .ovw .ovw-h .thi{color:var(--teal-text)}
 .ovw .ovw-h .thi:hover{background:rgba(255,255,255,.6);color:var(--teal-text)}
 .ovw .ovw-h .thi[aria-expanded=true]{background:rgba(255,255,255,.7);color:var(--teal-text)}
+
+/* Kopfbereiche: mittleres Petrol mit dunkler Schrift */
+.view>header h1,.ovw-t{color:#06303d}
+.view>header .lead,.view>header .kh-lead{color:#0f2a33!important}
+.view>header .eyebrow,.kh-eyebrow{color:#06303d!important}
+.kh-eyebrow{background:rgba(255,255,255,.55)}
+.ovw-u{color:#173a44}
+.ovw .ovw-h .thi,.view>header .thi{color:#06303d}
+.kh-deco{stroke:#ffffff;opacity:.22}
+.hd-title .hd-ew,.hd-title .hd-vf,.kh-steps li{background:rgba(255,255,255,.82);border-color:rgba(2,79,82,.35)}
+.kh-steps b{background:#024f52;color:#fff}
+.hd-note,.hd-pen{background:rgba(255,255,255,.9);border-color:rgba(2,79,82,.45);color:#024f52}
+.hd-note:hover,.hd-pen:hover{background:#fff}
+.hd-note[aria-expanded=true]{background:#024f52;border-color:#024f52;color:#fff}
+.hd-f{color:#06303d}
+.hd-f input{border-color:rgba(2,79,82,.45)}
+.hd-save{background:#024f52;border-color:#024f52}
+.hd-save:hover{background:#013b3d}
+.kh>.kh-logo{filter:drop-shadow(0 4px 10px rgba(0,40,50,.18))}
 </style>
 </head>
 <body>
